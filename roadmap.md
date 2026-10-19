@@ -21,9 +21,10 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Exam Mode: 1-minute revisions of all ready chapters in a subject, played back to back
 - [x] "Galti dikhi? Batao" mistake reports (saved for the owner)
 - [x] Warning before closing the page while notes are still being written
+- [x] Daily study streak on home page and notebook
 
 ## Ready next
 - Owner page to read mistake reports and re-create a chapter's notes after fixing
 - Pre-build chapter lists for Classes 9–12 so the first visit is instant (uses AI credits up front)
-- Download a chapter's full audio as one file for offline listening
-- Daily study streak + reminder on the home page
+- Download a chapter's audio for offline listening (needs a smaller audio format than today's files)
+- Student accounts so the notebook syncs across phone and laptop
