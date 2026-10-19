@@ -18,9 +18,12 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Rate limiting for AI generation
 - [x] SEO head tags on every page
 - [x] Tests for catalog, slugs, audio tracks, normalizers, quiz
+- [x] Exam Mode: 1-minute revisions of all ready chapters in a subject, played back to back
+- [x] "Galti dikhi? Batao" mistake reports (saved for the owner)
+- [x] Warning before closing the page while notes are still being written
 
 ## Ready next
-- Keep writing notes on the server even if the student closes the page mid-way
-- "Exam mode": play only 1-minute revisions of all chapters in a subject back-to-back
-- Pre-build chapter lists for the most-used classes (9–12) so the first visit is instant
-- Report-a-mistake button on notes (lets students flag wrong facts)
+- Owner page to read mistake reports and re-create a chapter's notes after fixing
+- Pre-build chapter lists for Classes 9–12 so the first visit is instant (uses AI credits up front)
+- Download a chapter's full audio as one file for offline listening
+- Daily study streak + reminder on the home page
