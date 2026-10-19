@@ -110,3 +110,39 @@ export const searchChapters = createServerFn({ method: "GET" })
     if (error) throw new Error("Search failed");
     return ((rows ?? []) as ChapterHit[]).filter((r) => isBoard(r.board) && getSubject(r.board, r.grade, r.subject));
   });
+
+export interface RevisionItem {
+  noteId: string;
+  chapter: string;
+  title: string;
+  points: string[];
+  trackIndex: number;
+}
+
+/** 1-minute revisions of every chapter in a subject that already has notes in `lang`. */
+export const fetchSubjectRevisions = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    const base = validateSubject(input);
+    const lang = (input as { lang?: unknown })?.lang;
+    if (!isLang(lang)) throw new Error("Invalid input");
+    return { ...base, lang };
+  })
+  .handler(async ({ data }): Promise<RevisionItem[]> => {
+    const { buildTracks } = await import("@/lib/tracks");
+    const sb = await publicClient();
+    const { data: rows, error } = await sb
+      .from("notes")
+      .select("id, chapter_slug, chapter_title, content")
+      .eq("board", data.board)
+      .eq("grade", data.grade)
+      .eq("subject", data.subject)
+      .eq("language", data.lang)
+      .eq("is_custom", false);
+    if (error) throw new Error("Could not load revisions");
+    return (rows ?? []).flatMap((r) => {
+      const content = r.content as unknown as import("@/lib/types").NoteContent;
+      const trackIndex = buildTracks(content, data.lang).findIndex((t) => t.blockId === "revision");
+      if (trackIndex < 0 || !content.quickRevision?.length) return [];
+      return [{ noteId: r.id as string, chapter: r.chapter_slug as string, title: r.chapter_title as string, points: content.quickRevision, trackIndex }];
+    });
+  });
