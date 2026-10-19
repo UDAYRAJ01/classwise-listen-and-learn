@@ -26,12 +26,14 @@ interface NotebookState {
   saved: ChapterRef[];
   recent: ChapterRef[];
   done: string[];
+  /** Local dates (YYYY-MM-DD) on which a chapter was opened. */
+  days: string[];
   prefs: Prefs;
 }
 
 const KEY = "padhosuno:v1";
 const DEFAULT_PREFS: Prefs = { lang: null, voice: "didi", rate: 1, follow: true };
-const EMPTY: NotebookState = { saved: [], recent: [], done: [], prefs: DEFAULT_PREFS };
+const EMPTY: NotebookState = { saved: [], recent: [], done: [], days: [], prefs: DEFAULT_PREFS };
 
 let state: NotebookState = EMPTY;
 let loaded = false;
@@ -48,6 +50,7 @@ function load() {
         saved: Array.isArray(parsed.saved) ? parsed.saved : [],
         recent: Array.isArray(parsed.recent) ? parsed.recent : [],
         done: Array.isArray(parsed.done) ? parsed.done : [],
+        days: Array.isArray(parsed.days) ? parsed.days : [],
         prefs: { ...DEFAULT_PREFS, ...(parsed.prefs ?? {}) },
       };
     }
@@ -71,6 +74,25 @@ function commit(next: NotebookState) {
     // storage full or blocked; keep in memory
   }
   listeners.forEach((l) => l());
+}
+
+export function localDay(d = new Date()): string {
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** Consecutive study days ending today (or yesterday, so the streak survives until tonight). */
+export function streakFrom(days: string[], today = new Date()): number {
+  const set = new Set(days);
+  const cursor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  if (!set.has(localDay(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let n = 0;
+  while (set.has(localDay(cursor))) {
+    n += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return n;
 }
 
 export function refKey(r: Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">): string {

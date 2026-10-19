@@ -171,3 +171,14 @@ describe("quiz", () => {
     expect(buildTracks(withQuiz, "en").length).toBe(buildTracks(NOTE, "en").length);
   });
 });
+
+describe("study streak", () => {
+  it("counts consecutive days ending today or yesterday", async () => {
+    const { streakFrom } = await import("@/lib/notebook-store");
+    const today = new Date(2026, 9, 20);
+    expect(streakFrom(["2026-10-18", "2026-10-19", "2026-10-20"], today)).toBe(3);
+    expect(streakFrom(["2026-10-18", "2026-10-19"], today)).toBe(2);
+    expect(streakFrom(["2026-10-17"], today)).toBe(0);
+    expect(streakFrom([], today)).toBe(0);
+  });
+});
