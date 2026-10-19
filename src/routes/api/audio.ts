@@ -109,13 +109,11 @@ export const Route = createFileRoute("/api/audio")({
             });
             flush();
             const path = `${noteId}/${voice}/${trackIndex}.wav`;
-            const up = await supabaseAdmin.storage
-              .from(BUCKET)
-              .upload(path, buildWav(pcm), {
-                contentType: "audio/wav",
-                upsert: true,
-                cacheControl: "31536000",
-              });
+            const up = await supabaseAdmin.storage.from(BUCKET).upload(path, buildWav(pcm), {
+              contentType: "audio/wav",
+              upsert: true,
+              cacheControl: "31536000",
+            });
             if (up.error) throw up.error;
             await supabaseAdmin
               .from("note_audio")
