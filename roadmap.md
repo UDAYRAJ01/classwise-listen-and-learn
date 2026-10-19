@@ -22,9 +22,9 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] "Galti dikhi? Batao" mistake reports (saved for the owner)
 - [x] Warning before closing the page while notes are still being written
 - [x] Daily study streak on home page and notebook
+- [x] Chapter lists pre-built for every Class 9–12 subject (CBSE + ICSE/ISC)
 
 ## Ready next
 - Owner page to read mistake reports and re-create a chapter's notes after fixing
-- Pre-build chapter lists for Classes 9–12 so the first visit is instant (uses AI credits up front)
 - Download a chapter's audio for offline listening (needs a smaller audio format than today's files)
 - Student accounts so the notebook syncs across phone and laptop
