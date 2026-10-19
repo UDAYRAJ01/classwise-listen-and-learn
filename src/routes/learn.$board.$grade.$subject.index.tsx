@@ -164,17 +164,6 @@ function ChaptersPage() {
         )}
       </header>
 
-      {books && books.length > 0 && (
-        <ExamMode
-          board={board}
-          grade={grade}
-          subject={subject.slug}
-          subjectName={subject.name}
-          lang={lang ?? DEFAULT_LANG}
-          books={books}
-        />
-      )}
-
       {/* Language preference + custom topic */}
       <div className="mt-8 grid gap-4 md:grid-cols-[auto_1fr]">
         <div className="sticker rounded-2xl bg-card p-4">
@@ -213,6 +202,17 @@ function ChaptersPage() {
           {topicError && <p className="mt-2 text-sm font-semibold text-destructive">{topicError}</p>}
         </form>
       </div>
+
+      {books && books.length > 0 && (
+        <ExamMode
+          board={board}
+          grade={grade}
+          subject={subject.slug}
+          subjectName={subject.name}
+          lang={lang ?? DEFAULT_LANG}
+          books={books}
+        />
+      )}
 
       {/* Chapters */}
       <section className="mt-12">
