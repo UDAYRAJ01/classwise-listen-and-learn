@@ -240,6 +240,17 @@ function ChapterView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [record?.id]);
 
+  // Closing the tab mid-way loses the half-written notes, so ask first.
+  useEffect(() => {
+    if (!streaming) return undefined;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [streaming]);
+
   // Read-along: keep the block being spoken in view.
   useEffect(() => {
     if (!prefs.follow || !narration.activeBlockId || narration.status === "paused") return;
