@@ -12,6 +12,9 @@ export interface Track {
   blockId: string;
   label: string;
   text: string;
+  /** For playlists that mix notes: which note and which of its parts to play. */
+  noteId?: string;
+  sourceIndex?: number;
 }
 
 export const TERMS_PER_TRACK = 6;

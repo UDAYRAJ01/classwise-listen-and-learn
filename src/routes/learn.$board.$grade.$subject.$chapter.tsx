@@ -231,7 +231,7 @@ function ChapterView({
   const tracks = useMemo(() => (record ? buildTracks(record.content, lang) : []), [record, lang]);
   const mcqs = record?.content.mcqs ?? [];
   const blockToTrack = useMemo(() => new Map(tracks.map((t) => [t.blockId, t.index])), [tracks]);
-  const narration = useNarration({ noteId: record?.id ?? null, tracks, lang, title: meta.title });
+  const narration = useNarration({ noteId: record?.id ?? null, tracks, lang, title: meta.title, warmUp: true });
 
   // Remember this chapter once its notes exist.
   useEffect(() => {

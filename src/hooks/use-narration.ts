@@ -23,7 +23,15 @@ export interface NarrationError {
   message: string;
 }
 
-export function useNarration(opts: { noteId: string | null; tracks: Track[]; lang: Lang; title: string }) {
+export function useNarration(opts: {
+  /** Note the tracks belong to (or a playlist key when tracks carry their own noteId). */
+  noteId: string | null;
+  tracks: Track[];
+  lang: Lang;
+  title: string;
+  /** Prepare the first part in the background so play starts instantly. */
+  warmUp?: boolean;
+}) {
   const { noteId, tracks, lang, title } = opts;
   const { prefs } = useNotebook();
 
@@ -73,10 +81,20 @@ export function useNarration(opts: { noteId: string | null; tracks: Track[]; lan
     }
   }, []);
 
-  const prefetch = useCallback((i: number, voice: VoiceId) => {
-    const id = live.current.noteId;
-    if (id && live.current.tracks[i]) getAudioJob(id, voice, i);
+  /** Audio job for playlist position i (a track may point into another note). */
+  const jobFor = useCallback((i: number, voice: VoiceId): AudioJob | null => {
+    const t = live.current.tracks[i];
+    const id = t?.noteId ?? live.current.noteId;
+    if (!t || !id) return null;
+    return getAudioJob(id, voice, t.sourceIndex ?? i);
   }, []);
+
+  const prefetch = useCallback(
+    (i: number, voice: VoiceId) => {
+      jobFor(i, voice);
+    },
+    [jobFor],
+  );
 
   const getAudio = useCallback(() => {
     let a = audioRef.current;
@@ -208,8 +226,8 @@ export function useNarration(opts: { noteId: string | null; tracks: Track[]; lan
 
   const playAt = useCallback(
     (i: number, overrides?: { voice?: VoiceId; mode?: NarrationMode }) => {
-      const id = live.current.noteId;
-      if (!live.current.tracks[i] || !id) return;
+      const t = live.current.tracks[i];
+      if (!t || !(t.noteId ?? live.current.noteId)) return;
       const token = ++tokenRef.current;
       const voice = overrides?.voice ?? live.current.voice;
       const m = overrides?.mode ?? live.current.mode;
@@ -225,7 +243,7 @@ export function useNarration(opts: { noteId: string | null; tracks: Track[]; lan
 
       // Created inside the click so browsers allow sound.
       const context = ensureAudioContext();
-      const job = getAudioJob(id, voice, i);
+      const job = jobFor(i, voice)!;
       setStatus("loading");
 
       const begin = (): boolean => {
@@ -256,7 +274,7 @@ export function useNarration(opts: { noteId: string | null; tracks: Track[]; lan
         waitRef.current = unsub;
       }
     },
-    [playPcm, playUrl, speakDevice, stopAll],
+    [jobFor, playPcm, playUrl, speakDevice, stopAll],
   );
   playAtRef.current = playAt;
 
@@ -355,10 +373,10 @@ export function useNarration(opts: { noteId: string | null; tracks: Track[]; lan
 
   // Warm up the first part so pressing play starts instantly.
   useEffect(() => {
-    if (!noteId || tracks.length === 0) return undefined;
-    const t = setTimeout(() => getAudioJob(noteId, live.current.voice, 0), 1200);
+    if (!opts.warmUp || tracks.length === 0) return undefined;
+    const t = setTimeout(() => jobFor(0, live.current.voice), 1200);
     return () => clearTimeout(t);
-  }, [noteId, tracks.length]);
+  }, [noteId, tracks.length, opts.warmUp, jobFor]);
 
   // Stop everything when leaving the page.
   useEffect(
