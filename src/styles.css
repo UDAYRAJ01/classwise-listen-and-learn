@@ -220,8 +220,20 @@
 @utility paper-ruled {
   background-color: var(--card);
   background-image:
-    linear-gradient(90deg, transparent 2.75rem, var(--margin) 2.75rem, var(--margin) calc(2.75rem + 1.5px), transparent calc(2.75rem + 1.5px)),
-    repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.9rem - 1px), var(--rule) calc(1.9rem - 1px), var(--rule) 1.9rem);
+    linear-gradient(
+      90deg,
+      transparent 2.75rem,
+      var(--margin) 2.75rem,
+      var(--margin) calc(2.75rem + 1.5px),
+      transparent calc(2.75rem + 1.5px)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent calc(1.9rem - 1px),
+      var(--rule) calc(1.9rem - 1px),
+      var(--rule) 1.9rem
+    );
 }
 
 @utility paper-grid {

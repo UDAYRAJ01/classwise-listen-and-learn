@@ -71,7 +71,11 @@ function Block({
     <div
       id={`blk-${id}`}
       data-block={id}
-      className={cn("print-plain relative scroll-mt-32 transition-[outline,box-shadow] duration-300", active && "reading-now", className)}
+      className={cn(
+        "print-plain relative scroll-mt-32 transition-[outline,box-shadow] duration-300",
+        active && "reading-now",
+        className,
+      )}
     >
       {playable && (
         <button
@@ -84,7 +88,11 @@ function Block({
             active && "bg-accent text-accent-foreground",
           )}
         >
-          {active ? <Volume2 className="h-4 w-4" /> : <Play className="h-3.5 w-3.5 translate-x-px" />}
+          {active ? (
+            <Volume2 className="h-4 w-4" />
+          ) : (
+            <Play className="h-3.5 w-3.5 translate-x-px" />
+          )}
         </button>
       )}
       {children}
@@ -92,11 +100,28 @@ function Block({
   );
 }
 
-function SectionTitle({ id, icon, title, sub, right }: { id: string; icon: ReactNode; title: string; sub?: string; right?: ReactNode }) {
+function SectionTitle({
+  id,
+  icon,
+  title,
+  sub,
+  right,
+}: {
+  id: string;
+  icon: ReactNode;
+  title: string;
+  sub?: string;
+  right?: ReactNode;
+}) {
   return (
-    <div id={`sec-${id}`} className="mb-5 flex scroll-mt-28 flex-wrap items-end justify-between gap-3">
+    <div
+      id={`sec-${id}`}
+      className="mb-5 flex scroll-mt-28 flex-wrap items-end justify-between gap-3"
+    >
       <div className="flex items-center gap-3">
-        <span className="sticker grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-card">{icon}</span>
+        <span className="sticker grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-card">
+          {icon}
+        </span>
         <div>
           <h2 className="text-2xl font-extrabold sm:text-3xl">{title}</h2>
           {sub && <p className="font-hand text-lg leading-tight text-muted-foreground">{sub}</p>}
@@ -111,7 +136,11 @@ function Skeleton({ lines = 3 }: { lines?: number }) {
   return (
     <div className="space-y-2.5" aria-hidden>
       {Array.from({ length: lines }).map((_, i) => (
-        <div key={i} className="h-4 animate-pulse rounded bg-muted" style={{ width: `${90 - i * 12}%` }} />
+        <div
+          key={i}
+          className="h-4 animate-pulse rounded bg-muted"
+          style={{ width: `${90 - i * 12}%` }}
+        />
       ))}
     </div>
   );
@@ -130,7 +159,8 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
   const tips = content.examTips ?? [];
 
   const termChunks: (typeof terms)[] = [];
-  for (let i = 0; i < terms.length; i += TERMS_PER_TRACK) termChunks.push(terms.slice(i, i + TERMS_PER_TRACK));
+  for (let i = 0; i < terms.length; i += TERMS_PER_TRACK)
+    termChunks.push(terms.slice(i, i + TERMS_PER_TRACK));
 
   const blockProps = (id: string, label: string) => ({
     id,
@@ -148,8 +178,15 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
     <div className="space-y-16">
       {/* Summary */}
       <section aria-labelledby="sec-summary">
-        <SectionTitle id="summary" icon={<BookMarked className="h-5 w-5 text-tone-ink" />} title="Chapter ek nazar mein" />
-        <Block {...blockProps("intro", "Summary")} className="sticker-lg rounded-2xl bg-card p-6 sm:p-8">
+        <SectionTitle
+          id="summary"
+          icon={<BookMarked className="h-5 w-5 text-tone-ink" />}
+          title="Chapter ek nazar mein"
+        />
+        <Block
+          {...blockProps("intro", "Summary")}
+          className="sticker-lg rounded-2xl bg-card p-6 sm:p-8"
+        >
           {content.oneLiner ? (
             <div className="mb-5 flex gap-3 pr-10">
               <Quote className="mt-1 h-6 w-6 shrink-0 text-accent" />
@@ -192,7 +229,10 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
                 <ul className="space-y-0">
                   {(g.points ?? []).map((p, j) => (
                     <li key={j} className="relative leading-[1.9rem]">
-                      <span className="absolute -left-6 top-0 font-hand text-lg text-accent" aria-hidden>
+                      <span
+                        className="absolute -left-6 top-0 font-hand text-lg text-accent"
+                        aria-hidden
+                      >
                         ✱
                       </span>
                       <Emph text={p} />
@@ -213,10 +253,19 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
       {/* Key terms */}
       {started(terms) && (
         <section>
-          <SectionTitle id="terms" icon={<Sparkles className="h-5 w-5 text-tone-sun" />} title="Important Words" sub="definition yaad = aadha kaam ho gaya" />
+          <SectionTitle
+            id="terms"
+            icon={<Sparkles className="h-5 w-5 text-tone-sun" />}
+            title="Important Words"
+            sub="definition yaad = aadha kaam ho gaya"
+          />
           <div className="space-y-6">
             {termChunks.map((chunk, k) => (
-              <Block key={k} {...blockProps(`terms-${k}`, "Important words")} className="sticker rounded-2xl bg-card p-5 pr-12">
+              <Block
+                key={k}
+                {...blockProps(`terms-${k}`, "Important words")}
+                className="sticker rounded-2xl bg-card p-5 pr-12"
+              >
                 <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
                   {chunk.map((t, i) => (
                     <div key={i} className="border-l-4 border-tone-sun pl-3">
@@ -238,8 +287,15 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
       {/* Formulas */}
       {showFormulas && (
         <section>
-          <SectionTitle id="formulas" icon={<FlaskRound className="h-5 w-5 text-tone-teal" />} title="Formulas & Rules" />
-          <Block {...blockProps("formulas", "Formulas")} className="paper-grid sticker rounded-2xl p-5 pr-12 sm:p-6">
+          <SectionTitle
+            id="formulas"
+            icon={<FlaskRound className="h-5 w-5 text-tone-teal" />}
+            title="Formulas & Rules"
+          />
+          <Block
+            {...blockProps("formulas", "Formulas")}
+            className="paper-grid sticker rounded-2xl p-5 pr-12 sm:p-6"
+          >
             <ul className="grid gap-4 sm:grid-cols-2">
               {formulas.map((f, i) => (
                 <li key={i} className="rounded-xl border-2 border-ink/80 bg-card/95 p-4">
@@ -275,7 +331,11 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
               <Block
                 key={i}
                 {...blockProps(`trick-${i}`, t.title ?? "Trick")}
-                className={cn("tape sticker rounded-md p-5 pr-12 pt-7", STICKY_TONES[i % 4], TILTS[i % 4])}
+                className={cn(
+                  "tape sticker rounded-md p-5 pr-12 pt-7",
+                  STICKY_TONES[i % 4],
+                  TILTS[i % 4],
+                )}
               >
                 <span className="mb-2 inline-block rounded-full border-2 border-ink bg-card px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">
                   {TRICK_LABEL[(t.kind as TrickKind) ?? "shortcut"] ?? "Trick"}
@@ -324,7 +384,10 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
               const show = !hideAnswers || revealed.has(i) || activeBlockId === `q-${i}`;
               return (
                 <li key={i}>
-                  <Block {...blockProps(`q-${i}`, `Question ${i + 1}`)} className="sticker rounded-2xl bg-card p-5 pr-12">
+                  <Block
+                    {...blockProps(`q-${i}`, `Question ${i + 1}`)}
+                    className="sticker rounded-2xl bg-card p-5 pr-12"
+                  >
                     <div className="flex items-start gap-3">
                       <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink font-display text-sm font-bold text-paper">
                         {i + 1}
@@ -366,8 +429,16 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
       {/* Revision */}
       {started(revision) && (
         <section>
-          <SectionTitle id="revision" icon={<CheckCheck className="h-5 w-5 text-tone-leaf" />} title="1-Minute Revision" sub="exam se pehle bas ye padh lo" />
-          <Block {...blockProps("revision", "Quick revision")} className="sticker-lg rounded-2xl bg-ink p-6 pr-12 text-paper sm:p-8">
+          <SectionTitle
+            id="revision"
+            icon={<CheckCheck className="h-5 w-5 text-tone-leaf" />}
+            title="1-Minute Revision"
+            sub="exam se pehle bas ye padh lo"
+          />
+          <Block
+            {...blockProps("revision", "Quick revision")}
+            className="sticker-lg rounded-2xl bg-ink p-6 pr-12 text-paper sm:p-8"
+          >
             <ul className="grid gap-3 sm:grid-cols-2">
               {revision.map((r, i) => (
                 <li key={i} className="flex gap-3">
@@ -387,13 +458,22 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
       {/* Tips + fun fact */}
       {(started(tips) || content.funFact) && (
         <section>
-          <SectionTitle id="tips" icon={<Target className="h-5 w-5 text-tone-brick" />} title="Exam Tips" />
-          <Block {...blockProps("tips", "Exam tips")} className="grid gap-5 md:grid-cols-[1.4fr_1fr]">
+          <SectionTitle
+            id="tips"
+            icon={<Target className="h-5 w-5 text-tone-brick" />}
+            title="Exam Tips"
+          />
+          <Block
+            {...blockProps("tips", "Exam tips")}
+            className="grid gap-5 md:grid-cols-[1.4fr_1fr]"
+          >
             {tips.length > 0 && (
               <ul className="sticker space-y-3 rounded-2xl bg-card p-5 pr-12">
                 {tips.map((t, i) => (
                   <li key={i} className="flex gap-3">
-                    <span className="font-display text-lg font-extrabold text-accent">{i + 1}.</span>
+                    <span className="font-display text-lg font-extrabold text-accent">
+                      {i + 1}.
+                    </span>
                     <span>
                       <Emph text={t} />
                     </span>
@@ -403,7 +483,9 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
             )}
             {content.funFact && (
               <div className="sticker rounded-2xl bg-secondary p-5 pr-12">
-                <p className="font-display text-sm font-bold uppercase tracking-wider">Mazedaar fact</p>
+                <p className="font-display text-sm font-bold uppercase tracking-wider">
+                  Mazedaar fact
+                </p>
                 <p className="mt-2 font-hand text-xl leading-snug">
                   <Emph text={content.funFact} />
                 </p>

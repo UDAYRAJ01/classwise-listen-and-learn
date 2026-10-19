@@ -49,10 +49,30 @@ export function useNarration(opts: {
   const tokenRef = useRef(0);
   const switchingRef = useRef(false);
 
-  const live = useRef({ index, status, mode, voice: prefs.voice as VoiceId, rate: prefs.rate, tracks, lang, noteId });
-  live.current = { index, status, mode, voice: prefs.voice as VoiceId, rate: prefs.rate, tracks, lang, noteId };
+  const live = useRef({
+    index,
+    status,
+    mode,
+    voice: prefs.voice as VoiceId,
+    rate: prefs.rate,
+    tracks,
+    lang,
+    noteId,
+  });
+  live.current = {
+    index,
+    status,
+    mode,
+    voice: prefs.voice as VoiceId,
+    rate: prefs.rate,
+    tracks,
+    lang,
+    noteId,
+  };
 
-  const playAtRef = useRef<(i: number, overrides?: { voice?: VoiceId; mode?: NarrationMode }) => void>(() => {});
+  const playAtRef = useRef<
+    (i: number, overrides?: { voice?: VoiceId; mode?: NarrationMode }) => void
+  >(() => {});
 
   const stopAll = useCallback(() => {
     switchingRef.current = true;
@@ -69,7 +89,8 @@ export function useNarration(opts: {
       a.removeAttribute("src");
       a.load();
     }
-    if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    if (typeof window !== "undefined" && "speechSynthesis" in window)
+      window.speechSynthesis.cancel();
   }, []);
 
   const advance = useCallback((from: number) => {
@@ -335,7 +356,8 @@ export function useNarration(opts: {
   const setVoice = useCallback((voice: VoiceId) => {
     notebook.setPrefs({ voice });
     const s = live.current.status;
-    if (live.current.mode === "ai" && (s === "playing" || s === "loading")) playAtRef.current(live.current.index, { voice });
+    if (live.current.mode === "ai" && (s === "playing" || s === "loading"))
+      playAtRef.current(live.current.index, { voice });
   }, []);
 
   const setMode = useCallback(
@@ -397,7 +419,8 @@ export function useNarration(opts: {
         artist: title,
         album: "PadhoSuno",
       });
-      navigator.mediaSession.playbackState = status === "playing" ? "playing" : status === "paused" ? "paused" : "none";
+      navigator.mediaSession.playbackState =
+        status === "playing" ? "playing" : status === "paused" ? "paused" : "none";
       navigator.mediaSession.setActionHandler("play", () => toggle());
       navigator.mediaSession.setActionHandler("pause", () => pause());
       navigator.mediaSession.setActionHandler("nexttrack", () => next());

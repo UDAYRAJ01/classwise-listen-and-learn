@@ -4,7 +4,16 @@ import { ArrowRight, CheckCircle2, Languages } from "lucide-react";
 import { BoardSwitch } from "@/components/board-switch";
 import { Crumbs } from "@/components/crumbs";
 import { SubjectIcon } from "@/components/subject-icon";
-import { BOARDS, GRADES, getSubjects, gradeLabel, isBoard, parseGrade, TONE_CLASSES, type BoardId } from "@/lib/catalog";
+import {
+  BOARDS,
+  GRADES,
+  getSubjects,
+  gradeLabel,
+  isBoard,
+  parseGrade,
+  TONE_CLASSES,
+  type BoardId,
+} from "@/lib/catalog";
 import { useNotebook } from "@/lib/notebook-store";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +48,8 @@ function SubjectsPage() {
   const subjects = getSubjects(board, grade);
   const label = gradeLabel(board, grade);
   const { done } = useNotebook();
-  const doneIn = (slug: string) => done.filter((k) => k.startsWith(`${board}/${grade}/${slug}/`)).length;
+  const doneIn = (slug: string) =>
+    done.filter((k) => k.startsWith(`${board}/${grade}/${slug}/`)).length;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -49,7 +59,9 @@ function SubjectsPage() {
         <div>
           <p className="font-hand text-xl text-accent">{BOARDS[board].books}</p>
           <h1 className="text-5xl font-extrabold sm:text-6xl">{label}</h1>
-          <p className="mt-2 text-lg text-muted-foreground">Subject chuno — har chapter ke notes, tricks aur audio milenge.</p>
+          <p className="mt-2 text-lg text-muted-foreground">
+            Subject chuno — har chapter ke notes, tricks aur audio milenge.
+          </p>
         </div>
         <BoardSwitch value={board} grade={grade} />
       </div>
@@ -81,11 +93,18 @@ function SubjectsPage() {
                 params={{ board, grade: String(grade), subject: s.slug }}
                 className="sticker press group flex h-full items-center gap-4 rounded-2xl bg-card p-5"
               >
-                <span className={cn("grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-2 border-ink", tone.solid)}>
+                <span
+                  className={cn(
+                    "grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-2 border-ink",
+                    tone.solid,
+                  )}
+                >
                   <SubjectIcon name={s.icon} className="h-7 w-7 text-paper" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block font-display text-xl font-bold leading-tight">{s.name}</span>
+                  <span className="block font-display text-xl font-bold leading-tight">
+                    {s.name}
+                  </span>
                   <span className="block text-muted-foreground">{s.hi}</span>
                   {doneIn(s.slug) > 0 && (
                     <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-tone-leaf/15 px-2 py-0.5 text-xs font-bold text-tone-leaf">
@@ -103,9 +122,10 @@ function SubjectsPage() {
       <div className="mt-12 flex items-start gap-3 rounded-2xl border-2 border-dashed border-ink/40 p-5">
         <Languages className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
         <p className="text-muted-foreground">
-          Notes <strong className="text-foreground">Hinglish</strong>, <strong className="text-foreground">हिंदी</strong> ya{" "}
-          <strong className="text-foreground">English</strong> mein padh aur sun sakte ho. Chapter kholne ke baad upar se
-          bhasha badlo.
+          Notes <strong className="text-foreground">Hinglish</strong>,{" "}
+          <strong className="text-foreground">हिंदी</strong> ya{" "}
+          <strong className="text-foreground">English</strong> mein padh aur sun sakte ho. Chapter
+          kholne ke baad upar se bhasha badlo.
         </p>
       </div>
     </div>

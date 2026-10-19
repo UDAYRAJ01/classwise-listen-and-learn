@@ -47,7 +47,9 @@ export async function consumeRateLimit(
     return true;
   }
   if ((count ?? 0) >= HOURLY_LIMITS[kind]) return false;
-  const { error: insertError } = await admin.from("generation_events").insert({ ip_hash: ipHash, kind });
+  const { error: insertError } = await admin
+    .from("generation_events")
+    .insert({ ip_hash: ipHash, kind });
   if (insertError) console.error("rate limit insert failed", insertError.message);
   return true;
 }

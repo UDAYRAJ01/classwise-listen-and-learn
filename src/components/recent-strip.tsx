@@ -23,8 +23,14 @@ export function ChapterRefCard({ r, done }: { r: ChapterRef; done?: boolean }) {
         <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
           {BOARDS[r.board].short} · Class {r.grade} · {subject?.name}
         </span>
-        <span className="mt-0.5 line-clamp-2 block font-display text-base font-bold leading-snug">{r.title}</span>
-        {done && <span className="mt-1 inline-block rounded-full bg-tone-leaf/15 px-2 py-0.5 text-xs font-bold text-tone-leaf">✓ Yaad ho gaya</span>}
+        <span className="mt-0.5 line-clamp-2 block font-display text-base font-bold leading-snug">
+          {r.title}
+        </span>
+        {done && (
+          <span className="mt-1 inline-block rounded-full bg-tone-leaf/15 px-2 py-0.5 text-xs font-bold text-tone-leaf">
+            ✓ Yaad ho gaya
+          </span>
+        )}
       </span>
     </Link>
   );
@@ -39,14 +45,23 @@ export function RecentStrip() {
         <h2 className="flex items-center gap-2 text-2xl font-extrabold">
           <History className="h-6 w-6 text-accent" /> Jahan chhoda tha
         </h2>
-        <Link to="/notebook" className="inline-flex items-center gap-1 text-sm font-bold hover:underline">
+        <Link
+          to="/notebook"
+          className="inline-flex items-center gap-1 text-sm font-bold hover:underline"
+        >
           Sab dekho <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
       <ul className="no-scrollbar -mx-4 mt-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3">
         {recent.slice(0, 6).map((r) => (
-          <li key={`${r.board}${r.grade}${r.subject}${r.chapter}`} className="w-72 shrink-0 snap-start">
-            <ChapterRefCard r={r} done={done.includes(`${r.board}/${r.grade}/${r.subject}/${r.chapter}`)} />
+          <li
+            key={`${r.board}${r.grade}${r.subject}${r.chapter}`}
+            className="w-72 shrink-0 snap-start"
+          >
+            <ChapterRefCard
+              r={r}
+              done={done.includes(`${r.board}/${r.grade}/${r.subject}/${r.chapter}`)}
+            />
           </li>
         ))}
       </ul>

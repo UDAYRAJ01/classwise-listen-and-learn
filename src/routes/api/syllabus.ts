@@ -31,16 +31,23 @@ export const Route = createFileRoute("/api/syllabus")({
           .eq("subject", subject.slug)
           .maybeSingle();
         if (existing.data) {
-          return ndjsonStream(async (send) => send({ type: "done", data: existing.data as unknown as SyllabusRecord }));
+          return ndjsonStream(async (send) =>
+            send({ type: "done", data: existing.data as unknown as SyllabusRecord }),
+          );
         }
 
         const { consumeRateLimit } = await import("@/lib/server/rate-limit.server");
         if (!(await consumeRateLimit(supabaseAdmin, request, "syllabus"))) {
-          return jsonError(429, "Aaj ke liye bahut saari requests ho gayi. 1 ghante baad try karein.");
+          return jsonError(
+            429,
+            "Aaj ke liye bahut saari requests ho gayi. 1 ghante baad try karein.",
+          );
         }
 
-        const { streamStructured, friendlyMessage, toGatewayError } = await import("@/lib/server/ai.server");
-        const { syllabusInstructions, syllabusPrompt } = await import("@/lib/server/prompts.server");
+        const { streamStructured, friendlyMessage, toGatewayError } =
+          await import("@/lib/server/ai.server");
+        const { syllabusInstructions, syllabusPrompt } =
+          await import("@/lib/server/prompts.server");
         const { syllabusJsonSchema } = await import("@/lib/server/schemas.server");
         const { normalizeSyllabus } = await import("@/lib/server/normalize.server");
 
@@ -57,7 +64,11 @@ export const Route = createFileRoute("/api/syllabus")({
             partial.cancel();
             const books = normalizeSyllabus(raw);
             if (books.length === 0) {
-              send({ type: "error", status: 502, message: "Chapter list nahi mil payi. Dobara try karein." });
+              send({
+                type: "error",
+                status: 502,
+                message: "Chapter list nahi mil payi. Dobara try karein.",
+              });
               return;
             }
             await supabaseAdmin
@@ -79,7 +90,11 @@ export const Route = createFileRoute("/api/syllabus")({
             partial.cancel();
             const err = toGatewayError(error);
             console.error("syllabus generation failed", err.status, err.message);
-            send({ type: "error", status: err.status, message: friendlyMessage(err, "chapter list") });
+            send({
+              type: "error",
+              status: err.status,
+              message: friendlyMessage(err, "chapter list"),
+            });
           }
         });
       },

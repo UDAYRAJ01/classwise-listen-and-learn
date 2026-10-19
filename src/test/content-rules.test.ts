@@ -30,7 +30,9 @@ describe("catalog", () => {
 
 describe("slugs", () => {
   it("builds official chapter slugs from book and chapter position", () => {
-    expect(chapterSlug(0, 8, "Light – Reflection and Refraction")).toBe("b1-c9-light-reflection-and-refraction");
+    expect(chapterSlug(0, 8, "Light – Reflection and Refraction")).toBe(
+      "b1-c9-light-reflection-and-refraction",
+    );
     expect(chapterSlug(1, 0, "कृतिका")).toBe("b2-c1");
   });
 
@@ -77,7 +79,19 @@ describe("audio tracks", () => {
   it("gives every short-notes group, trick and question its own part", () => {
     const tracks = buildTracks(NOTE, "en");
     const ids = tracks.map((t) => t.blockId);
-    expect(ids).toEqual(["intro", "kp-0", "kp-1", "terms-0", "terms-1", "formulas", "trick-0", "q-0", "q-1", "revision", "tips"]);
+    expect(ids).toEqual([
+      "intro",
+      "kp-0",
+      "kp-1",
+      "terms-0",
+      "terms-1",
+      "formulas",
+      "trick-0",
+      "q-0",
+      "q-1",
+      "revision",
+      "tips",
+    ]);
     expect(tracks.map((t) => t.index)).toEqual(ids.map((_, i) => i));
   });
 
@@ -120,9 +134,16 @@ describe("normalizers", () => {
 
   it("drops chapter-number prefixes and assigns slugs in order", () => {
     const books = normalizeSyllabus({
-      books: [{ name: "First Flight", chapters: [{ title: "Chapter 1: A Letter to God", gist: "x" }] }],
+      books: [
+        { name: "First Flight", chapters: [{ title: "Chapter 1: A Letter to God", gist: "x" }] },
+      ],
     });
-    expect(books[0]?.chapters[0]).toEqual({ slug: "b1-c1-a-letter-to-god", number: 1, title: "A Letter to God", gist: "x" });
+    expect(books[0]?.chapters[0]).toEqual({
+      slug: "b1-c1-a-letter-to-god",
+      number: 1,
+      title: "A Letter to God",
+      gist: "x",
+    });
   });
 });
 
@@ -143,7 +164,10 @@ describe("quiz", () => {
   });
 
   it("is never read aloud", () => {
-    const withQuiz = { ...NOTE, mcqs: [{ question: "Q?", options: ["a", "b", "c", "d"], answer: 0, explanation: "" }] };
+    const withQuiz = {
+      ...NOTE,
+      mcqs: [{ question: "Q?", options: ["a", "b", "c", "d"], answer: 0, explanation: "" }],
+    };
     expect(buildTracks(withQuiz, "en").length).toBe(buildTracks(NOTE, "en").length);
   });
 });

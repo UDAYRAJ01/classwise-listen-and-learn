@@ -4,9 +4,7 @@ export function jsonError(status: number, message: string): Response {
   return Response.json({ error: message }, { status });
 }
 
-export function ndjsonStream(
-  run: (send: (event: unknown) => void) => Promise<void>,
-): Response {
+export function ndjsonStream(run: (send: (event: unknown) => void) => Promise<void>): Response {
   const encoder = new TextEncoder();
   const body = new ReadableStream<Uint8Array>({
     async start(controller) {

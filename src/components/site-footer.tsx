@@ -9,20 +9,28 @@ export function SiteFooter() {
         <div className="space-y-3">
           <Logo />
           <p className="max-w-sm text-sm text-muted-foreground">
-            Class 1 se 12 tak — NCERT, CBSE aur ICSE ke har chapter ke short notes, yaad karne ki tricks
-            aur audio. Padho bhi, suno bhi.
+            Class 1 se 12 tak — NCERT, CBSE aur ICSE ke har chapter ke short notes, yaad karne ki
+            tricks aur audio. Padho bhi, suno bhi.
           </p>
         </div>
         <div className="space-y-2 text-sm">
           <p className="font-display font-bold">Boards</p>
           <ul className="space-y-1 text-muted-foreground">
             <li>
-              <Link to="/learn/$board/$grade" params={{ board: "cbse", grade: "10" }} className="hover:text-foreground">
+              <Link
+                to="/learn/$board/$grade"
+                params={{ board: "cbse", grade: "10" }}
+                className="hover:text-foreground"
+              >
                 CBSE · NCERT
               </Link>
             </li>
             <li>
-              <Link to="/learn/$board/$grade" params={{ board: "icse", grade: "10" }} className="hover:text-foreground">
+              <Link
+                to="/learn/$board/$grade"
+                params={{ board: "icse", grade: "10" }}
+                className="hover:text-foreground"
+              >
                 ICSE · ISC
               </Link>
             </li>
@@ -46,8 +54,8 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border">
         <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-muted-foreground">
-          Notes AI ki madad se textbook ke hisaab se banaye jaate hain. Exam se pehle apni textbook se ek baar
-          zaroor milayein.
+          Notes AI ki madad se textbook ke hisaab se banaye jaate hain. Exam se pehle apni textbook
+          se ek baar zaroor milayein.
         </p>
       </div>
     </footer>

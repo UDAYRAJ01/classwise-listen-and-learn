@@ -18,7 +18,15 @@ import heroImg from "@/assets/hero-books.png";
 import { BoardSwitch } from "@/components/board-switch";
 import { RecentStrip } from "@/components/recent-strip";
 import { Button } from "@/components/ui/button";
-import { BOARDS, GRADES, getSubjects, gradeLabel, TONE_CLASSES, type BoardId, type Tone } from "@/lib/catalog";
+import {
+  BOARDS,
+  GRADES,
+  getSubjects,
+  gradeLabel,
+  TONE_CLASSES,
+  type BoardId,
+  type Tone,
+} from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -33,7 +41,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "PadhoSuno — Padho bhi, suno bhi, turant yaad" },
       {
         property: "og:description",
-        content: "Har chapter ke short notes + memory tricks + audio. Class 1–12, NCERT, CBSE & ICSE. Hindi, English, Hinglish.",
+        content:
+          "Har chapter ke short notes + memory tricks + audio. Class 1–12, NCERT, CBSE & ICSE. Hindi, English, Hinglish.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,17 +51,70 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const GRADE_TONES: Tone[] = ["coral", "sun", "leaf", "sky", "rose", "teal", "brick", "ink", "coral", "sky", "leaf", "ink"];
+const GRADE_TONES: Tone[] = [
+  "coral",
+  "sun",
+  "leaf",
+  "sky",
+  "rose",
+  "teal",
+  "brick",
+  "ink",
+  "coral",
+  "sky",
+  "leaf",
+  "ink",
+];
 
 const FEATURES = [
-  { icon: ListChecks, title: "Short Notes", text: "Poora chapter chhote, saaf points mein. Zaroori words highlighted.", tone: "leaf" as Tone },
-  { icon: Lightbulb, title: "Yaad karne ki Tricks", text: "Mnemonics, kahaniyan, rhymes — ek baar padho, hamesha yaad.", tone: "coral" as Tone },
-  { icon: AudioLines, title: "Audio Notes", text: "Didi ya Bhaiya ki awaaz mein suno, saath-saath highlight dekho.", tone: "sky" as Tone },
-  { icon: Target, title: "Important Q&A", text: "Exam pattern ke sawaal, marks ke hisaab se model answers.", tone: "rose" as Tone },
-  { icon: FlaskRound, title: "Formulas & Rules", text: "Saare formulas ek jagah, bolkar samjhaye hue.", tone: "teal" as Tone },
-  { icon: Brain, title: "Flashcards", text: "Card palto, khud ko test karo. Jo bhool gaye, wo dobara.", tone: "sun" as Tone },
-  { icon: CheckCheck, title: "1-Minute Revision", text: "Exam se theek pehle — bas ye list padh lo.", tone: "brick" as Tone },
-  { icon: Languages, title: "3 Bhashayein", text: "Hinglish, हिंदी ya English — jaise aap samjho.", tone: "ink" as Tone },
+  {
+    icon: ListChecks,
+    title: "Short Notes",
+    text: "Poora chapter chhote, saaf points mein. Zaroori words highlighted.",
+    tone: "leaf" as Tone,
+  },
+  {
+    icon: Lightbulb,
+    title: "Yaad karne ki Tricks",
+    text: "Mnemonics, kahaniyan, rhymes — ek baar padho, hamesha yaad.",
+    tone: "coral" as Tone,
+  },
+  {
+    icon: AudioLines,
+    title: "Audio Notes",
+    text: "Didi ya Bhaiya ki awaaz mein suno, saath-saath highlight dekho.",
+    tone: "sky" as Tone,
+  },
+  {
+    icon: Target,
+    title: "Important Q&A",
+    text: "Exam pattern ke sawaal, marks ke hisaab se model answers.",
+    tone: "rose" as Tone,
+  },
+  {
+    icon: FlaskRound,
+    title: "Formulas & Rules",
+    text: "Saare formulas ek jagah, bolkar samjhaye hue.",
+    tone: "teal" as Tone,
+  },
+  {
+    icon: Brain,
+    title: "Flashcards",
+    text: "Card palto, khud ko test karo. Jo bhool gaye, wo dobara.",
+    tone: "sun" as Tone,
+  },
+  {
+    icon: CheckCheck,
+    title: "1-Minute Revision",
+    text: "Exam se theek pehle — bas ye list padh lo.",
+    tone: "brick" as Tone,
+  },
+  {
+    icon: Languages,
+    title: "3 Bhashayein",
+    text: "Hinglish, हिंदी ya English — jaise aap samjho.",
+    tone: "ink" as Tone,
+  },
 ];
 
 function Home() {
@@ -75,10 +137,13 @@ function Home() {
               Turant <span className="scribble-underline">yaad</span>.
             </h1>
             <p className="mt-6 max-w-xl text-lg text-foreground/85 sm:text-xl">
-              Har book ke har chapter ke <mark className="hl bg-transparent font-semibold text-foreground">short notes</mark>,
-              yaad karne ki <mark className="hl bg-transparent font-semibold text-foreground">tricks</mark>, important
-              sawaal aur <mark className="hl bg-transparent font-semibold text-foreground">audio</mark> — ek hi jagah,
-              ek hi baar mein.
+              Har book ke har chapter ke{" "}
+              <mark className="hl bg-transparent font-semibold text-foreground">short notes</mark>,
+              yaad karne ki{" "}
+              <mark className="hl bg-transparent font-semibold text-foreground">tricks</mark>,
+              important sawaal aur{" "}
+              <mark className="hl bg-transparent font-semibold text-foreground">audio</mark> — ek hi
+              jagah, ek hi baar mein.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild variant="ink" size="xl">
@@ -162,7 +227,9 @@ function Home() {
                     <span className="block font-hand text-xl leading-none opacity-90">
                       {gradeLabel(board, g).replace(/\s*\d+$/, "")}
                     </span>
-                    <span className="block font-display text-7xl font-extrabold leading-none tracking-tighter">{g}</span>
+                    <span className="block font-display text-7xl font-extrabold leading-none tracking-tighter">
+                      {g}
+                    </span>
                   </span>
                   <span className="ml-2 flex items-center justify-between text-sm font-semibold">
                     {getSubjects(board, g).length} subjects
@@ -183,7 +250,12 @@ function Home() {
           <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {FEATURES.map((f) => (
               <li key={f.title} className="sticker rounded-2xl bg-background p-5">
-                <span className={cn("grid h-11 w-11 place-items-center rounded-xl", TONE_CLASSES[f.tone].soft)}>
+                <span
+                  className={cn(
+                    "grid h-11 w-11 place-items-center rounded-xl",
+                    TONE_CLASSES[f.tone].soft,
+                  )}
+                >
                   <f.icon className={cn("h-5 w-5", TONE_CLASSES[f.tone].text)} />
                 </span>
                 <h3 className="mt-4 text-xl font-bold">{f.title}</h3>

@@ -9,7 +9,14 @@ export const Route = createFileRoute("/api/notes")({
     handlers: {
       POST: async ({ request }) => {
         const { jsonError, ndjsonStream, throttle } = await import("@/lib/server/ndjson.server");
-        let body: { board?: unknown; grade?: unknown; lang?: unknown; chapter?: unknown; subject?: unknown; title?: unknown };
+        let body: {
+          board?: unknown;
+          grade?: unknown;
+          lang?: unknown;
+          chapter?: unknown;
+          subject?: unknown;
+          title?: unknown;
+        };
         try {
           body = await request.json();
         } catch {
@@ -19,7 +26,13 @@ export const Route = createFileRoute("/api/notes")({
         const grade = parseGrade(body.grade as number);
         const lang = body.lang;
         const chapter = typeof body.chapter === "string" ? body.chapter : "";
-        if (!isBoard(board) || grade === null || !isLang(lang) || typeof body.subject !== "string" || !chapter) {
+        if (
+          !isBoard(board) ||
+          grade === null ||
+          !isLang(lang) ||
+          typeof body.subject !== "string" ||
+          !chapter
+        ) {
           return jsonError(400, "Invalid request");
         }
         const subject = getSubject(board, grade, body.subject);
@@ -40,7 +53,9 @@ export const Route = createFileRoute("/api/notes")({
 
         const existing = await findNote();
         if (existing.data) {
-          return ndjsonStream(async (send) => send({ type: "done", data: existing.data as unknown as NoteRecord }));
+          return ndjsonStream(async (send) =>
+            send({ type: "done", data: existing.data as unknown as NoteRecord }),
+          );
         }
 
         // Resolve what chapter this is: an official syllabus chapter or a typed topic.
@@ -50,7 +65,11 @@ export const Route = createFileRoute("/api/notes")({
         const custom = isCustomSlug(chapter);
         if (custom) {
           const title = normalizeTopic(typeof body.title === "string" ? body.title : "");
-          if (title.length < TOPIC_MIN || title.length > TOPIC_MAX || customTopicSlug(title) !== chapter) {
+          if (
+            title.length < TOPIC_MIN ||
+            title.length > TOPIC_MAX ||
+            customTopicSlug(title) !== chapter
+          ) {
             return jsonError(400, "Topic ka naam sahi se likhein (3–120 letters).");
           }
           chapterTitle = title;
@@ -77,10 +96,14 @@ export const Route = createFileRoute("/api/notes")({
 
         const { consumeRateLimit } = await import("@/lib/server/rate-limit.server");
         if (!(await consumeRateLimit(supabaseAdmin, request, "notes"))) {
-          return jsonError(429, "Is ghante ke notes ki limit poori ho gayi. Thodi der baad try karein.");
+          return jsonError(
+            429,
+            "Is ghante ke notes ki limit poori ho gayi. Thodi der baad try karein.",
+          );
         }
 
-        const { streamStructured, friendlyMessage, toGatewayError } = await import("@/lib/server/ai.server");
+        const { streamStructured, friendlyMessage, toGatewayError } =
+          await import("@/lib/server/ai.server");
         const { notesInstructions, notesPrompt } = await import("@/lib/server/prompts.server");
         const { notePartSchemas } = await import("@/lib/server/schemas.server");
         const { normalizeNote } = await import("@/lib/server/normalize.server");
@@ -89,11 +112,25 @@ export const Route = createFileRoute("/api/notes")({
           const partial = throttle<unknown>((data) => send({ type: "partial", data }), 300);
           try {
             type Part = "core" | "practice" | "quiz";
-            const halves: Record<Part, Record<string, unknown>> = { core: {}, practice: {}, quiz: {} };
+            const halves: Record<Part, Record<string, unknown>> = {
+              core: {},
+              practice: {},
+              quiz: {},
+            };
             const run = (part: Part) =>
               streamStructured<Record<string, unknown>>({
                 instructions: notesInstructions(),
-                prompt: notesPrompt({ board, grade, subject, chapterTitle, bookName, gist, lang, custom, part }),
+                prompt: notesPrompt({
+                  board,
+                  grade,
+                  subject,
+                  chapterTitle,
+                  bookName,
+                  gist,
+                  lang,
+                  custom,
+                  part,
+                }),
                 schema: notePartSchemas[part],
                 effort: "low",
                 onPartial: (p) => {
@@ -113,7 +150,11 @@ export const Route = createFileRoute("/api/notes")({
             partial.cancel();
             const content = normalizeNote({ ...core, ...practice, ...quiz }, chapterTitle);
             if (content.keyPoints.length === 0) {
-              send({ type: "error", status: 502, message: "Notes poore nahi ban paaye. Dobara try karein." });
+              send({
+                type: "error",
+                status: 502,
+                message: "Notes poore nahi ban paaye. Dobara try karein.",
+              });
               return;
             }
             await supabaseAdmin.from("notes").upsert(

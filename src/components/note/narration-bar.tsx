@@ -44,7 +44,10 @@ export function NarrationBar({
       <div className="sticker-lg mx-auto max-w-4xl overflow-hidden rounded-2xl bg-card">
         {/* overall progress */}
         <div className="h-1.5 w-full bg-muted" aria-hidden>
-          <div className="h-full bg-accent transition-[width] duration-300" style={{ width: `${Math.min(overall, 1) * 100}%` }} />
+          <div
+            className="h-full bg-accent transition-[width] duration-300"
+            style={{ width: `${Math.min(overall, 1) * 100}%` }}
+          />
         </div>
 
         <div className="flex items-center gap-2 p-2.5 sm:gap-3 sm:p-3">
@@ -78,14 +81,22 @@ export function NarrationBar({
             )}
           </button>
 
-          <Button variant="ghost" size="icon" onClick={n.next} disabled={!ready || n.index >= total - 1} aria-label="Agla part">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={n.next}
+            disabled={!ready || n.index >= total - 1}
+            aria-label="Agla part"
+          >
             <SkipForward />
           </Button>
 
           <div className="min-w-0 flex-1">
             {n.error ? (
               <div className="flex flex-wrap items-center gap-2">
-                <p className="line-clamp-2 text-sm font-semibold text-destructive">{n.error.message}</p>
+                <p className="line-clamp-2 text-sm font-semibold text-destructive">
+                  {n.error.message}
+                </p>
                 {canFallback && (
                   <Button size="sm" variant="sun" onClick={() => n.setMode("device")}>
                     <Smartphone /> Phone ki awaaz se suno
@@ -95,20 +106,36 @@ export function NarrationBar({
             ) : (
               <>
                 <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                  {playing ? <AudioLines className="h-3.5 w-3.5 text-accent" /> : <Headphones className="h-3.5 w-3.5" />}
+                  {playing ? (
+                    <AudioLines className="h-3.5 w-3.5 text-accent" />
+                  ) : (
+                    <Headphones className="h-3.5 w-3.5" />
+                  )}
                   {!ready
                     ? "Notes ban rahe hain…"
                     : started
                       ? `Part ${n.index + 1} / ${total}`
                       : "Padho bhi, suno bhi"}
-                  {n.mode === "device" && <span className="rounded bg-muted px-1.5 py-px normal-case">phone voice</span>}
+                  {n.mode === "device" && (
+                    <span className="rounded bg-muted px-1.5 py-px normal-case">phone voice</span>
+                  )}
                 </p>
                 <p className="truncate font-display text-base font-bold">
-                  {loading && n.mode === "ai" ? "Awaaz taiyaar ho rahi hai…" : started ? n.track?.label : "Poora chapter suno — play dabao"}
+                  {loading && n.mode === "ai"
+                    ? "Awaaz taiyaar ho rahi hai…"
+                    : started
+                      ? n.track?.label
+                      : "Poora chapter suno — play dabao"}
                 </p>
                 {started && (
-                  <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
-                    <div className="h-full bg-ink transition-[width] duration-200" style={{ width: `${n.progress * 100}%` }} />
+                  <div
+                    className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted"
+                    aria-hidden
+                  >
+                    <div
+                      className="h-full bg-ink transition-[width] duration-200"
+                      style={{ width: `${n.progress * 100}%` }}
+                    />
                   </div>
                 )}
               </>
@@ -135,9 +162,15 @@ export function NarrationBar({
                 <Settings2 />
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="end" side="top" className="sticker w-72 space-y-4 rounded-2xl bg-card p-4">
+            <PopoverContent
+              align="end"
+              side="top"
+              className="sticker w-72 space-y-4 rounded-2xl bg-card p-4"
+            >
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Awaaz</p>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Awaaz
+                </p>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -159,7 +192,9 @@ export function NarrationBar({
               </div>
               {n.mode === "ai" && (
                 <div>
-                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Kaun padhaye?</p>
+                  <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Kaun padhaye?
+                  </p>
                   <div className="grid grid-cols-2 gap-2">
                     {(["didi", "bhaiya"] as const).map((v) => (
                       <button
@@ -176,7 +211,9 @@ export function NarrationBar({
                 </div>
               )}
               <div>
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Speed</p>
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Speed
+                </p>
                 <div className="flex flex-wrap gap-1.5">
                   {RATES.map((r) => (
                     <button
@@ -194,7 +231,9 @@ export function NarrationBar({
               <label className="flex items-center justify-between gap-3">
                 <span>
                   <span className="block text-sm font-bold">Saath-saath padho</span>
-                  <span className="block text-xs text-muted-foreground">Jo bol raha hai, wahan apne aap scroll</span>
+                  <span className="block text-xs text-muted-foreground">
+                    Jo bol raha hai, wahan apne aap scroll
+                  </span>
                 </span>
                 <Switch checked={follow} onCheckedChange={onFollowChange} />
               </label>

@@ -12,10 +12,14 @@ export const Route = createFileRoute("/notebook")({
       { title: "Meri Notebook — Saved Chapters & Progress | PadhoSuno" },
       {
         name: "description",
-        content: "Aapke save kiye hue chapters, haal hi mein padhe gaye notes aur yaad ho chuke chapters — sab ek jagah.",
+        content:
+          "Aapke save kiye hue chapters, haal hi mein padhe gaye notes aur yaad ho chuke chapters — sab ek jagah.",
       },
       { property: "og:title", content: "Meri Notebook — PadhoSuno" },
-      { property: "og:description", content: "Saved chapters, recently read notes aur aapki progress." },
+      {
+        property: "og:description",
+        content: "Saved chapters, recently read notes aur aapki progress.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -38,7 +42,9 @@ function NotebookPage() {
           <h1 className="flex items-center gap-3 text-5xl font-extrabold">
             <NotebookPen className="h-10 w-10" /> Meri Notebook
           </h1>
-          <p className="mt-2 text-muted-foreground">Ye sab isi device par save rehta hai — login ki zaroorat nahi.</p>
+          <p className="mt-2 text-muted-foreground">
+            Ye sab isi device par save rehta hai — login ki zaroorat nahi.
+          </p>
         </div>
         <dl className="flex gap-4">
           {[
@@ -86,7 +92,9 @@ function NotebookPage() {
       {list.length === 0 ? (
         <div className="paper-ruled sticker mt-8 rounded-3xl p-10 pl-16 text-center">
           <p className="font-hand text-3xl leading-[1.9rem]">
-            {tab === "saved" ? "Abhi koi chapter save nahi kiya." : "Abhi tak koi chapter nahi padha."}
+            {tab === "saved"
+              ? "Abhi koi chapter save nahi kiya."
+              : "Abhi tak koi chapter nahi padha."}
           </p>
           <p className="mt-2 leading-[1.9rem] text-muted-foreground">
             {tab === "saved"

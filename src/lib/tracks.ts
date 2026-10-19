@@ -83,22 +83,29 @@ export function buildTracks(note: NoteContent, lang: Lang): Track[] {
   tracks.push({
     blockId: "intro",
     label: L.intro,
-    text: [sentence(note.title), sentence(note.oneLiner), sentence(note.summary)].filter(Boolean).join(" "),
+    text: [sentence(note.title), sentence(note.oneLiner), sentence(note.summary)]
+      .filter(Boolean)
+      .join(" "),
   });
 
   note.keyPoints.forEach((group, i) => {
     const text = [sentence(group.heading), ...group.points.map(sentence)].filter(Boolean).join(" ");
-    if (text) tracks.push({ blockId: `kp-${i}`, label: sentence(group.heading).replace(/\.$/, ""), text });
+    if (text)
+      tracks.push({ blockId: `kp-${i}`, label: sentence(group.heading).replace(/\.$/, ""), text });
   });
 
   for (let start = 0; start < note.keyTerms.length; start += TERMS_PER_TRACK) {
     const chunk = note.keyTerms.slice(start, start + TERMS_PER_TRACK);
     const part = start / TERMS_PER_TRACK;
-    const label = note.keyTerms.length > TERMS_PER_TRACK ? `${L.terms} — ${L.part} ${part + 1}` : L.terms;
+    const label =
+      note.keyTerms.length > TERMS_PER_TRACK ? `${L.terms} — ${L.part} ${part + 1}` : L.terms;
     tracks.push({
       blockId: `terms-${part}`,
       label,
-      text: [sentence(label), ...chunk.map((t) => `${sentence(t.term).replace(/\.$/, ":")} ${sentence(t.meaning)}`)].join(" "),
+      text: [
+        sentence(label),
+        ...chunk.map((t) => `${sentence(t.term).replace(/\.$/, ":")} ${sentence(t.meaning)}`),
+      ].join(" "),
     });
   }
 
@@ -109,7 +116,10 @@ export function buildTracks(note: NoteContent, lang: Lang): Track[] {
       text: [
         sentence(L.formulas),
         ...note.formulas.map((f) =>
-          [`${sentence(f.name).replace(/\.$/, ":")} ${sentence(f.spoken || f.formula)}`, sentence(f.note)]
+          [
+            `${sentence(f.name).replace(/\.$/, ":")} ${sentence(f.spoken || f.formula)}`,
+            sentence(f.note),
+          ]
             .filter(Boolean)
             .join(" "),
         ),
@@ -121,7 +131,9 @@ export function buildTracks(note: NoteContent, lang: Lang): Track[] {
     tracks.push({
       blockId: `trick-${i}`,
       label: `${L.trick}: ${sentence(t.title).replace(/\.$/, "")}`,
-      text: [`${L.trick}: ${sentence(t.title)}`, sentence(t.trick), sentence(t.explanation)].filter(Boolean).join(" "),
+      text: [`${L.trick}: ${sentence(t.title)}`, sentence(t.trick), sentence(t.explanation)]
+        .filter(Boolean)
+        .join(" "),
     });
   });
 
@@ -146,7 +158,11 @@ export function buildTracks(note: NoteContent, lang: Lang): Track[] {
     ...(note.funFact ? [`${L.fun}: ${sentence(note.funFact)}`] : []),
   ];
   if (tipParts.length) {
-    tracks.push({ blockId: "tips", label: note.examTips.length ? L.tips : L.fun, text: tipParts.join(" ") });
+    tracks.push({
+      blockId: "tips",
+      label: note.examTips.length ? L.tips : L.fun,
+      text: tipParts.join(" "),
+    });
   }
 
   return tracks.filter((t) => t.text.trim().length > 0).map((t, index) => ({ ...t, index }));

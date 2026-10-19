@@ -23,7 +23,9 @@ function NotFoundComponent() {
         <p className="font-hand text-2xl text-accent">Arre!</p>
         <h1 className="mt-1 font-display text-7xl font-extrabold text-foreground">404</h1>
         <h2 className="mt-3 text-xl font-bold text-foreground">Ye page notebook mein nahi mila</h2>
-        <p className="mt-2 text-muted-foreground">Shayad link galat hai ya page hata diya gaya hai.</p>
+        <p className="mt-2 text-muted-foreground">
+          Shayad link galat hai ya page hata diya gaya hai.
+        </p>
         <div className="mt-6">
           <Link
             to="/"

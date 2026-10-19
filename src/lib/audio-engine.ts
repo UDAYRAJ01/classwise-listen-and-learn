@@ -70,7 +70,14 @@ async function runJob(job: AudioJob, body: { noteId: string; voice: string; trac
   let finished = false;
   const handle = (line: string) => {
     if (!line.trim()) return;
-    let e: { t?: string; type?: string; d?: string; url?: string; status?: number; message?: string };
+    let e: {
+      t?: string;
+      type?: string;
+      d?: string;
+      url?: string;
+      status?: number;
+      message?: string;
+    };
     try {
       e = JSON.parse(line);
     } catch {
@@ -142,7 +149,9 @@ let ctx: AudioContext | null = null;
 /** Must be called from a user gesture the first time (autoplay rules). */
 export function ensureAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
-  const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  const Ctor =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
   if (!Ctor) return null;
   if (!ctx || ctx.state === "closed") ctx = new Ctor();
   if (ctx.state === "suspended") void ctx.resume().catch(() => {});
@@ -208,7 +217,11 @@ export class PcmPlayer {
 
   private checkEnd() {
     if (this.stopped || this.endedFired) return;
-    if (this.job.status === "done" && this.scheduled >= this.job.chunks.length && this.sources.size === 0) {
+    if (
+      this.job.status === "done" &&
+      this.scheduled >= this.job.chunks.length &&
+      this.sources.size === 0
+    ) {
       this.endedFired = true;
       this.detach();
       this.onEnded();
@@ -220,7 +233,9 @@ export class PcmPlayer {
     if (this.startedAt < 0) return 0;
     const played = Math.max(0, this.context.currentTime - this.startedAt);
     const total =
-      this.job.status === "done" ? this.job.samples / PCM_RATE / this.rate : Math.max(this.scheduledSeconds, played + 1);
+      this.job.status === "done"
+        ? this.job.samples / PCM_RATE / this.rate
+        : Math.max(this.scheduledSeconds, played + 1);
     return total > 0 ? Math.min(played / total, 1) : 0;
   }
 

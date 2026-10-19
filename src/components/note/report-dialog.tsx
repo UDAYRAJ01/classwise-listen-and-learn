@@ -4,7 +4,13 @@ import { toast } from "sonner";
 
 import { SECTIONS } from "@/components/note/note-view";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { reportMistake } from "@/lib/report.functions";
 
@@ -48,11 +54,15 @@ export function ReportDialog({ noteId }: { noteId: string }) {
       <DialogContent className="sticker-lg max-w-md rounded-3xl border-0 bg-background p-6 sm:rounded-3xl">
         <div className="space-y-4">
           <div>
-            <DialogTitle className="font-display text-2xl font-extrabold">Galti report karo</DialogTitle>
+            <DialogTitle className="font-display text-2xl font-extrabold">
+              Galti report karo
+            </DialogTitle>
             <DialogDescription>Aapki madad se notes aur bhi sahi bante hain.</DialogDescription>
           </div>
           <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Kahan?</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Kahan?
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {SECTIONS.map((s) => (
                 <button
@@ -68,7 +78,10 @@ export function ReportDialog({ noteId }: { noteId: string }) {
             </div>
           </div>
           <div>
-            <label htmlFor="report-msg" className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <label
+              htmlFor="report-msg"
+              className="mb-2 block text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            >
               Kya galat hai?
             </label>
             <Textarea

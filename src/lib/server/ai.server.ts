@@ -47,14 +47,18 @@ export function toGatewayError(error: unknown): GatewayError {
   let message = "";
   if (e?.responseBody) {
     try {
-      const body = JSON.parse(e.responseBody) as { error?: { message?: string } | string; message?: string };
+      const body = JSON.parse(e.responseBody) as {
+        error?: { message?: string } | string;
+        message?: string;
+      };
       message =
         (typeof body.error === "string" ? body.error : body.error?.message) ?? body.message ?? "";
     } catch {
       message = "";
     }
   }
-  if (typeof status === "number") return new GatewayError(status, message || e?.message || "AI request failed");
+  if (typeof status === "number")
+    return new GatewayError(status, message || e?.message || "AI request failed");
   if (e?.cause && e.cause !== error) {
     const inner = toGatewayError(e.cause);
     if (inner.status !== 500) return inner;
@@ -102,7 +106,9 @@ export async function streamStructured<T>(opts: {
     instructions: opts.instructions,
     prompt: opts.prompt,
     maxRetries: 1,
-    output: Output.object({ schema: jsonSchema<T>(opts.schema as Parameters<typeof jsonSchema>[0]) }),
+    output: Output.object({
+      schema: jsonSchema<T>(opts.schema as Parameters<typeof jsonSchema>[0]),
+    }),
     onError: ({ error }) => {
       streamError = error;
     },

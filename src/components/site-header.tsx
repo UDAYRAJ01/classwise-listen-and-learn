@@ -6,7 +6,11 @@ import { useNotebook } from "@/lib/notebook-store";
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
-    <Link to="/" className={`group inline-flex items-center gap-2 ${className}`} aria-label="PadhoSuno home">
+    <Link
+      to="/"
+      className={`group inline-flex items-center gap-2 ${className}`}
+      aria-label="PadhoSuno home"
+    >
       <span className="sticker grid h-9 w-9 place-items-center rounded-xl bg-secondary transition-transform group-hover:-rotate-6">
         <Headphones className="h-5 w-5 text-ink" strokeWidth={2.5} />
       </span>

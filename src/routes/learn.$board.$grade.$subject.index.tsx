@@ -64,7 +64,10 @@ export const Route = createFileRoute("/learn/$board/$grade/$subject/")({
   component: ChaptersPage,
   errorComponent: ({ reset }) => (
     <div className="mx-auto max-w-3xl px-4 py-16">
-      <ErrorCard message="Chapters load nahi hue. Internet check karke dobara try karein." onRetry={reset} />
+      <ErrorCard
+        message="Chapters load nahi hue. Internet check karke dobara try karein."
+        onRetry={reset}
+      />
     </div>
   ),
 });
@@ -85,7 +88,8 @@ function ChaptersPage() {
     url: "/api/syllabus",
     body: { board, grade, subject: subject.slug },
     enabled: !syllabus,
-    onDone: (rec) => queryClient.setQueryData(syllabusQuery(board, grade, subject.slug).queryKey, rec),
+    onDone: (rec) =>
+      queryClient.setQueryData(syllabusQuery(board, grade, subject.slug).queryKey, rec),
   });
 
   const books = syllabus?.books ?? gen.result?.books ?? null;
@@ -98,14 +102,21 @@ function ChaptersPage() {
     const q = filter.trim().toLowerCase();
     if (!q) return books;
     return books
-      .map((b) => ({ ...b, chapters: b.chapters.filter((c) => `${c.title} ${c.gist}`.toLowerCase().includes(q)) }))
+      .map((b) => ({
+        ...b,
+        chapters: b.chapters.filter((c) => `${c.title} ${c.gist}`.toLowerCase().includes(q)),
+      }))
       .filter((b) => b.chapters.length > 0);
   }, [books, filter]);
 
   const totalChapters = books?.reduce((n, b) => n + b.chapters.length, 0) ?? 0;
   const doneCount =
     books?.reduce(
-      (n, b) => n + b.chapters.filter((c) => done.includes(refKey({ board, grade, subject: subject.slug, chapter: c.slug }))).length,
+      (n, b) =>
+        n +
+        b.chapters.filter((c) =>
+          done.includes(refKey({ board, grade, subject: subject.slug, chapter: c.slug })),
+        ).length,
       0,
     ) ?? 0;
 
@@ -133,7 +144,11 @@ function ChaptersPage() {
           {
             label,
             link: (
-              <Link to="/learn/$board/$grade" params={{ board, grade: String(grade) }} className="hover:text-foreground">
+              <Link
+                to="/learn/$board/$grade"
+                params={{ board, grade: String(grade) }}
+                className="hover:text-foreground"
+              >
                 {BOARDS[board].short} · {label}
               </Link>
             ),
@@ -167,7 +182,9 @@ function ChaptersPage() {
       {/* Language preference + custom topic */}
       <div className="mt-8 grid gap-4 md:grid-cols-[auto_1fr]">
         <div className="sticker rounded-2xl bg-card p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Notes kis bhasha mein?</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Notes kis bhasha mein?
+          </p>
           <div className="mt-2 flex gap-1.5">
             {LANGS.map((l) => (
               <button
@@ -182,8 +199,14 @@ function ChaptersPage() {
             ))}
           </div>
         </div>
-        <form onSubmit={onTopic} className="sticker rounded-2xl bg-sticky p-4 text-sticky-foreground">
-          <label htmlFor="topic" className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
+        <form
+          onSubmit={onTopic}
+          className="sticker rounded-2xl bg-sticky p-4 text-sticky-foreground"
+        >
+          <label
+            htmlFor="topic"
+            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider"
+          >
             <WandSparkles className="h-3.5 w-3.5" /> Koi bhi topic ya chapter likho
           </label>
           <div className="mt-2 flex gap-2">
@@ -199,7 +222,9 @@ function ChaptersPage() {
               <Sparkles /> Notes banao
             </Button>
           </div>
-          {topicError && <p className="mt-2 text-sm font-semibold text-destructive">{topicError}</p>}
+          {topicError && (
+            <p className="mt-2 text-sm font-semibold text-destructive">{topicError}</p>
+          )}
         </form>
       </div>
 
@@ -251,7 +276,8 @@ function ChaptersPage() {
 
         {filtered && filtered.length === 0 && (
           <p className="mt-6 rounded-2xl border-2 border-dashed border-ink/40 p-6 text-center text-muted-foreground">
-            “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana sakte ho.
+            “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana sakte
+            ho.
           </p>
         )}
 
@@ -262,7 +288,9 @@ function ChaptersPage() {
                 {book.name}
               </h3>
             )}
-            {books && books.length === 1 && <p className="mb-3 font-hand text-lg text-muted-foreground">Book: {book.name}</p>}
+            {books && books.length === 1 && (
+              <p className="mb-3 font-hand text-lg text-muted-foreground">Book: {book.name}</p>
+            )}
             <ol className="grid gap-3">
               {book.chapters.map((c) => {
                 const k = refKey({ board, grade, subject: subject.slug, chapter: c.slug });
@@ -271,7 +299,12 @@ function ChaptersPage() {
                   <li key={c.slug}>
                     <Link
                       to="/learn/$board/$grade/$subject/$chapter"
-                      params={{ board, grade: String(grade), subject: subject.slug, chapter: c.slug }}
+                      params={{
+                        board,
+                        grade: String(grade),
+                        subject: subject.slug,
+                        chapter: c.slug,
+                      }}
                       search={lang ? { lang } : {}}
                       className="group flex items-center gap-4 rounded-2xl border-2 border-ink bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker"
                     >
@@ -284,10 +317,19 @@ function ChaptersPage() {
                         {isDone ? <CheckCircle2 className="h-5 w-5" /> : c.number}
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-display text-lg font-bold leading-snug">{c.title}</span>
-                        {c.gist && <span className="block text-sm text-muted-foreground">{c.gist}</span>}
+                        <span className="block font-display text-lg font-bold leading-snug">
+                          {c.title}
+                        </span>
+                        {c.gist && (
+                          <span className="block text-sm text-muted-foreground">{c.gist}</span>
+                        )}
                       </span>
-                      {savedKeys.has(k) && <BookmarkCheck className="h-5 w-5 shrink-0 text-accent" aria-label="Saved" />}
+                      {savedKeys.has(k) && (
+                        <BookmarkCheck
+                          className="h-5 w-5 shrink-0 text-accent"
+                          aria-label="Saved"
+                        />
+                      )}
                       <span className="hidden shrink-0 rounded-lg bg-secondary px-3 py-1.5 text-sm font-bold sm:inline-block">
                         Notes + Audio
                       </span>
@@ -309,7 +351,10 @@ function PartialBooks({ partial }: { partial: PartialSyllabus | null }) {
     return (
       <ol className="grid gap-3" aria-hidden>
         {Array.from({ length: 6 }).map((_, i) => (
-          <li key={i} className="h-[76px] animate-pulse rounded-2xl border-2 border-ink/20 bg-muted" />
+          <li
+            key={i}
+            className="h-[76px] animate-pulse rounded-2xl border-2 border-ink/20 bg-muted"
+          />
         ))}
       </ol>
     );
@@ -321,7 +366,10 @@ function PartialBooks({ partial }: { partial: PartialSyllabus | null }) {
           {b.name && <p className="mb-3 font-hand text-lg text-muted-foreground">Book: {b.name}</p>}
           <ol className="grid gap-3">
             {(b.chapters ?? []).map((c, ci) => (
-              <li key={ci} className="flex items-center gap-4 rounded-2xl border-2 border-ink/40 bg-card p-4 opacity-80">
+              <li
+                key={ci}
+                className="flex items-center gap-4 rounded-2xl border-2 border-ink/40 bg-card p-4 opacity-80"
+              >
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-muted font-display text-lg font-extrabold">
                   {ci + 1}
                 </span>

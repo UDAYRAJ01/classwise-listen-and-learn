@@ -71,12 +71,36 @@ export const SUBJECTS: Record<string, SubjectMeta> = {
     icon: "Scale",
     tone: "ink",
   },
-  economics: { slug: "economics", name: "Economics", hi: "अर्थशास्त्र", icon: "TrendingUp", tone: "sun" },
+  economics: {
+    slug: "economics",
+    name: "Economics",
+    hi: "अर्थशास्त्र",
+    icon: "TrendingUp",
+    tone: "sun",
+  },
   physics: { slug: "physics", name: "Physics", hi: "भौतिकी", icon: "Atom", tone: "sky" },
-  chemistry: { slug: "chemistry", name: "Chemistry", hi: "रसायन विज्ञान", icon: "FlaskConical", tone: "coral" },
+  chemistry: {
+    slug: "chemistry",
+    name: "Chemistry",
+    hi: "रसायन विज्ञान",
+    icon: "FlaskConical",
+    tone: "coral",
+  },
   biology: { slug: "biology", name: "Biology", hi: "जीव विज्ञान", icon: "Dna", tone: "leaf" },
-  accountancy: { slug: "accountancy", name: "Accountancy", hi: "लेखाशास्त्र", icon: "Calculator", tone: "teal" },
-  accounts: { slug: "accounts", name: "Accounts", hi: "लेखाशास्त्र", icon: "Calculator", tone: "teal" },
+  accountancy: {
+    slug: "accountancy",
+    name: "Accountancy",
+    hi: "लेखाशास्त्र",
+    icon: "Calculator",
+    tone: "teal",
+  },
+  accounts: {
+    slug: "accounts",
+    name: "Accounts",
+    hi: "लेखाशास्त्र",
+    icon: "Calculator",
+    tone: "teal",
+  },
   commerce: { slug: "commerce", name: "Commerce", hi: "वाणिज्य", icon: "Store", tone: "sun" },
   "business-studies": {
     slug: "business-studies",
@@ -85,8 +109,20 @@ export const SUBJECTS: Record<string, SubjectMeta> = {
     icon: "Briefcase",
     tone: "brick",
   },
-  psychology: { slug: "psychology", name: "Psychology", hi: "मनोविज्ञान", icon: "Brain", tone: "rose" },
-  sociology: { slug: "sociology", name: "Sociology", hi: "समाजशास्त्र", icon: "Users", tone: "rose" },
+  psychology: {
+    slug: "psychology",
+    name: "Psychology",
+    hi: "मनोविज्ञान",
+    icon: "Brain",
+    tone: "rose",
+  },
+  sociology: {
+    slug: "sociology",
+    name: "Sociology",
+    hi: "समाजशास्त्र",
+    icon: "Users",
+    tone: "rose",
+  },
   "computer-science": {
     slug: "computer-science",
     name: "Computer Science",
@@ -122,7 +158,13 @@ export const SUBJECTS: Record<string, SubjectMeta> = {
     icon: "Landmark",
     tone: "brick",
   },
-  computer: { slug: "computer", name: "Computer Studies", hi: "कंप्यूटर", icon: "Monitor", tone: "ink" },
+  computer: {
+    slug: "computer",
+    name: "Computer Studies",
+    hi: "कंप्यूटर",
+    icon: "Monitor",
+    tone: "ink",
+  },
   "computer-applications": {
     slug: "computer-applications",
     name: "Computer Applications",
@@ -212,7 +254,13 @@ function subjectsFor(board: BoardId, grade: number): string[] {
   if (grade <= 2) return ["english", "hindi", "maths", "evs", "computer"];
   if (grade <= 5) return ["english", "hindi", "maths", "science", "social-studies", "computer"];
   if (grade <= 8) return ICSE_MIDDLE;
-  if (grade <= 10) return [...ICSE_MIDDLE.filter((s) => s !== "computer"), "computer-applications", "economics", "commercial-studies"];
+  if (grade <= 10)
+    return [
+      ...ICSE_MIDDLE.filter((s) => s !== "computer"),
+      "computer-applications",
+      "economics",
+      "commercial-studies",
+    ];
   return ISC_SENIOR;
 }
 
@@ -261,13 +309,56 @@ export function isLang(value: unknown): value is Lang {
 
 export const DEFAULT_LANG: Lang = "hinglish";
 
-export const TONE_CLASSES: Record<Tone, { solid: string; soft: string; text: string; border: string }> = {
-  ink: { solid: "bg-tone-ink", soft: "bg-tone-ink/12", text: "text-tone-ink", border: "border-tone-ink" },
-  coral: { solid: "bg-tone-coral", soft: "bg-tone-coral/12", text: "text-tone-coral", border: "border-tone-coral" },
-  leaf: { solid: "bg-tone-leaf", soft: "bg-tone-leaf/12", text: "text-tone-leaf", border: "border-tone-leaf" },
-  sun: { solid: "bg-tone-sun", soft: "bg-tone-sun/15", text: "text-tone-sun", border: "border-tone-sun" },
-  sky: { solid: "bg-tone-sky", soft: "bg-tone-sky/12", text: "text-tone-sky", border: "border-tone-sky" },
-  rose: { solid: "bg-tone-rose", soft: "bg-tone-rose/12", text: "text-tone-rose", border: "border-tone-rose" },
-  teal: { solid: "bg-tone-teal", soft: "bg-tone-teal/12", text: "text-tone-teal", border: "border-tone-teal" },
-  brick: { solid: "bg-tone-brick", soft: "bg-tone-brick/12", text: "text-tone-brick", border: "border-tone-brick" },
+export const TONE_CLASSES: Record<
+  Tone,
+  { solid: string; soft: string; text: string; border: string }
+> = {
+  ink: {
+    solid: "bg-tone-ink",
+    soft: "bg-tone-ink/12",
+    text: "text-tone-ink",
+    border: "border-tone-ink",
+  },
+  coral: {
+    solid: "bg-tone-coral",
+    soft: "bg-tone-coral/12",
+    text: "text-tone-coral",
+    border: "border-tone-coral",
+  },
+  leaf: {
+    solid: "bg-tone-leaf",
+    soft: "bg-tone-leaf/12",
+    text: "text-tone-leaf",
+    border: "border-tone-leaf",
+  },
+  sun: {
+    solid: "bg-tone-sun",
+    soft: "bg-tone-sun/15",
+    text: "text-tone-sun",
+    border: "border-tone-sun",
+  },
+  sky: {
+    solid: "bg-tone-sky",
+    soft: "bg-tone-sky/12",
+    text: "text-tone-sky",
+    border: "border-tone-sky",
+  },
+  rose: {
+    solid: "bg-tone-rose",
+    soft: "bg-tone-rose/12",
+    text: "text-tone-rose",
+    border: "border-tone-rose",
+  },
+  teal: {
+    solid: "bg-tone-teal",
+    soft: "bg-tone-teal/12",
+    text: "text-tone-teal",
+    border: "border-tone-teal",
+  },
+  brick: {
+    solid: "bg-tone-brick",
+    soft: "bg-tone-brick/12",
+    text: "text-tone-brick",
+    border: "border-tone-brick",
+  },
 };

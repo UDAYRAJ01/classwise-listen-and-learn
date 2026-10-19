@@ -14,7 +14,8 @@ export function isVoice(v: unknown): v is VoiceId {
 }
 
 export const SAMPLE_RATE = 24000;
-const STYLE = "Read aloud in a warm, clear, friendly Indian teacher voice at a steady, easy-to-follow pace: ";
+const STYLE =
+  "Read aloud in a warm, clear, friendly Indian teacher voice at a steady, easy-to-follow pace: ";
 
 function b64ToBytes(b64: string): Uint8Array {
   const bin = atob(b64);
@@ -35,14 +36,20 @@ export function bytesToB64(bytes: Uint8Array): string {
 async function readError(res: Response): Promise<string> {
   try {
     const body = (await res.json()) as { error?: { message?: string } | string; message?: string };
-    return (typeof body.error === "string" ? body.error : body.error?.message) ?? body.message ?? "";
+    return (
+      (typeof body.error === "string" ? body.error : body.error?.message) ?? body.message ?? ""
+    );
   } catch {
     return "";
   }
 }
 
 /** Streams one text chunk as PCM through the gateway's SSE speech stream. */
-async function streamChunk(text: string, voiceName: string, onPcm: (pcm: Uint8Array) => void): Promise<void> {
+async function streamChunk(
+  text: string,
+  voiceName: string,
+  onPcm: (pcm: Uint8Array) => void,
+): Promise<void> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new GatewayError(500, "AI service is not configured.");
   const res = await fetch(`${GATEWAY_URL}/audio/speech`, {
@@ -78,14 +85,22 @@ async function streamChunk(text: string, voiceName: string, onPcm: (pcm: Uint8Ar
       .map((l) => l.slice(5).trimStart())
       .join("\n");
     if (!data || data === "[DONE]") return;
-    let payload: { type?: string; audio?: string; error?: { message?: string } | string; message?: string };
+    let payload: {
+      type?: string;
+      audio?: string;
+      error?: { message?: string } | string;
+      message?: string;
+    };
     try {
       payload = JSON.parse(data);
     } catch {
       return;
     }
     if (payload.type === "error" || payload.error) {
-      const msg = typeof payload.error === "string" ? payload.error : (payload.error?.message ?? payload.message ?? "");
+      const msg =
+        typeof payload.error === "string"
+          ? payload.error
+          : (payload.error?.message ?? payload.message ?? "");
       throw new GatewayError(502, msg || "Voice stream failed");
     }
     if (payload.type === "speech.audio.done") {
@@ -110,7 +125,8 @@ async function streamChunk(text: string, voiceName: string, onPcm: (pcm: Uint8Ar
     }
   }
   if (buffer.trim()) handleEvent(buffer);
-  if (!completed || received < 2000) throw new GatewayError(502, "Voice service returned incomplete audio.");
+  if (!completed || received < 2000)
+    throw new GatewayError(502, "Voice service returned incomplete audio.");
 }
 
 /**

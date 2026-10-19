@@ -10,14 +10,25 @@ export const syllabusQuery = (board: BoardId, grade: number, subject: string) =>
     staleTime: 1000 * 60 * 60,
   });
 
-export const noteQuery = (board: BoardId, grade: number, subject: string, chapter: string, lang: Lang) =>
+export const noteQuery = (
+  board: BoardId,
+  grade: number,
+  subject: string,
+  chapter: string,
+  lang: Lang,
+) =>
   queryOptions({
     queryKey: ["note", board, grade, subject, chapter, lang],
     queryFn: () => fetchNote({ data: { board, grade, subject, chapter, lang } }),
     staleTime: 1000 * 60 * 60,
   });
 
-export const noteLanguagesQuery = (board: BoardId, grade: number, subject: string, chapter: string) =>
+export const noteLanguagesQuery = (
+  board: BoardId,
+  grade: number,
+  subject: string,
+  chapter: string,
+) =>
   queryOptions({
     queryKey: ["note-langs", board, grade, subject, chapter],
     queryFn: () => fetchNoteLanguages({ data: { board, grade, subject, chapter } }),

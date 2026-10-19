@@ -13,7 +13,8 @@ async function publicClient() {
     global: {
       fetch: (input, init) => {
         const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+          h.delete("Authorization");
         h.set("apikey", key);
         return fetch(input, { ...init, headers: h });
       },
@@ -26,7 +27,8 @@ type SubjectInput = { board: BoardId; grade: number; subject: string };
 function validateSubject(input: unknown): SubjectInput {
   const i = input as Partial<SubjectInput>;
   const grade = parseGrade(i?.grade as number);
-  if (!isBoard(i?.board) || grade === null || typeof i?.subject !== "string") throw new Error("Invalid input");
+  if (!isBoard(i?.board) || grade === null || typeof i?.subject !== "string")
+    throw new Error("Invalid input");
   if (!getSubject(i.board, grade, i.subject)) throw new Error("Unknown subject");
   return { board: i.board, grade, subject: i.subject };
 }
@@ -52,7 +54,8 @@ export const fetchNote = createServerFn({ method: "GET" })
   .validator((input: unknown): NoteInput => {
     const base = validateSubject(input);
     const i = input as Partial<NoteInput>;
-    if (typeof i.chapter !== "string" || i.chapter.length > 120 || !isLang(i.lang)) throw new Error("Invalid input");
+    if (typeof i.chapter !== "string" || i.chapter.length > 120 || !isLang(i.lang))
+      throw new Error("Invalid input");
     return { ...base, chapter: i.chapter, lang: i.lang };
   })
   .handler(async ({ data }): Promise<NoteRecord | null> => {
@@ -100,7 +103,10 @@ export interface ChapterHit {
 
 export const searchChapters = createServerFn({ method: "GET" })
   .validator((input: unknown) => {
-    const q = typeof (input as { q?: unknown })?.q === "string" ? (input as { q: string }).q.trim().slice(0, 80) : "";
+    const q =
+      typeof (input as { q?: unknown })?.q === "string"
+        ? (input as { q: string }).q.trim().slice(0, 80)
+        : "";
     return { q };
   })
   .handler(async ({ data }): Promise<ChapterHit[]> => {
@@ -108,7 +114,9 @@ export const searchChapters = createServerFn({ method: "GET" })
     const sb = await publicClient();
     const { data: rows, error } = await sb.rpc("search_chapters", { q: data.q, max_results: 20 });
     if (error) throw new Error("Search failed");
-    return ((rows ?? []) as ChapterHit[]).filter((r) => isBoard(r.board) && getSubject(r.board, r.grade, r.subject));
+    return ((rows ?? []) as ChapterHit[]).filter(
+      (r) => isBoard(r.board) && getSubject(r.board, r.grade, r.subject),
+    );
   });
 
 export interface RevisionItem {
@@ -143,6 +151,14 @@ export const fetchSubjectRevisions = createServerFn({ method: "GET" })
       const content = r.content as unknown as import("@/lib/types").NoteContent;
       const trackIndex = buildTracks(content, data.lang).findIndex((t) => t.blockId === "revision");
       if (trackIndex < 0 || !content.quickRevision?.length) return [];
-      return [{ noteId: r.id as string, chapter: r.chapter_slug as string, title: r.chapter_title as string, points: content.quickRevision, trackIndex }];
+      return [
+        {
+          noteId: r.id as string,
+          chapter: r.chapter_slug as string,
+          title: r.chapter_title as string,
+          points: content.quickRevision,
+          trackIndex,
+        },
+      ];
     });
   });

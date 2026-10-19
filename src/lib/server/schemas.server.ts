@@ -87,7 +87,10 @@ export const noteJsonSchema = {
         required: ["title", "kind", "trick", "explanation"],
         properties: {
           title: str,
-          kind: { type: "string", enum: ["acronym", "rhyme", "story", "visual", "pattern", "shortcut"] },
+          kind: {
+            type: "string",
+            enum: ["acronym", "rhyme", "story", "visual", "pattern", "shortcut"],
+          },
           trick: str,
           explanation: str,
         },

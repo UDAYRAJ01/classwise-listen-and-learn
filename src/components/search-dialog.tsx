@@ -12,7 +12,15 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { BOARD_IDS, BOARDS, GRADES, getSubjects, gradeLabel, SUBJECTS, type BoardId } from "@/lib/catalog";
+import {
+  BOARD_IDS,
+  BOARDS,
+  GRADES,
+  getSubjects,
+  gradeLabel,
+  SUBJECTS,
+  type BoardId,
+} from "@/lib/catalog";
 import { searchChapters } from "@/lib/content.functions";
 import { useNotebook } from "@/lib/notebook-store";
 
@@ -58,7 +66,9 @@ function matchCatalog(q: string): CatalogHit[] {
     .filter(Boolean);
   if (tokens.length === 0) return [];
   return CATALOG.filter((c) =>
-    tokens.every((t) => (/^\d+$/.test(t) ? Number(t) === c.grade : c.hay.includes(t.replace(/^class$/, "class")))),
+    tokens.every((t) =>
+      /^\d+$/.test(t) ? Number(t) === c.grade : c.hay.includes(t.replace(/^class$/, "class")),
+    ),
   ).slice(0, 8);
 }
 
@@ -77,7 +87,9 @@ export function SearchButton() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
-      const typing = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
+      const typing =
+        target &&
+        (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable);
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing)) {
         e.preventDefault();
         setOpen(true);
@@ -104,7 +116,13 @@ export function SearchButton() {
   );
 }
 
-function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function SearchDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const navigate = useNavigate();
   const { prefs } = useNotebook();
   const [q, setQ] = useState("");
@@ -141,12 +159,18 @@ function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
       <CommandList className="max-h-[60vh]">
         {q.trim().length === 0 && (
           <div className="px-4 py-6 text-sm text-muted-foreground">
-            Class, subject ya chapter ka naam likho. <span className="font-hand text-base">Tip: “/” dabao kahin se bhi.</span>
+            Class, subject ya chapter ka naam likho.{" "}
+            <span className="font-hand text-base">Tip: “/” dabao kahin se bhi.</span>
           </div>
         )}
-        {q.trim().length > 0 && catalogHits.length === 0 && chapters.length === 0 && !isFetching && (
-          <CommandEmpty>Kuch nahi mila. Spelling check karo ya subject kholo aur topic likho.</CommandEmpty>
-        )}
+        {q.trim().length > 0 &&
+          catalogHits.length === 0 &&
+          chapters.length === 0 &&
+          !isFetching && (
+            <CommandEmpty>
+              Kuch nahi mila. Spelling check karo ya subject kholo aur topic likho.
+            </CommandEmpty>
+          )}
         {catalogHits.length > 0 && (
           <CommandGroup heading="Classes & subjects">
             {catalogHits.map((c) => (
@@ -160,13 +184,19 @@ function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
                           to: "/learn/$board/$grade/$subject",
                           params: { board: c.board, grade: String(c.grade), subject: c.subject },
                         })
-                      : navigate({ to: "/learn/$board/$grade", params: { board: c.board, grade: String(c.grade) } }),
+                      : navigate({
+                          to: "/learn/$board/$grade",
+                          params: { board: c.board, grade: String(c.grade) },
+                        }),
                   )
                 }
                 className="gap-3"
               >
                 {c.subject ? (
-                  <SubjectIcon name={SUBJECTS[c.subject]?.icon ?? "BookOpen"} className="text-muted-foreground" />
+                  <SubjectIcon
+                    name={SUBJECTS[c.subject]?.icon ?? "BookOpen"}
+                    className="text-muted-foreground"
+                  />
                 ) : (
                   <GraduationCap className="text-muted-foreground" />
                 )}
@@ -193,7 +223,12 @@ function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
                   go(() =>
                     navigate({
                       to: "/learn/$board/$grade/$subject/$chapter",
-                      params: { board: h.board, grade: String(h.grade), subject: h.subject, chapter: h.slug },
+                      params: {
+                        board: h.board,
+                        grade: String(h.grade),
+                        subject: h.subject,
+                        chapter: h.slug,
+                      },
                       search: prefs.lang ? { lang: prefs.lang } : {},
                     }),
                   )
@@ -204,7 +239,8 @@ function SearchDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
                 <span className="min-w-0">
                   <span className="block truncate font-semibold">{h.title}</span>
                   <span className="block truncate text-xs text-muted-foreground">
-                    {BOARDS[h.board].short} · Class {h.grade} · {SUBJECTS[h.subject]?.name} · {h.book}
+                    {BOARDS[h.board].short} · Class {h.grade} · {SUBJECTS[h.subject]?.name} ·{" "}
+                    {h.book}
                   </span>
                 </span>
               </CommandItem>

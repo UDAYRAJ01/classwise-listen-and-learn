@@ -9,7 +9,8 @@ export const reportMistake = createServerFn({ method: "POST" })
     const noteId = typeof i?.noteId === "string" && UUID.test(i.noteId) ? i.noteId : null;
     const message = typeof i?.message === "string" ? i.message.replace(/\s+/g, " ").trim() : "";
     const section = typeof i?.section === "string" ? i.section.slice(0, 40) : null;
-    if (!noteId || message.length < 3 || message.length > 600) throw new Error("Galti ke baare mein 3–600 letters mein likhein.");
+    if (!noteId || message.length < 3 || message.length > 600)
+      throw new Error("Galti ke baare mein 3–600 letters mein likhein.");
     return { noteId, message, section };
   })
   .handler(async ({ data }) => {

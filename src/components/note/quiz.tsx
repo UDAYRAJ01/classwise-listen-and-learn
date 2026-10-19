@@ -1,4 +1,14 @@
-import { BookOpen, Check, Dumbbell, PartyPopper, RotateCcw, Target, Trophy, X, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  Dumbbell,
+  PartyPopper,
+  RotateCcw,
+  Target,
+  Trophy,
+  X,
+  type LucideIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Emph } from "@/components/emph";
@@ -14,12 +24,25 @@ const LETTERS = ["A", "B", "C", "D"];
 function verdict(score: number, total: number): { icon: LucideIcon; line: string } {
   const pct = total ? score / total : 0;
   if (pct === 1) return { icon: Trophy, line: "Full marks! Topper wali tayyari." };
-  if (pct >= 0.7) return { icon: PartyPopper, line: "Bahut badhiya! Bas galat wale ek baar aur dekh lo." };
-  if (pct >= 0.4) return { icon: Dumbbell, line: "Achha start hai. Notes ek baar suno, phir dobara try karo." };
-  return { icon: BookOpen, line: "Koi baat nahi! Pehle short notes aur tricks padho, phir quiz do." };
+  if (pct >= 0.7)
+    return { icon: PartyPopper, line: "Bahut badhiya! Bas galat wale ek baar aur dekh lo." };
+  if (pct >= 0.4)
+    return { icon: Dumbbell, line: "Achha start hai. Notes ek baar suno, phir dobara try karo." };
+  return {
+    icon: BookOpen,
+    line: "Koi baat nahi! Pehle short notes aur tricks padho, phir quiz do.",
+  };
 }
 
-export function Quiz({ mcqs, open, onOpenChange }: { mcqs: Mcq[]; open: boolean; onOpenChange: (v: boolean) => void }) {
+export function Quiz({
+  mcqs,
+  open,
+  onOpenChange,
+}: {
+  mcqs: Mcq[];
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const all = useMemo(() => mcqs.map((q, i) => ({ ...q, id: i })), [mcqs]);
   const [queue, setQueue] = useState(all);
   const [pos, setPos] = useState(0);
@@ -86,7 +109,9 @@ export function Quiz({ mcqs, open, onOpenChange }: { mcqs: Mcq[]; open: boolean;
             </span>
             <div>
               <DialogTitle className="font-display text-2xl font-extrabold">Quick Quiz</DialogTitle>
-              <DialogDescription className="font-hand text-base">Sahi option chuno — turant pata chalega</DialogDescription>
+              <DialogDescription className="font-hand text-base">
+                Sahi option chuno — turant pata chalega
+              </DialogDescription>
             </div>
           </div>
 
@@ -117,7 +142,10 @@ export function Quiz({ mcqs, open, onOpenChange }: { mcqs: Mcq[]; open: boolean;
                 {queue.map((_, i) => (
                   <span
                     key={i}
-                    className={cn("h-1.5 flex-1 rounded-full", i < pos ? "bg-ink" : i === pos ? "bg-accent" : "bg-muted")}
+                    className={cn(
+                      "h-1.5 flex-1 rounded-full",
+                      i < pos ? "bg-ink" : i === pos ? "bg-accent" : "bg-muted",
+                    )}
                   />
                 ))}
               </div>
@@ -131,7 +159,8 @@ export function Quiz({ mcqs, open, onOpenChange }: { mcqs: Mcq[]; open: boolean;
                 {q.options.map((o, i) => {
                   const isAnswer = i === q.answer;
                   const isPicked = i === picked;
-                  const state = picked === null ? "idle" : isAnswer ? "right" : isPicked ? "wrong" : "dim";
+                  const state =
+                    picked === null ? "idle" : isAnswer ? "right" : isPicked ? "wrong" : "dim";
                   return (
                     <li key={i}>
                       <button
@@ -152,7 +181,13 @@ export function Quiz({ mcqs, open, onOpenChange }: { mcqs: Mcq[]; open: boolean;
                             state === "wrong" && "bg-destructive text-destructive-foreground",
                           )}
                         >
-                          {state === "right" ? <Check className="h-4 w-4" /> : state === "wrong" ? <X className="h-4 w-4" /> : LETTERS[i]}
+                          {state === "right" ? (
+                            <Check className="h-4 w-4" />
+                          ) : state === "wrong" ? (
+                            <X className="h-4 w-4" />
+                          ) : (
+                            LETTERS[i]
+                          )}
                         </span>
                         <span>{o}</span>
                       </button>
@@ -162,7 +197,9 @@ export function Quiz({ mcqs, open, onOpenChange }: { mcqs: Mcq[]; open: boolean;
               </ul>
               {picked !== null && (
                 <div className="sticker rounded-2xl bg-sticky p-4 text-sticky-foreground">
-                  <p className="font-display font-bold">{picked === q.answer ? "Sahi jawaab! ✓" : `Sahi jawaab: ${LETTERS[q.answer]}`}</p>
+                  <p className="font-display font-bold">
+                    {picked === q.answer ? "Sahi jawaab! ✓" : `Sahi jawaab: ${LETTERS[q.answer]}`}
+                  </p>
                   {q.explanation && (
                     <p className="mt-1">
                       <Emph text={q.explanation} />

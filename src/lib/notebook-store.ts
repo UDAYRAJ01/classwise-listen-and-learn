@@ -99,7 +99,9 @@ export const notebook = {
     const exists = state.saved.some((s) => refKey(s) === k);
     commit({
       ...state,
-      saved: exists ? state.saved.filter((s) => refKey(s) !== k) : [{ ...ref, at: Date.now() }, ...state.saved].slice(0, 200),
+      saved: exists
+        ? state.saved.filter((s) => refKey(s) !== k)
+        : [{ ...ref, at: Date.now() }, ...state.saved].slice(0, 200),
     });
     return !exists;
   },
@@ -108,7 +110,10 @@ export const notebook = {
     const k = refKey(ref);
     commit({
       ...state,
-      recent: [{ ...ref, at: Date.now() }, ...state.recent.filter((s) => refKey(s) !== k)].slice(0, 12),
+      recent: [{ ...ref, at: Date.now() }, ...state.recent.filter((s) => refKey(s) !== k)].slice(
+        0,
+        12,
+      ),
     });
   },
   toggleDone(ref: Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">) {

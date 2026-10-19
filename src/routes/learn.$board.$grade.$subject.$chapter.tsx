@@ -71,12 +71,23 @@ function resolveMeta(
 ): ChapterMeta | null {
   if (isCustomSlug(chapter)) {
     const t = note?.chapter_title ?? (title && customTopicSlug(title) === chapter ? title : null);
-    return t ? { title: t, bookName: null, number: null, custom: true, prev: null, next: null } : null;
+    return t
+      ? { title: t, bookName: null, number: null, custom: true, prev: null, next: null }
+      : null;
   }
   const all = (syllabus?.books ?? []).flatMap((b) => b.chapters.map((c) => ({ c, book: b.name })));
   const i = all.findIndex((x) => x.c.slug === chapter);
   if (i < 0) {
-    return note ? { title: note.chapter_title, bookName: note.book_name, number: null, custom: false, prev: null, next: null } : null;
+    return note
+      ? {
+          title: note.chapter_title,
+          bookName: note.book_name,
+          number: null,
+          custom: false,
+          prev: null,
+          next: null,
+        }
+      : null;
   }
   const cur = all[i]!;
   return {
@@ -104,7 +115,9 @@ export const Route = createFileRoute("/learn/$board/$grade/$subject/$chapter")({
     if (!subject) throw notFound();
     const [syllabus, note] = await Promise.all([
       context.queryClient.ensureQueryData(syllabusQuery(params.board, grade, subject.slug)),
-      context.queryClient.ensureQueryData(noteQuery(params.board, grade, subject.slug, params.chapter, deps.lang)),
+      context.queryClient.ensureQueryData(
+        noteQuery(params.board, grade, subject.slug, params.chapter, deps.lang),
+      ),
     ]);
     const meta = resolveMeta(params.chapter, syllabus, note, deps.title);
     if (!meta && syllabus && !isCustomSlug(params.chapter)) throw notFound();
@@ -139,7 +152,10 @@ export const Route = createFileRoute("/learn/$board/$grade/$subject/$chapter")({
   component: ChapterPage,
   errorComponent: ({ reset }) => (
     <div className="mx-auto max-w-3xl px-4 py-16">
-      <ErrorCard message="Notes load nahi hue. Internet check karke dobara try karein." onRetry={reset} />
+      <ErrorCard
+        message="Notes load nahi hue. Internet check karke dobara try karein."
+        onRetry={reset}
+      />
     </div>
   ),
 });
@@ -160,7 +176,10 @@ function ChapterPage() {
           message="Ye chapter ab tak khula nahi hai. Subject ki chapter list se dobara kholiye."
         />
         <Button asChild variant="paper" className="mt-6">
-          <Link to="/learn/$board/$grade/$subject" params={{ board, grade: String(grade), subject: subject.slug }}>
+          <Link
+            to="/learn/$board/$grade/$subject"
+            params={{ board, grade: String(grade), subject: subject.slug }}
+          >
             <ArrowLeft /> {subject.name} ke chapters
           </Link>
         </Button>
@@ -216,11 +235,20 @@ function ChapterView({
   const gen = useGeneration<PartialNote, NoteRecord>({
     key: `note:${board}:${grade}:${subject.slug}:${chapter}:${lang}`,
     url: "/api/notes",
-    body: { board, grade, subject: subject.slug, chapter, lang, ...(meta.custom ? { title: meta.title } : {}) },
+    body: {
+      board,
+      grade,
+      subject: subject.slug,
+      chapter,
+      lang,
+      ...(meta.custom ? { title: meta.title } : {}),
+    },
     enabled: !note,
     onDone: (rec) => {
       queryClient.setQueryData(noteQuery(board, grade, subject.slug, chapter, lang).queryKey, rec);
-      void queryClient.invalidateQueries({ queryKey: noteLanguagesQuery(board, grade, subject.slug, chapter).queryKey });
+      void queryClient.invalidateQueries({
+        queryKey: noteLanguagesQuery(board, grade, subject.slug, chapter).queryKey,
+      });
     },
   });
   const { data: readyLangs } = useQuery(noteLanguagesQuery(board, grade, subject.slug, chapter));
@@ -232,7 +260,13 @@ function ChapterView({
   const tracks = useMemo(() => (record ? buildTracks(record.content, lang) : []), [record, lang]);
   const mcqs = record?.content.mcqs ?? [];
   const blockToTrack = useMemo(() => new Map(tracks.map((t) => [t.blockId, t.index])), [tracks]);
-  const narration = useNarration({ noteId: record?.id ?? null, tracks, lang, title: meta.title, warmUp: true });
+  const narration = useNarration({
+    noteId: record?.id ?? null,
+    tracks,
+    lang,
+    title: meta.title,
+    warmUp: true,
+  });
 
   // Remember this chapter once its notes exist.
   useEffect(() => {
@@ -254,7 +288,9 @@ function ChapterView({
   // Read-along: keep the block being spoken in view.
   useEffect(() => {
     if (!prefs.follow || !narration.activeBlockId || narration.status === "paused") return;
-    document.getElementById(`blk-${narration.activeBlockId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document
+      .getElementById(`blk-${narration.activeBlockId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [narration.activeBlockId, prefs.follow, narration.status]);
 
   const sections = SECTIONS.filter((s) => {
@@ -302,7 +338,11 @@ function ChapterView({
       await navigator.clipboard.writeText(`${text}: ${url}`);
       toast.success("Link copy ho gaya — WhatsApp par dosto ko bhejo!");
     } catch {
-      window.open(`https://wa.me/?text=${encodeURIComponent(`${text}: ${url}`)}`, "_blank", "noopener");
+      window.open(
+        `https://wa.me/?text=${encodeURIComponent(`${text}: ${url}`)}`,
+        "_blank",
+        "noopener",
+      );
     }
   };
 
@@ -316,7 +356,11 @@ function ChapterView({
             {
               label,
               link: (
-                <Link to="/learn/$board/$grade" params={{ board, grade: String(grade) }} className="hover:text-foreground">
+                <Link
+                  to="/learn/$board/$grade"
+                  params={{ board, grade: String(grade) }}
+                  className="hover:text-foreground"
+                >
                   {BOARDS[board].short} · {label}
                 </Link>
               ),
@@ -339,7 +383,12 @@ function ChapterView({
 
         <header className="mt-6">
           <div className="flex flex-wrap items-center gap-2">
-            <span className={cn("inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3 py-1 text-sm font-bold", tone.soft)}>
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3 py-1 text-sm font-bold",
+                tone.soft,
+              )}
+            >
               <SubjectIcon name={subject.icon} className={cn("h-4 w-4", tone.text)} />
               {subject.name} · {label}
             </span>
@@ -349,16 +398,26 @@ function ChapterView({
               </span>
             )}
             {meta.custom && (
-              <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold">Aapka topic</span>
+              <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold">
+                Aapka topic
+              </span>
             )}
           </div>
           <h1 className="mt-4 max-w-4xl text-4xl font-extrabold sm:text-5xl">
-            {meta.number && <span className="mr-3 font-hand text-3xl font-bold text-accent sm:text-4xl">Ch {meta.number}.</span>}
+            {meta.number && (
+              <span className="mr-3 font-hand text-3xl font-bold text-accent sm:text-4xl">
+                Ch {meta.number}.
+              </span>
+            )}
             {meta.title}
           </h1>
 
           <div className="no-print mt-6 flex flex-wrap items-center gap-3">
-            <div role="tablist" aria-label="Bhasha" className="sticker inline-flex gap-1 rounded-xl bg-card p-1">
+            <div
+              role="tablist"
+              aria-label="Bhasha"
+              className="sticker inline-flex gap-1 rounded-xl bg-card p-1"
+            >
               {LANGS.map((l) => (
                 <Link
                   key={l.id}
@@ -369,12 +428,19 @@ function ChapterView({
                   role="tab"
                   aria-selected={lang === l.id}
                   data-active={lang === l.id}
-                  title={readyLangs?.includes(l.id) ? "Taiyaar hai — turant khulega" : "Pehli baar banega"}
+                  title={
+                    readyLangs?.includes(l.id)
+                      ? "Taiyaar hai — turant khulega"
+                      : "Pehli baar banega"
+                  }
                   className="relative rounded-lg px-3 py-1.5 text-sm font-bold hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper"
                 >
                   {l.native}
                   {readyLangs?.includes(l.id) && lang !== l.id && (
-                    <span className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-tone-leaf" aria-label="ready" />
+                    <span
+                      className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-tone-leaf"
+                      aria-label="ready"
+                    />
                   )}
                 </Link>
               ))}
@@ -398,7 +464,12 @@ function ChapterView({
             <Button variant="ghost" onClick={share} aria-label="Share karein">
               <Share2 /> <span className="hidden sm:inline">Share</span>
             </Button>
-            <Button variant="ghost" onClick={() => window.print()} disabled={!record} aria-label="Print ya PDF save karein">
+            <Button
+              variant="ghost"
+              onClick={() => window.print()}
+              disabled={!record}
+              aria-label="Print ya PDF save karein"
+            >
               <Printer /> <span className="hidden sm:inline">Print / PDF</span>
             </Button>
           </div>
@@ -408,7 +479,9 @@ function ChapterView({
       <div className="mx-auto mt-10 grid max-w-6xl gap-10 px-4 lg:grid-cols-[200px_1fr]">
         <aside className="no-print hidden lg:block">
           <nav aria-label="Is chapter mein" className="sticky top-24 space-y-1">
-            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Is chapter mein</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Is chapter mein
+            </p>
             {sections.map((s) => (
               <a
                 key={s.id}
@@ -457,7 +530,8 @@ function ChapterView({
               <div>
                 <p className="font-display text-2xl font-extrabold">Kitna yaad hua? Quiz do!</p>
                 <p className="font-hand text-xl">
-                  {mcqs.length} sawaal · sirf {Math.max(1, Math.round(mcqs.length / 4))}–{Math.max(2, Math.round(mcqs.length / 2))} minute
+                  {mcqs.length} sawaal · sirf {Math.max(1, Math.round(mcqs.length / 4))}–
+                  {Math.max(2, Math.round(mcqs.length / 2))} minute
                 </p>
               </div>
               <Button variant="paper" size="lg" onClick={() => setQuizOpen(true)}>
@@ -477,13 +551,20 @@ function ChapterView({
               {meta.prev ? (
                 <Link
                   to="/learn/$board/$grade/$subject/$chapter"
-                  params={{ board, grade: String(grade), subject: subject.slug, chapter: meta.prev.slug }}
+                  params={{
+                    board,
+                    grade: String(grade),
+                    subject: subject.slug,
+                    chapter: meta.prev.slug,
+                  }}
                   search={{ lang }}
                   className="sticker press flex min-w-0 items-center gap-3 rounded-2xl bg-card p-4"
                 >
                   <ArrowLeft className="h-5 w-5 shrink-0" />
                   <span className="min-w-0">
-                    <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Pichla chapter</span>
+                    <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Pichla chapter
+                    </span>
                     <span className="block truncate font-display font-bold">{meta.prev.title}</span>
                   </span>
                 </Link>
@@ -493,12 +574,19 @@ function ChapterView({
               {meta.next && (
                 <Link
                   to="/learn/$board/$grade/$subject/$chapter"
-                  params={{ board, grade: String(grade), subject: subject.slug, chapter: meta.next.slug }}
+                  params={{
+                    board,
+                    grade: String(grade),
+                    subject: subject.slug,
+                    chapter: meta.next.slug,
+                  }}
                   search={{ lang }}
                   className="sticker press flex min-w-0 items-center justify-end gap-3 rounded-2xl bg-card p-4 text-right"
                 >
                   <span className="min-w-0">
-                    <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">Agla chapter</span>
+                    <span className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      Agla chapter
+                    </span>
                     <span className="block truncate font-display font-bold">{meta.next.title}</span>
                   </span>
                   <ArrowRight className="h-5 w-5 shrink-0" />

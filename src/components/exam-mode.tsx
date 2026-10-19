@@ -67,7 +67,9 @@ export function ExamMode({
 
   useEffect(() => {
     if (!open || !prefs.follow || !narration.activeBlockId || narration.status === "paused") return;
-    document.getElementById(`blk-${narration.activeBlockId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document
+      .getElementById(`blk-${narration.activeBlockId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [open, narration.activeBlockId, prefs.follow, narration.status]);
 
   if (items.length === 0) return null;

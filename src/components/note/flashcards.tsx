@@ -22,18 +22,32 @@ const DECKS: { id: Deck; label: string }[] = [
   { id: "questions", label: "Sawaal" },
 ];
 
-const KIND_LABEL: Record<Card["kind"], string> = { terms: "Word", tricks: "Trick", questions: "Sawaal" };
+const KIND_LABEL: Record<Card["kind"], string> = {
+  terms: "Word",
+  tricks: "Trick",
+  questions: "Sawaal",
+};
 
 function buildCards(note: NoteContent): Card[] {
   return [
-    ...note.keyTerms.map((t, i) => ({ id: `t${i}`, kind: "terms" as const, front: t.term, back: t.meaning })),
+    ...note.keyTerms.map((t, i) => ({
+      id: `t${i}`,
+      kind: "terms" as const,
+      front: t.term,
+      back: t.meaning,
+    })),
     ...note.tricks.map((t, i) => ({
       id: `k${i}`,
       kind: "tricks" as const,
       front: t.title,
       back: `${t.trick}${t.explanation ? ` — ${t.explanation}` : ""}`,
     })),
-    ...note.questions.map((q, i) => ({ id: `q${i}`, kind: "questions" as const, front: q.question, back: q.answer })),
+    ...note.questions.map((q, i) => ({
+      id: `q${i}`,
+      kind: "questions" as const,
+      front: q.question,
+      back: q.answer,
+    })),
   ];
 }
 
@@ -48,7 +62,15 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-export function Flashcards({ note, open, onOpenChange }: { note: NoteContent; open: boolean; onOpenChange: (v: boolean) => void }) {
+export function Flashcards({
+  note,
+  open,
+  onOpenChange,
+}: {
+  note: NoteContent;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const all = useMemo(() => buildCards(note), [note]);
   const [deck, setDeck] = useState<Deck>("all");
   const [queue, setQueue] = useState<Card[]>([]);
@@ -114,7 +136,9 @@ export function Flashcards({ note, open, onOpenChange }: { note: NoteContent; op
             </span>
             <div>
               <DialogTitle className="font-display text-2xl font-extrabold">Flashcards</DialogTitle>
-              <DialogDescription className="font-hand text-base">Card palto, socho, yaad karo</DialogDescription>
+              <DialogDescription className="font-hand text-base">
+                Card palto, socho, yaad karo
+              </DialogDescription>
             </div>
           </div>
 
@@ -174,7 +198,9 @@ export function Flashcards({ note, open, onOpenChange }: { note: NoteContent; op
                   )}
                 >
                   <div className="paper-ruled sticker absolute inset-0 flex flex-col rounded-2xl p-6 pl-14 text-left backface-hidden">
-                    <span className="text-xs font-bold uppercase tracking-wider text-accent">{KIND_LABEL[card.kind]}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-accent">
+                      {KIND_LABEL[card.kind]}
+                    </span>
                     <p className="mt-3 flex-1 font-display text-2xl font-bold leading-snug">
                       <Emph text={card.front} />
                     </p>

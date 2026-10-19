@@ -27,15 +27,20 @@ export const Route = createFileRoute("/api/audio")({
         } catch {
           return jsonError(400, "Invalid request");
         }
-        const noteId = typeof body.noteId === "string" && UUID.test(body.noteId) ? body.noteId : null;
-        const trackIndex = typeof body.track === "number" && Number.isInteger(body.track) ? body.track : -1;
-        if (!noteId || trackIndex < 0 || !isVoice(body.voice)) return jsonError(400, "Invalid request");
+        const noteId =
+          typeof body.noteId === "string" && UUID.test(body.noteId) ? body.noteId : null;
+        const trackIndex =
+          typeof body.track === "number" && Number.isInteger(body.track) ? body.track : -1;
+        if (!noteId || trackIndex < 0 || !isVoice(body.voice))
+          return jsonError(400, "Invalid request");
         const voice = body.voice;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
         const sign = async (path: string) => {
-          const { data, error } = await supabaseAdmin.storage.from(BUCKET).createSignedUrl(path, SIGNED_SECONDS);
+          const { data, error } = await supabaseAdmin.storage
+            .from(BUCKET)
+            .createSignedUrl(path, SIGNED_SECONDS);
           if (error || !data) throw error ?? new Error("sign failed");
           return data.signedUrl;
         };
@@ -48,7 +53,11 @@ export const Route = createFileRoute("/api/audio")({
             .eq("track_index", trackIndex)
             .eq("voice", voice)
             .maybeSingle(),
-          supabaseAdmin.from("notes").select("id, language, content").eq("id", noteId).maybeSingle(),
+          supabaseAdmin
+            .from("notes")
+            .select("id, language, content")
+            .eq("id", noteId)
+            .maybeSingle(),
         ]);
         if (cached.data) {
           try {
@@ -59,13 +68,19 @@ export const Route = createFileRoute("/api/audio")({
         }
 
         if (!note.data) return jsonError(404, "Notes nahi mile");
-        const tracks = buildTracks(note.data.content as unknown as NoteContent, note.data.language as Lang);
+        const tracks = buildTracks(
+          note.data.content as unknown as NoteContent,
+          note.data.language as Lang,
+        );
         const track = tracks[trackIndex];
         if (!track) return jsonError(404, "Ye audio part nahi mila");
 
         const { consumeRateLimit } = await import("@/lib/server/rate-limit.server");
         if (!(await consumeRateLimit(supabaseAdmin, request, "audio"))) {
-          return jsonError(429, "Is ghante ki audio limit poori ho gayi. Tab tak phone ki awaaz use karein.");
+          return jsonError(
+            429,
+            "Is ghante ki audio limit poori ho gayi. Tab tak phone ki awaaz use karein.",
+          );
         }
 
         const { streamTrack, buildWav, bytesToB64 } = await import("@/lib/server/tts.server");
@@ -96,7 +111,11 @@ export const Route = createFileRoute("/api/audio")({
             const path = `${noteId}/${voice}/${trackIndex}.wav`;
             const up = await supabaseAdmin.storage
               .from(BUCKET)
-              .upload(path, buildWav(pcm), { contentType: "audio/wav", upsert: true, cacheControl: "31536000" });
+              .upload(path, buildWav(pcm), {
+                contentType: "audio/wav",
+                upsert: true,
+                cacheControl: "31536000",
+              });
             if (up.error) throw up.error;
             await supabaseAdmin
               .from("note_audio")

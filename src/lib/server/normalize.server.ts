@@ -15,7 +15,10 @@ export function normalizeSyllabus(raw: { books?: unknown }): SyllabusBook[] {
     .map((book, bi) => {
       const chapters = list<{ title?: unknown; gist?: unknown }>(book.chapters)
         .map((c) => ({
-          title: clean(c.title, 140).replace(/^(chapter|ch\.?|lesson|unit|पाठ|अध्याय)\s*[\d०-९]+\s*[:.\-–]\s*/i, ""),
+          title: clean(c.title, 140).replace(
+            /^(chapter|ch\.?|lesson|unit|पाठ|अध्याय)\s*[\d०-९]+\s*[:.\-–]\s*/i,
+            "",
+          ),
           gist: clean(c.gist, 160),
         }))
         .filter((c) => c.title.length > 0)
@@ -52,7 +55,9 @@ export function normalizeNote(raw: Partial<NoteContent>, fallbackTitle: string):
       .map((t) => ({ term: plain(t.term, 120), meaning: clean(t.meaning, 500) }))
       .filter((t) => t.term && t.meaning)
       .slice(0, 18),
-    formulas: list<{ name?: unknown; formula?: unknown; spoken?: unknown; note?: unknown }>(raw.formulas)
+    formulas: list<{ name?: unknown; formula?: unknown; spoken?: unknown; note?: unknown }>(
+      raw.formulas,
+    )
       .map((f) => ({
         name: plain(f.name, 160),
         formula: plain(f.formula, 400),
@@ -61,7 +66,9 @@ export function normalizeNote(raw: Partial<NoteContent>, fallbackTitle: string):
       }))
       .filter((f) => f.formula)
       .slice(0, 16),
-    tricks: list<{ title?: unknown; kind?: unknown; trick?: unknown; explanation?: unknown }>(raw.tricks)
+    tricks: list<{ title?: unknown; kind?: unknown; trick?: unknown; explanation?: unknown }>(
+      raw.tricks,
+    )
       .map((t) => ({
         title: plain(t.title, 160),
         kind: (KINDS.includes(t.kind as TrickKind) ? t.kind : "shortcut") as TrickKind,
@@ -90,7 +97,9 @@ export function normalizeNote(raw: Partial<NoteContent>, fallbackTitle: string):
       .filter(Boolean)
       .slice(0, 6),
     funFact: clean(raw.funFact, 500),
-    mcqs: list<{ question?: unknown; options?: unknown; answer?: unknown; explanation?: unknown }>(raw.mcqs)
+    mcqs: list<{ question?: unknown; options?: unknown; answer?: unknown; explanation?: unknown }>(
+      raw.mcqs,
+    )
       .map((q) => ({
         question: clean(q.question, 500),
         options: list<unknown>(q.options)
