@@ -19,6 +19,7 @@ export function syllabusPrompt(board: BoardId, grade: number, subject: SubjectMe
           "Otherwise use the latest rationalised NCERT edition and leave out chapters NCERT removed during rationalisation.",
           "For Class 9-10 History, Geography, Political Science and Economics list the matching NCERT book (India and the Contemporary World, Contemporary India, Democratic Politics, Economics / Understanding Economic Development).",
           "For Class 11-12 subjects with two NCERT books (e.g. Physics Part I & II, History Themes I-III, Accountancy, Business Studies, Geography, Economics, Political Science) list every book separately.",
+          "English books: Class 9 Beehive + Moments; Class 10 First Flight + Footprints without Feet; Class 11 Hornbill + Snapshots; Class 12 Flamingo + Vistas. Always list their lessons and poems.",
         ]
       : [
           `Board: CISCE — ${grade >= 11 ? "ISC" : "ICSE"}. CISCE prescribes a syllabus rather than one textbook.`,
