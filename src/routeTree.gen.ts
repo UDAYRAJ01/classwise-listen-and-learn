@@ -10,33 +10,130 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NotebookRouteImport } from './routes/notebook'
+import { Route as ApiAudioRouteImport } from './routes/api/audio'
+import { Route as ApiNotesRouteImport } from './routes/api/notes'
+import { Route as ApiSyllabusRouteImport } from './routes/api/syllabus'
+import { Route as LearnBoardGradeIndexRouteImport } from './routes/learn.$board.$grade.index'
+import { Route as LearnBoardGradeSubjectIndexRouteImport } from './routes/learn.$board.$grade.$subject.index'
+import { Route as LearnBoardGradeSubjectChapterRouteImport } from './routes/learn.$board.$grade.$subject.$chapter'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NotebookRoute = NotebookRouteImport.update({
+  id: '/notebook',
+  path: '/notebook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAudioRoute = ApiAudioRouteImport.update({
+  id: '/api/audio',
+  path: '/api/audio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotesRoute = ApiNotesRouteImport.update({
+  id: '/api/notes',
+  path: '/api/notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSyllabusRoute = ApiSyllabusRouteImport.update({
+  id: '/api/syllabus',
+  path: '/api/syllabus',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnBoardGradeIndexRoute = LearnBoardGradeIndexRouteImport.update({
+  id: '/learn/$board/$grade/',
+  path: '/learn/$board/$grade/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LearnBoardGradeSubjectIndexRoute =
+  LearnBoardGradeSubjectIndexRouteImport.update({
+    id: '/learn/$board/$grade/$subject/',
+    path: '/learn/$board/$grade/$subject/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LearnBoardGradeSubjectChapterRoute =
+  LearnBoardGradeSubjectChapterRouteImport.update({
+    id: '/learn/$board/$grade/$subject/$chapter',
+    path: '/learn/$board/$grade/$subject/$chapter',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/notebook': typeof NotebookRoute
+  '/api/audio': typeof ApiAudioRoute
+  '/api/notes': typeof ApiNotesRoute
+  '/api/syllabus': typeof ApiSyllabusRoute
+  '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
+  '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
+  '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/notebook': typeof NotebookRoute
+  '/api/audio': typeof ApiAudioRoute
+  '/api/notes': typeof ApiNotesRoute
+  '/api/syllabus': typeof ApiSyllabusRoute
+  '/learn/$board/$grade': typeof LearnBoardGradeIndexRoute
+  '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
+  '/learn/$board/$grade/$subject': typeof LearnBoardGradeSubjectIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/notebook': typeof NotebookRoute
+  '/api/audio': typeof ApiAudioRoute
+  '/api/notes': typeof ApiNotesRoute
+  '/api/syllabus': typeof ApiSyllabusRoute
+  '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
+  '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
+  '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/notebook'
+    | '/api/audio'
+    | '/api/notes'
+    | '/api/syllabus'
+    | '/learn/$board/$grade/'
+    | '/learn/$board/$grade/$subject/$chapter'
+    | '/learn/$board/$grade/$subject/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/notebook'
+    | '/api/audio'
+    | '/api/notes'
+    | '/api/syllabus'
+    | '/learn/$board/$grade'
+    | '/learn/$board/$grade/$subject/$chapter'
+    | '/learn/$board/$grade/$subject'
+  id:
+    | '__root__'
+    | '/'
+    | '/notebook'
+    | '/api/audio'
+    | '/api/notes'
+    | '/api/syllabus'
+    | '/learn/$board/$grade/'
+    | '/learn/$board/$grade/$subject/$chapter'
+    | '/learn/$board/$grade/$subject/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  NotebookRoute: typeof NotebookRoute
+  ApiAudioRoute: typeof ApiAudioRoute
+  ApiNotesRoute: typeof ApiNotesRoute
+  ApiSyllabusRoute: typeof ApiSyllabusRoute
+  LearnBoardGradeIndexRoute: typeof LearnBoardGradeIndexRoute
+  LearnBoardGradeSubjectChapterRoute: typeof LearnBoardGradeSubjectChapterRoute
+  LearnBoardGradeSubjectIndexRoute: typeof LearnBoardGradeSubjectIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +145,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/notebook': {
+      id: '/notebook'
+      path: '/notebook'
+      fullPath: '/notebook'
+      preLoaderRoute: typeof NotebookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/audio': {
+      id: '/api/audio'
+      path: '/api/audio'
+      fullPath: '/api/audio'
+      preLoaderRoute: typeof ApiAudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notes': {
+      id: '/api/notes'
+      path: '/api/notes'
+      fullPath: '/api/notes'
+      preLoaderRoute: typeof ApiNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/syllabus': {
+      id: '/api/syllabus'
+      path: '/api/syllabus'
+      fullPath: '/api/syllabus'
+      preLoaderRoute: typeof ApiSyllabusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn/$board/$grade/': {
+      id: '/learn/$board/$grade/'
+      path: '/learn/$board/$grade'
+      fullPath: '/learn/$board/$grade/'
+      preLoaderRoute: typeof LearnBoardGradeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn/$board/$grade/$subject/': {
+      id: '/learn/$board/$grade/$subject/'
+      path: '/learn/$board/$grade/$subject'
+      fullPath: '/learn/$board/$grade/$subject/'
+      preLoaderRoute: typeof LearnBoardGradeSubjectIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/learn/$board/$grade/$subject/$chapter': {
+      id: '/learn/$board/$grade/$subject/$chapter'
+      path: '/learn/$board/$grade/$subject/$chapter'
+      fullPath: '/learn/$board/$grade/$subject/$chapter'
+      preLoaderRoute: typeof LearnBoardGradeSubjectChapterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  NotebookRoute: NotebookRoute,
+  ApiAudioRoute: ApiAudioRoute,
+  ApiNotesRoute: ApiNotesRoute,
+  ApiSyllabusRoute: ApiSyllabusRoute,
+  LearnBoardGradeIndexRoute: LearnBoardGradeIndexRoute,
+  LearnBoardGradeSubjectChapterRoute: LearnBoardGradeSubjectChapterRoute,
+  LearnBoardGradeSubjectIndexRoute: LearnBoardGradeSubjectIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

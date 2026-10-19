@@ -1,0 +1,26 @@
+# PadhoSuno — Roadmap
+
+Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
+
+## Done
+- [x] Design system (notebook look, fonts with Hindi support, tokens)
+- [x] Subject catalog for every class (CBSE/NCERT + ICSE/ISC)
+- [x] AI chapter lists per subject (cached in Lovable Cloud, streamed while writing)
+- [x] AI notes per chapter: summary, short notes, key terms, formulas, tricks, important Q&A, quick revision, exam tips (streamed, cached, written in parallel parts ~1 min)
+- [x] 3 languages: Hinglish, Hindi, English (+ "ready" dot for already-made languages)
+- [x] Audio: AI voice per section with instant streaming start, cached for replays, read-along highlight + auto-scroll, speed, Didi/Bhaiya voices, phone-voice fallback, lock-screen controls
+- [x] Custom chapter/topic box inside a subject
+- [x] My Notebook: saved chapters, recently read, "yaad ho gaya" progress (+ subject badges)
+- [x] Flashcards mode from key terms, tricks, questions
+- [x] Quick Quiz (MCQ) per chapter with retry-wrong mode
+- [x] Search: classes, subjects and chapters ("/" shortcut)
+- [x] Share chapter (WhatsApp / copy link), Print / save as PDF
+- [x] Rate limiting for AI generation
+- [x] SEO head tags on every page
+- [x] Tests for catalog, slugs, audio tracks, normalizers, quiz
+
+## Ready next
+- Keep writing notes on the server even if the student closes the page mid-way
+- "Exam mode": play only 1-minute revisions of all chapters in a subject back-to-back
+- Pre-build chapter lists for the most-used classes (9–12) so the first visit is instant
+- Report-a-mistake button on notes (lets students flag wrong facts)
