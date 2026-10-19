@@ -22,6 +22,7 @@ import { Flashcards } from "@/components/note/flashcards";
 import { NarrationBar } from "@/components/note/narration-bar";
 import { NoteView, SECTIONS } from "@/components/note/note-view";
 import { Quiz } from "@/components/note/quiz";
+import { ReportDialog } from "@/components/note/report-dialog";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
@@ -451,6 +452,12 @@ function ChapterView({
               <Button variant="paper" size="lg" onClick={() => setQuizOpen(true)}>
                 <Target /> Quiz shuru karo
               </Button>
+            </div>
+          )}
+
+          {record && (
+            <div className="flex justify-end">
+              <ReportDialog noteId={record.id} />
             </div>
           )}
 

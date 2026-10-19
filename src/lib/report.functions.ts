@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -16,6 +15,7 @@ export const reportMistake = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { consumeRateLimit } = await import("@/lib/server/rate-limit.server");
+    const { getRequest } = await import("@tanstack/react-start/server");
     const request = getRequest();
     if (!(await consumeRateLimit(supabaseAdmin, request, "report"))) {
       throw new Error("Bahut saari reports ho gayi. Thodi der baad try karein.");
