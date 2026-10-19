@@ -4,6 +4,7 @@ import { BookmarkCheck, CheckCircle2, Search, Sparkles, WandSparkles } from "luc
 import { useMemo, useState, type FormEvent } from "react";
 
 import { Crumbs } from "@/components/crumbs";
+import { ExamMode } from "@/components/exam-mode";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useGeneration } from "@/hooks/use-generation";
 import {
   BOARDS,
+  DEFAULT_LANG,
   getSubject,
   gradeLabel,
   isBoard,
@@ -161,6 +163,17 @@ function ChaptersPage() {
           </div>
         )}
       </header>
+
+      {books && books.length > 0 && (
+        <ExamMode
+          board={board}
+          grade={grade}
+          subject={subject.slug}
+          subjectName={subject.name}
+          lang={lang ?? DEFAULT_LANG}
+          books={books}
+        />
+      )}
 
       {/* Language preference + custom topic */}
       <div className="mt-8 grid gap-4 md:grid-cols-[auto_1fr]">
