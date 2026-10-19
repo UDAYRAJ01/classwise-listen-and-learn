@@ -70,6 +70,38 @@ export type Database = {
           },
         ]
       }
+      note_reports: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          note_id: string
+          section: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          note_id: string
+          section?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          note_id?: string
+          section?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_reports_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           board: string

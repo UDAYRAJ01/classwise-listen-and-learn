@@ -1,13 +1,14 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-export type GenerationKind = "syllabus" | "notes" | "audio";
+export type GenerationKind = "syllabus" | "notes" | "audio" | "report";
 
 /** Max fresh AI generations per visitor per hour. Cached content never counts. */
 export const HOURLY_LIMITS: Record<GenerationKind, number> = {
   syllabus: 40,
   notes: 25,
   audio: 250,
+  report: 15,
 };
 
 function clientIp(request: Request): string {
