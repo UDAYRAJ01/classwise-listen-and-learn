@@ -1,10 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookmarkCheck, CheckCircle2, History, NotebookPen, Trash2 } from "lucide-react";
+import { BookmarkCheck, CheckCircle2, Flame, History, NotebookPen, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { ChapterRefCard } from "@/components/recent-strip";
 import { Button } from "@/components/ui/button";
-import { notebook, refKey, useNotebook, type ChapterRef } from "@/lib/notebook-store";
+import { notebook, refKey, streakFrom, useNotebook, type ChapterRef } from "@/lib/notebook-store";
 
 export const Route = createFileRoute("/notebook")({
   head: () => ({
@@ -30,7 +30,8 @@ export const Route = createFileRoute("/notebook")({
 type Tab = "saved" | "recent";
 
 function NotebookPage() {
-  const { saved, recent, done } = useNotebook();
+  const { saved, recent, done, days } = useNotebook();
+  const streak = streakFrom(days);
   const [tab, setTab] = useState<Tab>("saved");
   const list: ChapterRef[] = tab === "saved" ? saved : recent;
 
@@ -50,6 +51,7 @@ function NotebookPage() {
           {[
             { n: saved.length, l: "saved", icon: BookmarkCheck },
             { n: done.length, l: "yaad ho gaye", icon: CheckCircle2 },
+            { n: streak, l: "din ki streak", icon: Flame },
           ].map((s) => (
             <div key={s.l} className="sticker rounded-2xl bg-card px-5 py-3 text-center">
               <dt className="flex items-center justify-center gap-1.5 font-display text-3xl font-extrabold">

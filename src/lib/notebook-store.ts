@@ -130,12 +130,11 @@ export const notebook = {
   visit(ref: Omit<ChapterRef, "at">) {
     load();
     const k = refKey(ref);
+    const today = localDay();
     commit({
       ...state,
-      recent: [{ ...ref, at: Date.now() }, ...state.recent.filter((s) => refKey(s) !== k)].slice(
-        0,
-        12,
-      ),
+      recent: [{ ...ref, at: Date.now() }, ...state.recent.filter((s) => refKey(s) !== k)].slice(0, 12),
+      days: state.days.includes(today) ? state.days : [...state.days, today].slice(-120),
     });
   },
   toggleDone(ref: Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">) {

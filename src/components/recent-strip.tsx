@@ -1,9 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, History } from "lucide-react";
+import { ArrowRight, Flame, History } from "lucide-react";
 
 import { SubjectIcon } from "@/components/subject-icon";
 import { BOARDS, SUBJECTS, TONE_CLASSES } from "@/lib/catalog";
-import { useNotebook, type ChapterRef } from "@/lib/notebook-store";
+import { streakFrom, useNotebook, type ChapterRef } from "@/lib/notebook-store";
 import { cn } from "@/lib/utils";
 
 export function ChapterRefCard({ r, done }: { r: ChapterRef; done?: boolean }) {
@@ -37,14 +37,18 @@ export function ChapterRefCard({ r, done }: { r: ChapterRef; done?: boolean }) {
 }
 
 export function RecentStrip() {
-  const { recent, done } = useNotebook();
+  const { recent, done, days } = useNotebook();
   if (recent.length === 0) return null;
+  const streak = streakFrom(days);
   return (
     <section className="mx-auto max-w-6xl px-4 pt-12">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="flex items-center gap-2 text-2xl font-extrabold">
-          <History className="h-6 w-6 text-accent" /> Jahan chhoda tha
-        </h2>
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="flex items-center gap-2 text-2xl font-extrabold">
+            <History className="h-6 w-6 text-accent" /> Jahan chhoda tha
+          </h2>
+          {streak > 0 && <StreakChip days={streak} />}
+        </div>
         <Link
           to="/notebook"
           className="inline-flex items-center gap-1 text-sm font-bold hover:underline"
@@ -66,5 +70,14 @@ export function RecentStrip() {
         ))}
       </ul>
     </section>
+  );
+}
+
+export function StreakChip({ days }: { days: number }) {
+  return (
+    <span className="sticker inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-sm font-bold">
+      <Flame className="h-4 w-4 text-accent" />
+      {days === 1 ? "Aaj padhai ho gayi!" : `${days} din se lagatar!`}
+    </span>
   );
 }
