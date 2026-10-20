@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Headphones, LogIn, LogOut, NotebookPen } from "lucide-react";
+import { GraduationCap, Headphones, LogIn, LogOut, NotebookPen } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
