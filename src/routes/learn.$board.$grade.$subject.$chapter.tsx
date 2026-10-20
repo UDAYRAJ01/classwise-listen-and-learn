@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  ExternalLink,
   Bookmark,
   BookmarkCheck,
   Brain,
@@ -57,6 +58,8 @@ interface ChapterSearch {
 interface ChapterMeta {
   title: string;
   bookName: string | null;
+  /** Official textbook chapter PDF (NCERT) when known. */
+  textbookUrl: string | null;
   number: number | null;
   custom: boolean;
   prev: SyllabusChapter | null;
@@ -72,16 +75,17 @@ function resolveMeta(
   if (isCustomSlug(chapter)) {
     const t = note?.chapter_title ?? (title && customTopicSlug(title) === chapter ? title : null);
     return t
-      ? { title: t, bookName: null, number: null, custom: true, prev: null, next: null }
+      ? { title: t, bookName: null, textbookUrl: null, number: null, custom: true, prev: null, next: null }
       : null;
   }
-  const all = (syllabus?.books ?? []).flatMap((b) => b.chapters.map((c) => ({ c, book: b.name })));
+  const all = (syllabus?.books ?? []).flatMap((b) => b.chapters.map((c) => ({ c, book: b.name, code: b.code })));
   const i = all.findIndex((x) => x.c.slug === chapter);
   if (i < 0) {
     return note
       ? {
           title: note.chapter_title,
           bookName: note.book_name,
+          textbookUrl: null,
           number: null,
           custom: false,
           prev: null,
@@ -93,6 +97,9 @@ function resolveMeta(
   return {
     title: cur.c.title,
     bookName: cur.book,
+    textbookUrl: cur.code
+      ? `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`
+      : null,
     number: cur.c.number,
     custom: false,
     prev: all[i - 1]?.c ?? null,
@@ -396,6 +403,29 @@ function ChapterView({
               <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink/30 px-3 py-1 text-sm font-semibold text-muted-foreground">
                 <BookOpen className="h-4 w-4" /> {meta.bookName}
               </span>
+            )}
+            {meta.textbookUrl ? (
+              <a
+                href={meta.textbookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="no-print inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
+              >
+                <ExternalLink className="h-4 w-4" /> NCERT textbook (PDF)
+              </a>
+            ) : (
+              board === "icse" &&
+              !meta.custom && (
+                <a
+                  href="https://cisce.org/regulations-and-syllabuses/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title="CISCE ki official free textbook PDF nahi hoti — school ki prescribed book se milao."
+                  className="no-print inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
+                >
+                  <ExternalLink className="h-4 w-4" /> CISCE syllabus
+                </a>
+              )
             )}
             {meta.custom && (
               <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold">

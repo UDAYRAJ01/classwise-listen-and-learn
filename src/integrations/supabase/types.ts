@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      chapter_sources: {
+        Row: {
+          board: string
+          body: string
+          chapter_slug: string
+          created_at: string
+          grade: number
+          source_url: string
+          subject: string
+        }
+        Insert: {
+          board: string
+          body: string
+          chapter_slug: string
+          created_at?: string
+          grade: number
+          source_url: string
+          subject: string
+        }
+        Update: {
+          board?: string
+          body?: string
+          chapter_slug?: string
+          created_at?: string
+          grade?: number
+          source_url?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       generation_events: {
         Row: {
           created_at: string
@@ -65,6 +95,32 @@ export type Database = {
             foreignKeyName: "note_audio_note_id_fkey"
             columns: ["note_id"]
             isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      note_checks: {
+        Row: {
+          checked_at: string
+          issues: Json
+          note_id: string
+        }
+        Insert: {
+          checked_at?: string
+          issues?: Json
+          note_id: string
+        }
+        Update: {
+          checked_at?: string
+          issues?: Json
+          note_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_checks_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: true
             referencedRelation: "notes"
             referencedColumns: ["id"]
           },

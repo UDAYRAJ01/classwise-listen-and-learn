@@ -120,6 +120,17 @@ export const Route = createFileRoute("/api/notes")({
           .order("resolved_at", { ascending: true })
           .limit(20);
         const corrections = (fixes.data ?? []).map((f) => f.correction as string);
+        const src = custom
+          ? null
+          : await supabaseAdmin
+              .from("chapter_sources")
+              .select("body")
+              .eq("board", board)
+              .eq("grade", grade)
+              .eq("subject", subject.slug)
+              .eq("chapter_slug", chapter)
+              .maybeSingle();
+        const source = src?.data?.body ? src.data.body.slice(0, 60000) : null;
 
         return ndjsonStream(async (send) => {
           const partial = throttle<unknown>((data) => send({ type: "partial", data }), 300);
@@ -144,6 +155,7 @@ export const Route = createFileRoute("/api/notes")({
                   custom,
                   part,
                   corrections,
+                  source,
                 }),
                 schema: notePartSchemas[part],
                 effort: "low",

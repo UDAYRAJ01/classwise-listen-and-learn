@@ -236,7 +236,8 @@ function subjectsFor(board: BoardId, grade: number): string[] {
   if (board === "cbse") {
     if (grade <= 2) return ["english", "hindi", "maths"];
     if (grade <= 5) return ["english", "hindi", "maths", "evs"];
-    if (grade <= 8) return ["english", "hindi", "maths", "science", "social-science", "sanskrit"];
+    // From 2026-27 NCERT's new Class 9 books use one combined Social Science book.
+    if (grade <= 9) return ["english", "hindi", "maths", "science", "social-science", "sanskrit"];
     if (grade <= 10)
       return [
         "english",
