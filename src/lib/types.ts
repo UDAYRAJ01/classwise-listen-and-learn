@@ -9,6 +9,8 @@ export interface SyllabusChapter {
 
 export interface SyllabusBook {
   name: string;
+  /** NCERT book code; chapter n is the PDF {code}{nn}.pdf on ncert.nic.in. */
+  code?: string;
   chapters: SyllabusChapter[];
 }
 
