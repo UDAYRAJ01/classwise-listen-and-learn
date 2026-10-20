@@ -1,5 +1,8 @@
 import { Link } from "@tanstack/react-router";
-import { Headphones, NotebookPen } from "lucide-react";
+import { Headphones, LogIn, LogOut, NotebookPen } from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { supabase } from "@/integrations/supabase/client";
 
 import { SearchButton } from "@/components/search-dialog";
 import { useNotebook } from "@/lib/notebook-store";
@@ -49,8 +52,43 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
+          <AccountButton />
         </nav>
       </div>
     </header>
+  );
+}
+
+function AccountButton() {
+  const [email, setEmail] = useState<string | null | undefined>(undefined);
+  useEffect(() => {
+    void supabase.auth.getSession().then(({ data }) => setEmail(data.session?.user.email ?? null));
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => setEmail(s?.user.email ?? null));
+    return () => data.subscription.unsubscribe();
+  }, []);
+  if (email === undefined) return <span className="w-9" aria-hidden />;
+  if (!email)
+    return (
+      <Link
+        to="/auth"
+        search={{ next: "/notebook" }}
+        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+      >
+        <LogIn className="h-4 w-4" />
+        <span className="hidden sm:inline">Sign in</span>
+      </Link>
+    );
+  return (
+    <button
+      type="button"
+      title={`${email} — sign out`}
+      onClick={() => void supabase.auth.signOut()}
+      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+    >
+      <span className="grid h-7 w-7 place-items-center rounded-full bg-accent text-xs font-bold uppercase text-accent-foreground">
+        {email[0]}
+      </span>
+      <LogOut className="hidden h-4 w-4 sm:inline" />
+    </button>
   );
 }

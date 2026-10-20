@@ -50,7 +50,10 @@ export function startNotebookSync() {
     const uid = userId;
     if (!uid) return;
     if (timer) clearTimeout(timer);
-    timer = setTimeout(() => void push(uid, s), 800);
+    timer = setTimeout(() => {
+      timer = null;
+      void push(uid, s);
+    }, 800);
   });
 
   const apply = (uid: string | null, event?: string) => {
@@ -71,7 +74,9 @@ export function startNotebookSync() {
   const { data } = supabase.auth.onAuthStateChange((event, session) =>
     apply(session?.user.id ?? null, event),
   );
-  const onFocus = () => userId && void pull(userId);
+  const onFocus = () => {
+    if (userId && !timer) void pull(userId);
+  };
   window.addEventListener("focus", onFocus);
 
   return () => {
