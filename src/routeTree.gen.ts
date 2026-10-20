@@ -10,10 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as ApiAudioRouteImport } from './routes/api/audio'
 import { Route as ApiNotesRouteImport } from './routes/api/notes'
 import { Route as ApiSyllabusRouteImport } from './routes/api/syllabus'
+import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as LearnBoardGradeIndexRouteImport } from './routes/learn.$board.$grade.index'
 import { Route as LearnBoardGradeSubjectIndexRouteImport } from './routes/learn.$board.$grade.$subject.index'
 import { Route as LearnBoardGradeSubjectChapterRouteImport } from './routes/learn.$board.$grade.$subject.$chapter'
@@ -21,6 +24,15 @@ import { Route as LearnBoardGradeSubjectChapterRouteImport } from './routes/lear
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotebookRoute = NotebookRouteImport.update({
@@ -43,6 +55,12 @@ const ApiSyllabusRoute = ApiSyllabusRouteImport.update({
   path: '/api/syllabus',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminReportsRoute =
+  AuthenticatedAdminReportsRouteImport.update({
+    id: '/admin/reports',
+    path: '/admin/reports',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const LearnBoardGradeIndexRoute = LearnBoardGradeIndexRouteImport.update({
   id: '/learn/$board/$grade/',
   path: '/learn/$board/$grade/',
@@ -63,20 +81,24 @@ const LearnBoardGradeSubjectChapterRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/learn/$board/$grade': typeof LearnBoardGradeIndexRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject': typeof LearnBoardGradeSubjectIndexRoute
@@ -84,10 +106,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
+  '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
@@ -96,30 +121,37 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/notebook'
     | '/api/audio'
     | '/api/notes'
     | '/api/syllabus'
+    | '/admin/reports'
     | '/learn/$board/$grade/'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/notebook'
     | '/api/audio'
     | '/api/notes'
     | '/api/syllabus'
+    | '/admin/reports'
     | '/learn/$board/$grade'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
+    | '/auth'
     | '/notebook'
     | '/api/audio'
     | '/api/notes'
     | '/api/syllabus'
+    | '/_authenticated/admin/reports'
     | '/learn/$board/$grade/'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject/'
@@ -127,6 +159,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
   NotebookRoute: typeof NotebookRoute
   ApiAudioRoute: typeof ApiAudioRoute
   ApiNotesRoute: typeof ApiNotesRoute
@@ -143,6 +177,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notebook': {
@@ -173,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSyllabusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/reports': {
+      id: '/_authenticated/admin/reports'
+      path: '/admin/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/learn/$board/$grade/': {
       id: '/learn/$board/$grade/'
       path: '/learn/$board/$grade'
@@ -197,8 +252,21 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
   NotebookRoute: NotebookRoute,
   ApiAudioRoute: ApiAudioRoute,
   ApiNotesRoute: ApiNotesRoute,

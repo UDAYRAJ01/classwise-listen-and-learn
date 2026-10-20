@@ -53,10 +53,15 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border">
-        <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-muted-foreground">
-          Notes AI ki madad se textbook ke hisaab se banaye jaate hain. Exam se pehle apni textbook
-          se ek baar zaroor milayein.
-        </p>
+        <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-4 py-4 text-xs text-muted-foreground">
+          <p>
+            Notes AI ki madad se textbook ke hisaab se banaye jaate hain. Exam se pehle apni textbook
+            se ek baar zaroor milayein.
+          </p>
+          <Link to="/admin/reports" className="hover:text-foreground">
+            Owner
+          </Link>
+        </div>
       </div>
     </footer>
   );
