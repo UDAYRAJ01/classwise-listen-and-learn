@@ -23,3 +23,5 @@
 - Student mistake reports go to `note_reports` through a rate-limited server function; the table has no public policies and is read only from the backend.
 - The owner area lives under `src/routes/_authenticated/` (client-only gate to `/auth`); owner rights come only from `user_roles` checked server-side via `has_role`, and the first account ever created becomes the owner.
 - Resolved report corrections are injected into the notes prompt for that chapter; "rebuild" deletes the chapter's cached notes and audio so the next visit regenerates them.
+- CBSE Class 9–12 chapter lists are built from the official NCERT chapter PDFs (`src/lib/ncert-books.ts` lists the books); each chapter keeps its NCERT `pdf` number (NCERT numbering has gaps) for the textbook link, and its extracted text sits in `chapter_sources` (backend-only) to ground note generation.
+- Bulk note generation + textbook check runs as an offline script; check results live in `note_checks`, and found mistakes become resolved `note_reports` corrections before the chapter is regenerated.
