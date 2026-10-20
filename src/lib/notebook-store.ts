@@ -22,7 +22,7 @@ export interface Prefs {
   follow: boolean;
 }
 
-interface NotebookState {
+export interface NotebookState {
   saved: ChapterRef[];
   recent: ChapterRef[];
   done: string[];
@@ -66,7 +66,61 @@ function load() {
   });
 }
 
+const commitHooks = new Set<(s: NotebookState) => void>();
+
+/** Called after every local change (used by account sync). */
+export function onNotebookCommit(fn: (s: NotebookState) => void) {
+  commitHooks.add(fn);
+  return () => commitHooks.delete(fn);
+}
+
+export function getNotebookState(): NotebookState {
+  load();
+  return state;
+}
+
+/** Replace the whole notebook (e.g. with the copy from the account). Does not fire commit hooks. */
+export function replaceNotebook(next: Partial<NotebookState>) {
+  load();
+  writeLocal(sanitize(next));
+}
+
+export function sanitize(p: Partial<NotebookState> | null | undefined): NotebookState {
+  return {
+    saved: Array.isArray(p?.saved) ? p.saved : [],
+    recent: Array.isArray(p?.recent) ? p.recent : [],
+    done: Array.isArray(p?.done) ? p.done : [],
+    days: Array.isArray(p?.days) ? p.days : [],
+    prefs: { ...DEFAULT_PREFS, ...(p?.prefs ?? {}) },
+  };
+}
+
+/** Union of two notebooks: nothing saved on either side is lost. */
+export function mergeNotebooks(a: NotebookState, b: NotebookState): NotebookState {
+  const byKey = (lists: ChapterRef[][], max: number) => {
+    const m = new Map<string, ChapterRef>();
+    for (const r of lists.flat()) {
+      const k = refKey(r);
+      const prev = m.get(k);
+      if (!prev || r.at > prev.at) m.set(k, r);
+    }
+    return [...m.values()].sort((x, y) => y.at - x.at).slice(0, max);
+  };
+  return {
+    saved: byKey([a.saved, b.saved], 200),
+    recent: byKey([a.recent, b.recent], 12),
+    done: [...new Set([...a.done, ...b.done])],
+    days: [...new Set([...a.days, ...b.days])].sort().slice(-120),
+    prefs: { ...b.prefs, ...a.prefs },
+  };
+}
+
 function commit(next: NotebookState) {
+  writeLocal(next);
+  commitHooks.forEach((h) => h(next));
+}
+
+function writeLocal(next: NotebookState) {
   state = next;
   try {
     window.localStorage.setItem(KEY, JSON.stringify(next));
