@@ -108,6 +108,19 @@ export const Route = createFileRoute("/api/notes")({
         const { notePartSchemas } = await import("@/lib/server/schemas.server");
         const { normalizeNote } = await import("@/lib/server/normalize.server");
 
+        const fixes = await supabaseAdmin
+          .from("note_reports")
+          .select("correction")
+          .eq("board", board)
+          .eq("grade", grade)
+          .eq("subject", subject.slug)
+          .eq("chapter_slug", chapter)
+          .eq("status", "resolved")
+          .not("correction", "is", null)
+          .order("resolved_at", { ascending: true })
+          .limit(20);
+        const corrections = (fixes.data ?? []).map((f) => f.correction as string);
+
         return ndjsonStream(async (send) => {
           const partial = throttle<unknown>((data) => send({ type: "partial", data }), 300);
           try {
@@ -130,6 +143,7 @@ export const Route = createFileRoute("/api/notes")({
                   lang,
                   custom,
                   part,
+                  corrections,
                 }),
                 schema: notePartSchemas[part],
                 effort: "low",
