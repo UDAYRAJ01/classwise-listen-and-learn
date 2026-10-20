@@ -98,7 +98,7 @@ function resolveMeta(
     title: cur.c.title,
     bookName: cur.book,
     textbookUrl: cur.code
-      ? `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.number).padStart(2, "0")}.pdf`
+      ? `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`
       : null,
     number: cur.c.number,
     custom: false,

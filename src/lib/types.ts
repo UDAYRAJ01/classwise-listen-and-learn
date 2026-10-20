@@ -3,6 +3,8 @@ import type { BoardId, Lang } from "./catalog";
 export interface SyllabusChapter {
   slug: string;
   number: number;
+  /** NCERT chapter PDF number (can skip numbers where NCERT removed chapters). */
+  pdf?: number;
   title: string;
   gist: string;
 }
