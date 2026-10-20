@@ -31,3 +31,4 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 
 ## In progress
 - [ ] Class 9–12 notes for every chapter, checked against the textbook (background run started 20 Oct; ~3–4 hours). If it stops midway, re-run the script — finished chapters are skipped.
+- [ ] Pre-make didi-voice audio for all notes (background run, started 20 Oct; rerun skips finished parts)
