@@ -1,12 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, ExternalLink, Flag, LoaderCircle, LogOut, RefreshCw, RotateCcw, X } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  Flag,
+  LoaderCircle,
+  LogOut,
+  RefreshCw,
+  RotateCcw,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +64,11 @@ function ReportsPage() {
     queryFn: () => list({ data: { status: tab } }),
     enabled: isAdmin,
   });
-  const totals = useQuery({ queryKey: ["admin", "counts"], queryFn: () => counts(), enabled: isAdmin });
+  const totals = useQuery({
+    queryKey: ["admin", "counts"],
+    queryFn: () => counts(),
+    enabled: isAdmin,
+  });
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -67,8 +78,7 @@ function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <div>
       <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -77,7 +87,8 @@ function ReportsPage() {
               <Flag className="h-8 w-8" /> Galti reports
             </h1>
             <p className="mt-1 text-muted-foreground">
-              Students ki bheji galtiyan padho, sahi jaankari likho, phir chapter ke notes dobara banwao.
+              Students ki bheji galtiyan padho, sahi jaankari likho, phir chapter ke notes dobara
+              banwao.
             </p>
           </div>
           <Button variant="ghost" onClick={signOut}>
@@ -114,7 +125,11 @@ function ReportsPage() {
                 <Notice text="Reports load nahi hui. Dobara try karo." />
               ) : reports.data?.length === 0 ? (
                 <Notice
-                  text={tab === "open" ? "Koi nayi report nahi. Sab badhiya hai!" : "Yahan abhi kuch nahi hai."}
+                  text={
+                    tab === "open"
+                      ? "Koi nayi report nahi. Sab badhiya hai!"
+                      : "Yahan abhi kuch nahi hai."
+                  }
                 />
               ) : (
                 reports.data?.map((r) => <ReportCard key={r.id} report={r} />)
@@ -123,7 +138,6 @@ function ReportsPage() {
           </>
         )}
       </main>
-      <SiteFooter />
     </div>
   );
 }
@@ -140,7 +154,11 @@ function ReportCard({ report: r }: { report: AdminReport }) {
     mutationFn: (status: ReportStatus) => resolve({ data: { id: r.id, status, correction } }),
     onSuccess: (_d, status) => {
       toast.success(
-        status === "resolved" ? "Correction save ho gayi." : status === "dismissed" ? "Report chhod di." : "Report wapas khuli.",
+        status === "resolved"
+          ? "Correction save ho gayi."
+          : status === "dismissed"
+            ? "Report chhod di."
+            : "Report wapas khuli.",
       );
       void refresh();
     },
@@ -149,9 +167,13 @@ function ReportCard({ report: r }: { report: AdminReport }) {
 
   const redo = useMutation({
     mutationFn: () =>
-      rebuild({ data: { board: r.board!, grade: r.grade!, subject: r.subject!, chapter: r.chapterSlug! } }),
+      rebuild({
+        data: { board: r.board!, grade: r.grade!, subject: r.subject!, chapter: r.chapterSlug! },
+      }),
     onSuccess: () => {
-      toast.success("Purane notes hata diye. Agli baar chapter khulte hi naye notes correction ke saath banenge.");
+      toast.success(
+        "Purane notes hata diye. Agli baar chapter khulte hi naye notes correction ke saath banenge.",
+      );
       void refresh();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Nahi ho paya."),
@@ -173,11 +195,21 @@ function ReportCard({ report: r }: { report: AdminReport }) {
           <h2 className="mt-1 font-display text-xl font-bold">{r.chapterTitle ?? "Chapter"}</h2>
         </div>
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
-          <time>{new Date(r.createdAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</time>
+          <time>
+            {new Date(r.createdAt).toLocaleString("en-IN", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            })}
+          </time>
           {canLink && (
             <Link
               to="/learn/$board/$grade/$subject/$chapter"
-              params={{ board: board!, grade: String(r.grade), subject: subject!.slug, chapter: r.chapterSlug! }}
+              params={{
+                board: board!,
+                grade: String(r.grade),
+                subject: subject!.slug,
+                chapter: r.chapterSlug!,
+              }}
               search={r.language ? { lang: r.language as never } : {}}
               target="_blank"
               className="inline-flex items-center gap-1 font-bold hover:text-foreground"
@@ -188,11 +220,16 @@ function ReportCard({ report: r }: { report: AdminReport }) {
         </div>
       </div>
 
-      <blockquote className="mt-3 rounded-xl bg-sticky p-3 text-sticky-foreground">“{r.message}”</blockquote>
+      <blockquote className="mt-3 rounded-xl bg-sticky p-3 text-sticky-foreground">
+        “{r.message}”
+      </blockquote>
 
       {r.status === "open" ? (
         <div className="mt-4 space-y-3">
-          <label htmlFor={`fix-${r.id}`} className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          <label
+            htmlFor={`fix-${r.id}`}
+            className="block text-xs font-bold uppercase tracking-wider text-muted-foreground"
+          >
             Sahi jaankari (correction)
           </label>
           <Textarea
@@ -206,9 +243,14 @@ function ReportCard({ report: r }: { report: AdminReport }) {
           />
           <div className="flex flex-wrap gap-2">
             <Button variant="ink" disabled={save.isPending} onClick={() => save.mutate("resolved")}>
-              {save.isPending ? <LoaderCircle className="animate-spin" /> : <Check />} Correction save karo
+              {save.isPending ? <LoaderCircle className="animate-spin" /> : <Check />} Correction
+              save karo
             </Button>
-            <Button variant="ghost" disabled={save.isPending} onClick={() => save.mutate("dismissed")}>
+            <Button
+              variant="ghost"
+              disabled={save.isPending}
+              onClick={() => save.mutate("dismissed")}
+            >
               <X /> Galti nahi hai, chhod do
             </Button>
           </div>
@@ -235,7 +277,8 @@ function ReportCard({ report: r }: { report: AdminReport }) {
                     redo.mutate();
                 }}
               >
-                {redo.isPending ? <LoaderCircle className="animate-spin" /> : <RefreshCw />} Notes dobara banao
+                {redo.isPending ? <LoaderCircle className="animate-spin" /> : <RefreshCw />} Notes
+                dobara banao
               </Button>
             )}
             <Button variant="ghost" disabled={save.isPending} onClick={() => save.mutate("open")}>
@@ -262,5 +305,9 @@ function Loading() {
 }
 
 function Notice({ text }: { text: string }) {
-  return <div className="sticker mt-8 rounded-2xl bg-card p-8 text-center text-muted-foreground">{text}</div>;
+  return (
+    <div className="sticker mt-8 rounded-2xl bg-card p-8 text-center text-muted-foreground">
+      {text}
+    </div>
+  );
 }

@@ -100,9 +100,12 @@ export const resolveReport = createServerFn({ method: "POST" })
   .validator((input: unknown) => {
     const i = input as { id?: unknown; status?: unknown; correction?: unknown };
     if (typeof i?.id !== "string" || !UUID.test(i.id)) throw new Error("Invalid report");
-    const status = i.status === "dismissed" ? "dismissed" : i.status === "open" ? "open" : "resolved";
+    const status =
+      i.status === "dismissed" ? "dismissed" : i.status === "open" ? "open" : "resolved";
     const correction =
-      typeof i.correction === "string" ? i.correction.replace(/\s+/g, " ").trim().slice(0, 1000) : "";
+      typeof i.correction === "string"
+        ? i.correction.replace(/\s+/g, " ").trim().slice(0, 1000)
+        : "";
     if (status === "resolved" && correction.length < 3)
       throw new Error("Sahi jaankari kam se kam 3 letters mein likhein.");
     return { id: i.id, status, correction: correction || null };
@@ -151,7 +154,10 @@ export const rebuildChapter = createServerFn({ method: "POST" })
       .eq("chapter_slug", data.chapter);
     const ids = (notes.data ?? []).map((n) => n.id);
     if (ids.length > 0) {
-      const audio = await supabaseAdmin.from("note_audio").select("storage_path").in("note_id", ids);
+      const audio = await supabaseAdmin
+        .from("note_audio")
+        .select("storage_path")
+        .in("note_id", ids);
       const paths = (audio.data ?? []).map((a) => a.storage_path);
       for (let i = 0; i < paths.length; i += 100) {
         await supabaseAdmin.storage.from("note-audio").remove(paths.slice(i, i + 100));

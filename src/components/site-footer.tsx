@@ -55,8 +55,8 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-2 px-4 py-4 text-xs text-muted-foreground">
           <p>
-            Notes AI ki madad se textbook ke hisaab se banaye jaate hain. Exam se pehle apni textbook
-            se ek baar zaroor milayein.
+            Notes AI ki madad se textbook ke hisaab se banaye jaate hain. Exam se pehle apni
+            textbook se ek baar zaroor milayein.
           </p>
           <Link to="/admin/reports" className="hover:text-foreground">
             Owner

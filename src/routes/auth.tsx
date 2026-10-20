@@ -2,8 +2,6 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LoaderCircle, LogIn, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { lovable } from "@/integrations/lovable";
@@ -68,10 +66,13 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(next)}` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth?next=${encodeURIComponent(next)}`,
+          },
         });
         if (error) throw error;
-        if (!data.session) setInfo("Email check karo — confirm link par click karte hi sign in ho jaoge.");
+        if (!data.session)
+          setInfo("Email check karo — confirm link par click karte hi sign in ho jaoge.");
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign in nahi ho paya.");
@@ -83,19 +84,22 @@ function AuthPage() {
   const google = async () => {
     setError(null);
     sessionStorage.setItem(NEXT_KEY, next);
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/auth",
+    });
     if (result.error) setError("Google se sign in nahi ho paya. Dobara try karo.");
   };
 
   return (
-    <div className="min-h-screen">
-      <SiteHeader />
+    <div>
       <main className="mx-auto max-w-md px-4 py-14">
         <div className="sticker-lg rounded-3xl bg-card p-7">
           <span className="sticker grid h-12 w-12 place-items-center rounded-2xl bg-secondary">
             <ShieldCheck className="h-6 w-6" />
           </span>
-          <h1 className="mt-4 text-3xl font-extrabold">{mode === "in" ? "Owner sign in" : "Owner account banao"}</h1>
+          <h1 className="mt-4 text-3xl font-extrabold">
+            {mode === "in" ? "Owner sign in" : "Owner account banao"}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Ye sirf PadhoSuno chalane wale ke liye hai. Students ko login ki zaroorat nahi.
           </p>
@@ -104,7 +108,8 @@ function AuthPage() {
             Continue with Google
           </Button>
           <div className="my-5 flex items-center gap-3 text-xs font-bold uppercase text-muted-foreground">
-            <span className="h-px flex-1 bg-border" /> ya email se <span className="h-px flex-1 bg-border" />
+            <span className="h-px flex-1 bg-border" /> ya email se{" "}
+            <span className="h-px flex-1 bg-border" />
           </div>
           <form onSubmit={submit} className="space-y-3">
             <Input
@@ -142,7 +147,6 @@ function AuthPage() {
           </button>
         </div>
       </main>
-      <SiteFooter />
     </div>
   );
 }
