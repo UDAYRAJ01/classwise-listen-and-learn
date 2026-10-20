@@ -72,25 +72,55 @@ export type Database = {
       }
       note_reports: {
         Row: {
+          applied_at: string | null
+          board: string | null
+          chapter_slug: string | null
+          chapter_title: string | null
+          correction: string | null
           created_at: string
+          grade: number | null
           id: string
+          language: string | null
           message: string
-          note_id: string
+          note_id: string | null
+          resolved_at: string | null
           section: string | null
+          status: string
+          subject: string | null
         }
         Insert: {
+          applied_at?: string | null
+          board?: string | null
+          chapter_slug?: string | null
+          chapter_title?: string | null
+          correction?: string | null
           created_at?: string
+          grade?: number | null
           id?: string
+          language?: string | null
           message: string
-          note_id: string
+          note_id?: string | null
+          resolved_at?: string | null
           section?: string | null
+          status?: string
+          subject?: string | null
         }
         Update: {
+          applied_at?: string | null
+          board?: string | null
+          chapter_slug?: string | null
+          chapter_title?: string | null
+          correction?: string | null
           created_at?: string
+          grade?: number | null
           id?: string
+          language?: string | null
           message?: string
-          note_id?: string
+          note_id?: string | null
+          resolved_at?: string | null
           section?: string | null
+          status?: string
+          subject?: string | null
         }
         Relationships: [
           {
@@ -171,11 +201,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       search_chapters: {
         Args: { max_results?: number; q: string }
         Returns: {
@@ -189,7 +247,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -316,6 +374,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+    },
   },
 } as const

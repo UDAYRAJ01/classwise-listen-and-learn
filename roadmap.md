@@ -25,6 +25,6 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Chapter lists pre-built for every Class 9–12 subject (CBSE + ICSE/ISC)
 
 ## Ready next
-- Owner page to read mistake reports and re-create a chapter's notes after fixing
+- [x] Owner page: read mistake reports, save corrections, rebuild chapter notes
 - Download a chapter's audio for offline listening (needs a smaller audio format than today's files)
 - Student accounts so the notebook syncs across phone and laptop

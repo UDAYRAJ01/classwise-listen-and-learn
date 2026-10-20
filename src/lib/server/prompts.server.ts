@@ -84,6 +84,8 @@ export function notesPrompt(opts: {
   lang: Lang;
   custom: boolean;
   part: "core" | "practice" | "quiz";
+  /** Facts the owner verified after students reported mistakes. */
+  corrections?: string[];
 }): string {
   const board = BOARDS[opts.board];
   const stage = gradeStage(opts.grade);
@@ -110,6 +112,9 @@ export function notesPrompt(opts: {
       ? "This is a Hindi/Sanskrit chapter: keep quotations, verses and word meanings (शब्दार्थ) in Devanagari even when the chosen language is Hinglish or English; explain them in the chosen language."
       : null,
     STAGE_RULES[stage],
+    opts.corrections?.length
+      ? `Verified corrections from the teacher — these facts are correct and MUST be followed wherever relevant:\n${opts.corrections.map((c) => `- ${c}`).join("\n")}`
+      : null,
     "Make the notes complete enough that a student who reads and listens once can answer exam questions from this chapter.",
     opts.part === "core"
       ? "This request writes ONLY the first half of the notes: title, oneLiner, summary, keyPoints, keyTerms and formulas. Cover the whole chapter in keyPoints, in textbook order."
