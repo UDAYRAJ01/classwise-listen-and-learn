@@ -10,17 +10,17 @@ import { supabase } from "@/integrations/supabase/client";
 const NEXT_KEY = "padhosuno:auth-next";
 
 function safeNext(v: unknown): string {
-  return typeof v === "string" && v.startsWith("/") && !v.startsWith("//") ? v : "/admin/reports";
+  return typeof v === "string" && v.startsWith("/") && !v.startsWith("//") ? v : "/notebook";
 }
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s["next"]) }),
   head: () => ({
     meta: [
-      { title: "Owner sign in | PadhoSuno" },
-      { name: "description", content: "PadhoSuno owner sign in — galti reports dekhne ke liye." },
-      { property: "og:title", content: "Owner sign in | PadhoSuno" },
-      { property: "og:description", content: "PadhoSuno owner sign in." },
+      { title: "Sign in | PadhoSuno" },
+      { name: "description", content: "PadhoSuno mein sign in karo — notebook, progress aur streak har device par." },
+      { property: "og:title", content: "Sign in | PadhoSuno" },
+      { property: "og:description", content: "Notebook, progress aur streak har device par save." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -98,10 +98,10 @@ function AuthPage() {
             <ShieldCheck className="h-6 w-6" />
           </span>
           <h1 className="mt-4 text-3xl font-extrabold">
-            {mode === "in" ? "Owner sign in" : "Owner account banao"}
+            {mode === "in" ? "Sign in karo" : "Account banao"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Ye sirf PadhoSuno chalane wale ke liye hai. Students ko login ki zaroorat nahi.
+            Sign in karte hi tumhari notebook, done chapters aur streak har phone/laptop par saath chalenge. Bina login bhi padh sakte ho.
           </p>
 
           <Button variant="paper" className="mt-6 w-full" onClick={google}>
