@@ -25,3 +25,4 @@
 - Resolved report corrections are injected into the notes prompt for that chapter; "rebuild" deletes the chapter's cached notes and audio so the next visit regenerates them.
 - CBSE Class 9–12 chapter lists are built from the official NCERT chapter PDFs (`src/lib/ncert-books.ts` lists the books); each chapter keeps its NCERT `pdf` number (NCERT numbering has gaps) for the textbook link, and its extracted text sits in `chapter_sources` (backend-only) to ground note generation.
 - Bulk note generation + textbook check runs as an offline script; check results live in `note_checks`, and found mistakes become resolved `note_reports` corrections before the chapter is regenerated.
+- The AI tutor (`/ask`, `src/routes/api/tutor.ts`) answers by full-text searching `chapter_sources` via the service-role-only `search_chapter_sources` RPC and passing the matches to the model; it is retrieval, not model training, so new book text is usable as soon as it is stored.

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Headphones, LogIn, LogOut, NotebookPen } from "lucide-react";
+import { GraduationCap, Headphones, LogIn, LogOut, NotebookPen } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +38,14 @@ export function SiteHeader() {
             className="hidden rounded-lg px-3 py-2 hover:bg-muted sm:inline-flex"
           >
             Classes
+          </Link>
+          <Link
+            to="/ask"
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+            activeProps={{ className: "bg-muted" }}
+          >
+            <GraduationCap className="h-4 w-4" />
+            <span className="hidden sm:inline">Guru se poochho</span>
           </Link>
           <Link
             to="/notebook"

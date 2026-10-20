@@ -20,6 +20,7 @@ export type Database = {
           body: string
           chapter_slug: string
           created_at: string
+          fts: unknown
           grade: number
           source_url: string
           subject: string
@@ -29,6 +30,7 @@ export type Database = {
           body: string
           chapter_slug: string
           created_at?: string
+          fts?: unknown
           grade: number
           source_url: string
           subject: string
@@ -38,6 +40,7 @@ export type Database = {
           body?: string
           chapter_slug?: string
           created_at?: string
+          fts?: unknown
           grade?: number
           source_url?: string
           subject?: string
@@ -307,6 +310,18 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_chapter_sources: {
+        Args: { n?: number; q: string }
+        Returns: {
+          board: string
+          chapter_slug: string
+          grade: number
+          rank: number
+          snippet: string
+          source_url: string
+          subject: string
+        }[]
       }
       search_chapters: {
         Args: { max_results?: number; q: string }
