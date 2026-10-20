@@ -86,6 +86,8 @@ export function notesPrompt(opts: {
   part: "core" | "practice" | "quiz";
   /** Facts the owner verified after students reported mistakes. */
   corrections?: string[];
+  /** Text of the official textbook chapter, when we have it. */
+  source?: string | null;
 }): string {
   const board = BOARDS[opts.board];
   const stage = gradeStage(opts.grade);
@@ -114,6 +116,9 @@ export function notesPrompt(opts: {
     STAGE_RULES[stage],
     opts.corrections?.length
       ? `Verified corrections from the teacher — these facts are correct and MUST be followed wherever relevant:\n${opts.corrections.map((c) => `- ${c}`).join("\n")}`
+      : null,
+    opts.source
+      ? `OFFICIAL TEXTBOOK CHAPTER TEXT (extracted from the PDF; may contain layout noise). Base every fact, definition, date, name, formula, example and the chapter order on this text; do not add facts that contradict it, and cover what it covers:\n<<<\n${opts.source}\n>>>`
       : null,
     "Make the notes complete enough that a student who reads and listens once can answer exam questions from this chapter.",
     opts.part === "core"
