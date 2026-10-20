@@ -29,6 +29,13 @@
       "when": 1792472427759,
       "tag": "0003_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792472756504,
+      "tag": "0004_user_notebooks",
+      "breakpoints": true
     }
   ]
 }
