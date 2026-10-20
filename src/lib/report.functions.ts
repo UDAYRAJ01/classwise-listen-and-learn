@@ -21,9 +21,18 @@ export const reportMistake = createServerFn({ method: "POST" })
     if (!(await consumeRateLimit(supabaseAdmin, request, "report"))) {
       throw new Error("Bahut saari reports ho gayi. Thodi der baad try karein.");
     }
-    const { error } = await supabaseAdmin
-      .from("note_reports")
-      .insert({ note_id: data.noteId, section: data.section, message: data.message });
+    const note = await supabaseAdmin
+      .from("notes")
+      .select("board, grade, subject, chapter_slug, chapter_title, language")
+      .eq("id", data.noteId)
+      .maybeSingle();
+    if (!note.data) throw new Error("Ye notes nahi mile.");
+    const { error } = await supabaseAdmin.from("note_reports").insert({
+      note_id: data.noteId,
+      section: data.section,
+      message: data.message,
+      ...note.data,
+    });
     if (error) throw new Error("Report save nahi hui. Dobara try karein.");
     return { ok: true };
   });
