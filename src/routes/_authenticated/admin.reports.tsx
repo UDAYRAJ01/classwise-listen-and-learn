@@ -239,7 +239,7 @@ function ReportCard({ report: r }: { report: AdminReport }) {
             maxLength={1000}
             rows={3}
             placeholder="jaise: Ohm ka niyam V = IR hai, V = I/R nahi."
-            className="border-2 border-ink bg-background text-base"
+            className="border border-border bg-background text-base"
           />
           <div className="flex flex-wrap gap-2">
             <Button variant="ink" disabled={save.isPending} onClick={() => save.mutate("resolved")}>
@@ -258,7 +258,7 @@ function ReportCard({ report: r }: { report: AdminReport }) {
       ) : (
         <div className="mt-4 space-y-3">
           {r.correction && (
-            <p className="rounded-xl border-2 border-tone-leaf/50 bg-tone-leaf/10 p-3">
+            <p className="rounded-xl border border-tone-leaf/50 bg-tone-leaf/10 p-3">
               <span className="font-bold">Correction: </span>
               {r.correction}
             </p>

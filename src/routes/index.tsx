@@ -123,7 +123,7 @@ function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="paper-dots border-b-2 border-ink/90">
+      <section className="paper-dots border-b-2 border-border">
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 md:grid-cols-[1.15fr_1fr] md:py-20">
           <div>
             <span className="sticker inline-flex items-center gap-2 rounded-full bg-card px-3 py-1 text-sm font-bold">
@@ -179,10 +179,10 @@ function Home() {
               height={1024}
               className="relative z-10 w-full animate-float drop-shadow-xl"
             />
-            <span className="sticker absolute -left-2 top-10 z-20 -rotate-6 rounded-lg bg-sticky px-3 py-1.5 font-hand text-lg text-sticky-foreground">
+            <span className="sticker absolute -left-2 top-10 z-20 rounded-lg bg-sticky px-3 py-1.5 font-hand text-lg text-sticky-foreground">
               VIBGYOR = rainbow!
             </span>
-            <span className="sticker absolute -right-1 bottom-16 z-20 rotate-3 rounded-lg bg-card px-3 py-1.5 text-sm font-bold">
+            <span className="sticker absolute -right-1 bottom-16 z-20 rounded-lg bg-card px-3 py-1.5 text-sm font-bold">
               ▶ Audio: Part 3/12
             </span>
           </div>
@@ -243,7 +243,7 @@ function Home() {
       </section>
 
       {/* Features */}
-      <section className="border-y-2 border-ink/90 bg-card">
+      <section className="border-y-2 border-border bg-card">
         <div className="mx-auto max-w-6xl px-4 py-16">
           <p className="font-hand text-xl text-accent">Har chapter mein</p>
           <h2 className="text-4xl font-extrabold sm:text-5xl">Ek chapter, aath tarike se yaad</h2>

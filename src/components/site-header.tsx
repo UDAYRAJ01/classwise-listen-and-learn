@@ -14,7 +14,7 @@ export function Logo({ className = "" }: { className?: string }) {
       className={`group inline-flex items-center gap-2 ${className}`}
       aria-label="PadhoSuno home"
     >
-      <span className="sticker grid h-9 w-9 place-items-center rounded-xl bg-secondary transition-transform group-hover:-rotate-6">
+      <span className="sticker grid h-9 w-9 place-items-center rounded-xl bg-secondary transition-transform">
         <Headphones className="h-5 w-5 text-ink" strokeWidth={2.5} />
       </span>
       <span className="font-display text-xl font-extrabold tracking-tight">
@@ -27,7 +27,7 @@ export function Logo({ className = "" }: { className?: string }) {
 export function SiteHeader() {
   const { saved } = useNotebook();
   return (
-    <header className="no-print sticky top-0 z-40 border-b-2 border-ink/90 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
+    <header className="no-print sticky top-0 z-40 border-b-2 border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
         <Logo />
         <nav className="flex items-center gap-1 text-sm font-semibold sm:gap-2">

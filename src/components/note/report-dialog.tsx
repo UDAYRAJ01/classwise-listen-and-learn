@@ -70,7 +70,7 @@ export function ReportDialog({ noteId }: { noteId: string }) {
                   type="button"
                   data-active={section === s.id}
                   onClick={() => setSection(s.id)}
-                  className="rounded-full border-2 border-ink px-2.5 py-0.5 text-xs font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
+                  className="rounded-full border border-border px-2.5 py-0.5 text-xs font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
                 >
                   {s.label}
                 </button>
@@ -91,7 +91,7 @@ export function ReportDialog({ noteId }: { noteId: string }) {
               maxLength={600}
               rows={4}
               placeholder="jaise: Question 3 ka answer textbook se alag hai…"
-              className="border-2 border-ink bg-card text-base"
+              className="border border-border bg-card text-base"
             />
             {error && <p className="mt-2 text-sm font-semibold text-destructive">{error}</p>}
           </div>

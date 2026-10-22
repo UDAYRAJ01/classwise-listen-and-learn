@@ -127,7 +127,7 @@ export function ExamMode({
                 key={it.chapter}
                 id={`blk-rev-${i}`}
                 className={cn(
-                  "scroll-mt-32 rounded-2xl border-2 border-ink p-4 transition-[outline,box-shadow] duration-300",
+                  "scroll-mt-32 rounded-2xl border border-border p-4 transition-[outline,box-shadow] duration-300",
                   narration.activeBlockId === `rev-${i}` && "reading-now",
                 )}
               >

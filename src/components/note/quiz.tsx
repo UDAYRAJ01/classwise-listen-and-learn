@@ -169,14 +169,14 @@ export function Quiz({
                         disabled={picked !== null}
                         data-state={state}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-xl border-2 border-ink bg-card p-3 text-left font-semibold transition-colors",
+                          "flex w-full items-center gap-3 rounded-xl border border-border bg-card p-3 text-left font-semibold transition-colors",
                           "hover:bg-muted disabled:cursor-default disabled:hover:bg-card",
                           "data-[state=right]:bg-tone-leaf/20 data-[state=wrong]:bg-destructive/15 data-[state=dim]:opacity-55",
                         )}
                       >
                         <span
                           className={cn(
-                            "grid h-8 w-8 shrink-0 place-items-center rounded-lg border-2 border-ink font-display text-sm font-bold",
+                            "grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border font-display text-sm font-bold",
                             state === "right" && "bg-tone-leaf text-paper",
                             state === "wrong" && "bg-destructive text-destructive-foreground",
                           )}

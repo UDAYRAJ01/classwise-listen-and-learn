@@ -392,7 +392,7 @@ function ChapterView({
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3 py-1 text-sm font-bold",
+                "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm font-bold",
                 tone.soft,
               )}
             >
@@ -400,7 +400,7 @@ function ChapterView({
               {subject.name} · {label}
             </span>
             {meta.bookName && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink/30 px-3 py-1 text-sm font-semibold text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm font-semibold text-muted-foreground">
                 <BookOpen className="h-4 w-4" /> {meta.bookName}
               </span>
             )}
@@ -409,7 +409,7 @@ function ChapterView({
                 href={meta.textbookUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="no-print inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
+                className="no-print inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
               >
                 <ExternalLink className="h-4 w-4" /> NCERT textbook (PDF)
               </a>
@@ -421,7 +421,7 @@ function ChapterView({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="CISCE ki official free textbook PDF nahi hoti — school ki prescribed book se milao."
-                  className="no-print inline-flex items-center gap-1.5 rounded-full border-2 border-ink bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
+                  className="no-print inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
                 >
                   <ExternalLink className="h-4 w-4" /> CISCE syllabus
                 </a>
@@ -525,7 +525,7 @@ function ChapterView({
               <button
                 type="button"
                 onClick={() => narration.playAt(0)}
-                className="mt-4 flex w-full items-center gap-2 rounded-xl border-2 border-ink bg-secondary px-3 py-2 text-sm font-bold"
+                className="mt-4 flex w-full items-center gap-2 rounded-xl border border-border bg-secondary px-3 py-2 text-sm font-bold"
               >
                 <Headphones className="h-4 w-4" /> Shuru se suno
               </button>

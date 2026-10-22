@@ -74,7 +74,7 @@ function SubjectsPage() {
                 to="/learn/$board/$grade"
                 params={{ board, grade: String(g) }}
                 data-active={g === grade}
-                className="grid h-11 min-w-11 place-items-center rounded-xl border-2 border-ink px-3 font-display text-lg font-bold hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper"
+                className="grid h-11 min-w-11 place-items-center rounded-xl border border-border px-3 font-display text-lg font-bold hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper"
               >
                 {g}
               </Link>
@@ -95,7 +95,7 @@ function SubjectsPage() {
               >
                 <span
                   className={cn(
-                    "grid h-14 w-14 shrink-0 place-items-center rounded-2xl border-2 border-ink",
+                    "grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-border",
                     tone.solid,
                   )}
                 >
@@ -119,7 +119,7 @@ function SubjectsPage() {
         })}
       </ul>
 
-      <div className="mt-12 flex items-start gap-3 rounded-2xl border-2 border-dashed border-ink/40 p-5">
+      <div className="mt-12 flex items-start gap-3 rounded-2xl border border-dashed border-border p-5">
         <Languages className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
         <p className="text-muted-foreground">
           Notes <strong className="text-foreground">Hinglish</strong>,{" "}
