@@ -119,7 +119,7 @@ function AuthPage() {
               placeholder="Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="h-11 border-2 border-ink bg-background text-base"
+              className="h-11 border border-border bg-background text-base"
             />
             <Input
               type="password"
@@ -129,7 +129,7 @@ function AuthPage() {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="h-11 border-2 border-ink bg-background text-base"
+              className="h-11 border border-border bg-background text-base"
             />
             {error && <p className="text-sm font-semibold text-destructive">{error}</p>}
             {info && <p className="text-sm font-semibold text-tone-leaf">{info}</p>}

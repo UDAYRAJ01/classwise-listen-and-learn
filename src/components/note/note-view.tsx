@@ -40,7 +40,7 @@ const TRICK_LABEL: Record<TrickKind, string> = {
 };
 
 const STICKY_TONES = ["bg-sticky", "bg-tone-sky/25", "bg-tone-rose/20", "bg-tone-leaf/20"];
-const TILTS = ["-rotate-1", "rotate-1", "rotate-[0.6deg]", "-rotate-[0.8deg]"];
+const TILTS = ["", "", "", ""];
 
 interface Props {
   content: PartialNote;
@@ -84,7 +84,7 @@ function Block({
           aria-label={`${label} — suno`}
           title="Yahan se suno"
           className={cn(
-            "no-print absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full border-2 border-ink bg-card text-ink transition-transform hover:scale-110",
+            "no-print absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full border border-border bg-card text-ink transition-transform hover:scale-110",
             active && "bg-accent text-accent-foreground",
           )}
         >
@@ -298,7 +298,7 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
           >
             <ul className="grid gap-4 sm:grid-cols-2">
               {formulas.map((f, i) => (
-                <li key={i} className="rounded-xl border-2 border-ink/80 bg-card/95 p-4">
+                <li key={i} className="rounded-xl border border-border bg-card/95 p-4">
                   <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                     <Emph text={f.name} />
                   </p>
@@ -337,7 +337,7 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
                   TILTS[i % 4],
                 )}
               >
-                <span className="mb-2 inline-block rounded-full border-2 border-ink bg-card px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">
+                <span className="mb-2 inline-block rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">
                   {TRICK_LABEL[(t.kind as TrickKind) ?? "shortcut"] ?? "Trick"}
                 </span>
                 <h3 className="font-display text-lg font-bold">
@@ -372,7 +372,7 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
                   setHideAnswers((h) => !h);
                   setRevealed(new Set());
                 }}
-                className="no-print inline-flex items-center gap-2 rounded-lg border-2 border-ink bg-card px-3 py-1.5 text-sm font-bold hover:bg-muted"
+                className="no-print inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-bold hover:bg-muted"
               >
                 {hideAnswers ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
                 {hideAnswers ? "Sab answers dikhao" : "Self-test: answers chhupao"}
@@ -411,7 +411,7 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
                           <button
                             type="button"
                             onClick={() => setRevealed((s) => new Set(s).add(i))}
-                            className="mt-2 rounded-lg border-2 border-dashed border-ink/50 px-3 py-1.5 font-hand text-lg hover:bg-muted"
+                            className="mt-2 rounded-lg border border-dashed border-border px-3 py-1.5 font-hand text-lg hover:bg-muted"
                           >
                             Pehle khud socho… phir answer dekho
                           </button>
@@ -442,7 +442,7 @@ export function NoteView({ content, streaming, activeBlockId, playable, onPlayBl
             <ul className="grid gap-3 sm:grid-cols-2">
               {revision.map((r, i) => (
                 <li key={i} className="flex gap-3">
-                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded border-2 border-secondary text-[11px] font-bold text-secondary">
+                  <span className="mt-1 grid h-5 w-5 shrink-0 place-items-center rounded border border-secondary text-[11px] font-bold text-secondary">
                     ✓
                   </span>
                   <span className="[&_mark]:text-ink">

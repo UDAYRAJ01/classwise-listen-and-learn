@@ -153,7 +153,7 @@ function AskPage() {
       </div>
 
       <form
-        className="sticky bottom-4 mt-6 flex gap-2 rounded-2xl border-2 border-ink/80 bg-background p-2"
+        className="sticky bottom-4 mt-6 flex gap-2 rounded-2xl border border-border bg-background p-2"
         onSubmit={(e) => {
           e.preventDefault();
           void ask(input);

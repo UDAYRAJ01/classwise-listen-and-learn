@@ -155,7 +155,7 @@ export function Flashcards({
                     setDeck(d.id);
                     reset(d.id);
                   }}
-                  className="rounded-full border-2 border-ink px-3 py-1 text-sm font-bold disabled:opacity-40 data-[active=true]:bg-ink data-[active=true]:text-paper"
+                  className="rounded-full border border-border px-3 py-1 text-sm font-bold disabled:opacity-40 data-[active=true]:bg-ink data-[active=true]:text-paper"
                 >
                   {d.label} <span className="opacity-60">{count}</span>
                 </button>

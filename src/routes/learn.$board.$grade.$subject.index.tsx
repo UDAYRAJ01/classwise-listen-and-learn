@@ -1,3 +1,4 @@
+import { coverFor } from "@/lib/ncert-covers";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { BookmarkCheck, CheckCircle2, Search, Sparkles, WandSparkles } from "lucide-react";
@@ -192,7 +193,7 @@ function ChaptersPage() {
                 type="button"
                 data-active={(lang ?? "hinglish") === l.id}
                 onClick={() => notebook.setPrefs({ lang: l.id })}
-                className="rounded-lg border-2 border-ink px-3 py-1.5 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
+                className="rounded-lg border border-border px-3 py-1.5 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
               >
                 {l.native}
               </button>
@@ -216,7 +217,7 @@ function ChaptersPage() {
               onChange={(e) => setTopic(e.target.value)}
               maxLength={TOPIC_MAX}
               placeholder={`jaise: ${subject.slug === "maths" ? "Quadratic equations ka formula" : "Photosynthesis kaise hota hai"}`}
-              className="h-11 border-2 border-ink bg-card text-base text-foreground"
+              className="h-11 border border-border bg-card text-base text-foreground"
             />
             <Button type="submit" variant="ink" size="lg" className="shrink-0">
               <Sparkles /> Notes banao
@@ -251,7 +252,7 @@ function ChaptersPage() {
                 onChange={(e) => setFilter(e.target.value)}
                 placeholder="Chapter dhundho…"
                 aria-label="Chapter dhundho"
-                className="h-10 border-2 border-ink/70 bg-card pl-9"
+                className="h-10 border border-border bg-card pl-9"
               />
             </div>
           )}
@@ -275,7 +276,7 @@ function ChaptersPage() {
         )}
 
         {filtered && filtered.length === 0 && (
-          <p className="mt-6 rounded-2xl border-2 border-dashed border-ink/40 p-6 text-center text-muted-foreground">
+          <p className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center text-muted-foreground">
             “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana sakte
             ho.
           </p>
@@ -283,14 +284,25 @@ function ChaptersPage() {
 
         {filtered?.map((book) => (
           <div key={book.name} className="mt-8">
-            {books && books.length > 1 && (
-              <h3 className="mb-3 inline-flex items-center gap-2 rounded-lg bg-ink px-3 py-1 font-display text-lg font-bold text-paper">
-                {book.name}
-              </h3>
-            )}
-            {books && books.length === 1 && (
-              <p className="mb-3 font-hand text-lg text-muted-foreground">Book: {book.name}</p>
-            )}
+            <div className="mb-4 flex items-center gap-4">
+              {coverFor(book.code) && (
+                <img
+                  src={coverFor(book.code)}
+                  alt={`${book.name} cover`}
+                  width={64}
+                  height={90}
+                  loading="lazy"
+                  className="h-24 w-auto rounded-md border border-border shadow-sticker"
+                />
+              )}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {book.code ? "NCERT textbook" : "Book"}
+                </p>
+                <h3 className="font-display text-xl font-bold">{book.name}</h3>
+                <p className="text-sm text-muted-foreground">{book.chapters.length} chapters</p>
+              </div>
+            </div>
             <ol className="grid gap-3">
               {book.chapters.map((c) => {
                 const k = refKey({ board, grade, subject: subject.slug, chapter: c.slug });
@@ -306,11 +318,11 @@ function ChaptersPage() {
                         chapter: c.slug,
                       }}
                       search={lang ? { lang } : {}}
-                      className="group flex items-center gap-4 rounded-2xl border-2 border-ink bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker"
+                      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker"
                     >
                       <span
                         className={cn(
-                          "grid h-11 w-11 shrink-0 place-items-center rounded-xl border-2 border-ink font-display text-lg font-extrabold",
+                          "grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border font-display text-lg font-extrabold",
                           isDone ? "bg-tone-leaf text-paper" : tone.soft,
                         )}
                       >
@@ -353,7 +365,7 @@ function PartialBooks({ partial }: { partial: PartialSyllabus | null }) {
         {Array.from({ length: 6 }).map((_, i) => (
           <li
             key={i}
-            className="h-[76px] animate-pulse rounded-2xl border-2 border-ink/20 bg-muted"
+            className="h-[76px] animate-pulse rounded-2xl border border-border bg-muted"
           />
         ))}
       </ol>
@@ -368,7 +380,7 @@ function PartialBooks({ partial }: { partial: PartialSyllabus | null }) {
             {(b.chapters ?? []).map((c, ci) => (
               <li
                 key={ci}
-                className="flex items-center gap-4 rounded-2xl border-2 border-ink/40 bg-card p-4 opacity-80"
+                className="flex items-center gap-4 rounded-2xl border border-border bg-card p-4 opacity-80"
               >
                 <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-muted font-display text-lg font-extrabold">
                   {ci + 1}

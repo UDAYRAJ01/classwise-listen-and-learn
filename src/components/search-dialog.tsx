@@ -105,7 +105,7 @@ export function SearchButton() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Chapter ya subject dhundho"
-        className="inline-flex items-center gap-2 rounded-lg border-2 border-ink/80 bg-card px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+        className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
       >
         <Search className="h-4 w-4" />
         <span className="hidden md:inline">Dhundho…</span>

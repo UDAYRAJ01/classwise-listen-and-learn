@@ -20,7 +20,7 @@ const buttonVariants = cva(
         marker: "sticker press bg-accent text-accent-foreground",
         sun: "sticker press bg-secondary text-secondary-foreground",
         paper: "sticker press bg-card text-foreground",
-        chip: "border-2 border-ink/80 bg-card text-foreground hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper",
+        chip: "border border-border bg-card text-foreground hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper",
       },
       size: {
         default: "h-10 px-4 py-2",

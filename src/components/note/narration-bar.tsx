@@ -176,7 +176,7 @@ export function NarrationBar({
                     type="button"
                     data-active={n.mode === "ai"}
                     onClick={() => n.setMode("ai")}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border-2 border-ink px-2 py-2 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-2 py-2 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
                   >
                     <Sparkles className="h-4 w-4" /> AI teacher
                   </button>
@@ -184,7 +184,7 @@ export function NarrationBar({
                     type="button"
                     data-active={n.mode === "device"}
                     onClick={() => n.setMode("device")}
-                    className="flex items-center justify-center gap-1.5 rounded-lg border-2 border-ink px-2 py-2 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-2 py-2 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
                   >
                     <Smartphone className="h-4 w-4" /> Phone voice
                   </button>
@@ -202,7 +202,7 @@ export function NarrationBar({
                         type="button"
                         data-active={n.voice === v}
                         onClick={() => n.setVoice(v)}
-                        className="rounded-lg border-2 border-ink px-2 py-2 text-sm font-bold capitalize data-[active=true]:bg-secondary"
+                        className="rounded-lg border border-border px-2 py-2 text-sm font-bold capitalize data-[active=true]:bg-secondary"
                       >
                         {v === "didi" ? "Didi" : "Bhaiya"}
                       </button>
@@ -221,7 +221,7 @@ export function NarrationBar({
                       type="button"
                       onClick={() => n.setRate(r)}
                       data-active={n.rate === r}
-                      className="rounded-md border-2 border-ink px-2.5 py-1 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
+                      className="rounded-md border border-border px-2.5 py-1 text-sm font-bold data-[active=true]:bg-ink data-[active=true]:text-paper"
                     >
                       {r}x
                     </button>
