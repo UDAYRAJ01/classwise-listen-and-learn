@@ -1,3 +1,4 @@
+import { coverFor } from "@/lib/ncert-covers";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { BookmarkCheck, CheckCircle2, Search, Sparkles, WandSparkles } from "lucide-react";
@@ -283,14 +284,25 @@ function ChaptersPage() {
 
         {filtered?.map((book) => (
           <div key={book.name} className="mt-8">
-            {books && books.length > 1 && (
-              <h3 className="mb-3 inline-flex items-center gap-2 rounded-lg bg-ink px-3 py-1 font-display text-lg font-bold text-paper">
-                {book.name}
-              </h3>
-            )}
-            {books && books.length === 1 && (
-              <p className="mb-3 font-hand text-lg text-muted-foreground">Book: {book.name}</p>
-            )}
+            <div className="mb-4 flex items-center gap-4">
+              {coverFor(book.code) && (
+                <img
+                  src={coverFor(book.code)}
+                  alt={`${book.name} cover`}
+                  width={64}
+                  height={90}
+                  loading="lazy"
+                  className="h-24 w-auto rounded-md border border-border shadow-sticker"
+                />
+              )}
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  {book.code ? "NCERT textbook" : "Book"}
+                </p>
+                <h3 className="font-display text-xl font-bold">{book.name}</h3>
+                <p className="text-sm text-muted-foreground">{book.chapters.length} chapters</p>
+              </div>
+            </div>
             <ol className="grid gap-3">
               {book.chapters.map((c) => {
                 const k = refKey({ board, grade, subject: subject.slug, chapter: c.slug });

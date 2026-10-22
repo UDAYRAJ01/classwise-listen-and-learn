@@ -1,3 +1,4 @@
+import { coverFor } from "@/lib/ncert-covers";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
@@ -60,6 +61,7 @@ interface ChapterMeta {
   bookName: string | null;
   /** Official textbook chapter PDF (NCERT) when known. */
   textbookUrl: string | null;
+  cover?: string;
   number: number | null;
   custom: boolean;
   prev: SyllabusChapter | null;
@@ -97,6 +99,7 @@ function resolveMeta(
   return {
     title: cur.c.title,
     bookName: cur.book,
+    cover: coverFor(cur.code),
     textbookUrl: cur.code
       ? `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`
       : null,
@@ -388,7 +391,16 @@ function ChapterView({
           ]}
         />
 
-        <header className="mt-6">
+        <header className="mt-6 flow-root">
+          {meta.cover && (
+            <img
+              src={meta.cover}
+              alt={`${meta.bookName ?? "NCERT"} book cover`}
+              width={96}
+              height={136}
+              className="no-print float-right ml-4 hidden h-36 w-auto rounded-md border border-border shadow-sticker sm:block"
+            />
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <span
               className={cn(
