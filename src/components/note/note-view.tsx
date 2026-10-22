@@ -40,7 +40,7 @@ const TRICK_LABEL: Record<TrickKind, string> = {
 };
 
 const STICKY_TONES = ["bg-sticky", "bg-tone-sky/25", "bg-tone-rose/20", "bg-tone-leaf/20"];
-const TILTS = ["-rotate-1", "rotate-1", "rotate-[0.6deg]", "-rotate-[0.8deg]"];
+const TILTS = ["", "", "", ""];
 
 interface Props {
   content: PartialNote;
