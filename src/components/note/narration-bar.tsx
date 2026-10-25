@@ -1,5 +1,7 @@
 import {
   AudioLines,
+  CheckCircle2,
+  Download,
   Headphones,
   LoaderCircle,
   Pause,
@@ -9,12 +11,21 @@ import {
   SkipForward,
   Smartphone,
   Sparkles,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import type { Narration } from "@/hooks/use-narration";
+import {
+  audioFileName,
+  cancelAudioDownload,
+  downloadChapterAudio,
+  downloadKey,
+  useAudioDownload,
+} from "@/lib/audio-download";
+import type { Track } from "@/lib/tracks";
 import { cn } from "@/lib/utils";
 
 const RATES = [0.75, 1, 1.25, 1.5, 2];
@@ -25,12 +36,15 @@ export function NarrationBar({
   follow,
   onFollowChange,
   ready,
+  download,
 }: {
   narration: Narration;
   total: number;
   follow: boolean;
   onFollowChange: (v: boolean) => void;
   ready: boolean;
+  /** Lets the student save the whole narration as one file for offline listening. */
+  download?: { noteId: string; tracks: Track[]; title: string } | null;
 }) {
   const n = narration;
   const playing = n.status === "playing";
@@ -38,6 +52,10 @@ export function NarrationBar({
   const started = n.status !== "idle";
   const overall = total > 0 ? (n.index + (n.status === "ended" ? 1 : n.progress)) / total : 0;
   const canFallback = n.mode === "ai" && n.error;
+  const dl = useAudioDownload();
+  const dlKey = download ? downloadKey(download.noteId, n.voice) : null;
+  const dlMine = dl.key !== null && dl.key === dlKey;
+  const dlBusy = dl.status === "working";
 
   return (
     <div className="no-print fixed inset-x-0 bottom-0 z-50 px-3 pb-3 sm:px-4 sm:pb-4">
@@ -158,8 +176,13 @@ export function NarrationBar({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="paper" size="icon" aria-label="Audio settings">
+              <Button variant="paper" size="icon" aria-label="Audio settings" className="relative">
                 <Settings2 />
+                {dlBusy && (
+                  <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-accent text-accent-foreground">
+                    <LoaderCircle className="h-3 w-3 animate-spin" />
+                  </span>
+                )}
               </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -237,6 +260,70 @@ export function NarrationBar({
                 </span>
                 <Switch checked={follow} onCheckedChange={onFollowChange} />
               </label>
+              {download && download.tracks.length > 0 && (
+                <div className="border-t border-border pt-4">
+                  <p className="mb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Offline ke liye
+                  </p>
+                  {dlBusy && dlMine ? (
+                    <div className="space-y-2">
+                      <p className="text-sm font-bold">
+                        Audio taiyaar ho raha hai… {dl.done}/{dl.total}
+                      </p>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
+                        <div
+                          className="h-full bg-accent transition-[width] duration-300"
+                          style={{ width: `${dl.total ? (dl.done / dl.total) * 100 : 0}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Page khula rakhein. Pura hote hi file apne aap save ho jayegi.
+                      </p>
+                      <Button size="sm" variant="ghost" onClick={cancelAudioDownload}>
+                        <X /> Rok do
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground">
+                        Poore chapter ki {n.voice === "bhaiya" ? "Bhaiya" : "Didi"} wali awaaz ek
+                        file mein save karo — phir bina internet kisi bhi music player mein suno.
+                        (lagbhag 3 MB per minute)
+                      </p>
+                      <Button
+                        size="sm"
+                        variant="ink"
+                        className="w-full"
+                        disabled={!ready || dlBusy}
+                        onClick={() =>
+                          void downloadChapterAudio({
+                            noteId: download.noteId,
+                            tracks: download.tracks,
+                            voice: n.voice,
+                            fileName: audioFileName(download.title, n.voice),
+                          })
+                        }
+                      >
+                        <Download /> Audio download karo
+                      </Button>
+                      {dlBusy && !dlMine && (
+                        <p className="text-xs text-muted-foreground">
+                          Ek aur download chal raha hai — uske baad try karein.
+                        </p>
+                      )}
+                      {dlMine && dl.status === "done" && (
+                        <p className="flex items-center gap-1.5 text-xs font-bold text-tone-leaf">
+                          <CheckCircle2 className="h-4 w-4" /> File save ho gayi (
+                          {(dl.bytes / 1024 / 1024).toFixed(1)} MB)
+                        </p>
+                      )}
+                      {dlMine && dl.status === "error" && dl.message && (
+                        <p className="text-xs font-semibold text-destructive">{dl.message}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </PopoverContent>
           </Popover>
         </div>
