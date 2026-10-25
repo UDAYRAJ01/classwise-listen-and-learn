@@ -347,6 +347,36 @@ function ChaptersPage() {
           )}
         </div>
 
+        {books && prog.total > 0 && (
+          <div
+            role="tablist"
+            aria-label="Kaun se chapters dikhayein"
+            className="no-scrollbar -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1"
+          >
+            {(
+              [
+                ["all", "Sab", prog.total],
+                ["left", "Baaki", prog.left],
+                ["read", "Padh liye", readTotal],
+                ["done", "Yaad ho gaye", prog.done],
+              ] as const
+            ).map(([id, text, count]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={show === id}
+                data-active={show === id}
+                onClick={() => setShow(id)}
+                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-bold hover:bg-muted data-[active=true]:border-ink data-[active=true]:bg-ink data-[active=true]:text-paper"
+              >
+                {text}
+                <span className="tabular-nums opacity-70">{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {!books && gen.status === "error" && gen.error && (
           <div className="mt-6">
             <ErrorCard message={gen.error.message} onRetry={gen.retry} />
@@ -365,10 +395,27 @@ function ChaptersPage() {
         )}
 
         {filtered && filtered.length === 0 && (
-          <p className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center text-muted-foreground">
-            “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana sakte
-            ho.
-          </p>
+          <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center text-muted-foreground">
+            {filter.trim() ? (
+              <p>
+                “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana
+                sakte ho.
+              </p>
+            ) : show === "left" ? (
+              <p className="font-semibold text-foreground">
+                Shabash! Is subject ke saare chapters padh liye. 🎉
+              </p>
+            ) : show === "done" ? (
+              <p>Abhi koi chapter “Yaad ho gaya” mark nahi hua. Quiz ke baad mark karna.</p>
+            ) : (
+              <p>Abhi koi chapter padha nahi. “Baaki” mein se pehla chapter kholo.</p>
+            )}
+            {show !== "all" && (
+              <Button variant="paper" className="mt-4" onClick={() => setShow("all")}>
+                Saare chapters dikhao
+              </Button>
+            )}
+          </div>
         )}
 
         {filtered?.map((book) => (
@@ -389,13 +436,17 @@ function ChaptersPage() {
                   {book.code ? "NCERT textbook" : "Book"}
                 </p>
                 <h3 className="font-display text-xl font-bold">{book.name}</h3>
-                <p className="text-sm text-muted-foreground">{book.chapters.length} chapters</p>
+                <p className="text-sm text-muted-foreground">
+                  {show === "all"
+                    ? `${book.chapters.length} chapters`
+                    : `${book.chapters.length} chapters dikh rahe hain`}
+                </p>
               </div>
             </div>
             <ol className="grid gap-3">
               {book.chapters.map((c) => {
                 const k = refKey({ board, grade, subject: subject.slug, chapter: c.slug });
-                const isDone = done.includes(k);
+                const st = statusOf(c.slug);
                 return (
                   <li key={c.slug}>
                     <Link
@@ -407,18 +458,37 @@ function ChaptersPage() {
                         chapter: c.slug,
                       }}
                       search={lang ? { lang } : {}}
-                      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker"
+                      className={cn(
+                        "group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker",
+                        st === "new" || st === "started" ? "border-border" : "border-tone-leaf/40",
+                      )}
                     >
                       <span
                         className={cn(
                           "grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border font-display text-lg font-extrabold",
-                          isDone ? "bg-tone-leaf text-paper" : tone.soft,
+                          st === "done"
+                            ? "bg-tone-leaf text-paper"
+                            : st === "read"
+                              ? "bg-tone-leaf/15 text-tone-leaf"
+                              : st === "started"
+                                ? "bg-tone-sun/20"
+                                : tone.soft,
                         )}
+                        aria-hidden
                       >
-                        {isDone ? <CheckCircle2 className="h-5 w-5" /> : c.number}
+                        {st === "done" ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : st === "read" ? (
+                          <BookCheck className="h-5 w-5" />
+                        ) : st === "started" ? (
+                          <CircleDashed className="h-5 w-5" />
+                        ) : (
+                          c.number
+                        )}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-display text-lg font-bold leading-snug">
+                          <span className="sr-only">Chapter {c.number}: </span>
                           {c.title}
                         </span>
                         {c.gist && (
@@ -431,9 +501,7 @@ function ChaptersPage() {
                           aria-label="Saved"
                         />
                       )}
-                      <span className="hidden shrink-0 rounded-lg bg-secondary px-3 py-1.5 text-sm font-bold sm:inline-block">
-                        Notes + Audio
-                      </span>
+                      <StatusBadge status={st} />
                     </Link>
                   </li>
                 );
