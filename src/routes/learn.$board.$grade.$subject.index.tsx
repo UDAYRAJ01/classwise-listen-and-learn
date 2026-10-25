@@ -101,8 +101,10 @@ function ChaptersPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: syllabus } = useSuspenseQuery(syllabusQuery(board, grade, subject.slug));
-  const { done, saved, prefs } = useNotebook();
+  const nb = useNotebook();
+  const { saved, prefs } = nb;
   const lang: Lang | undefined = prefs.lang ?? undefined;
+  const show: ChapterFilter = Route.useSearch().show ?? "all";
 
   const gen = useGeneration<PartialSyllabus, SyllabusRecord>({
     key: `syllabus:${board}:${grade}:${subject.slug}`,
@@ -118,28 +120,43 @@ function ChaptersPage() {
   const [topic, setTopic] = useState("");
   const [topicError, setTopicError] = useState<string | null>(null);
 
+  const where = { board, grade, subject: subject.slug };
+  const statusOf = (slug: string) => chapterStatus(nb, refKey({ ...where, chapter: slug }));
+
   const filtered = useMemo(() => {
     if (!books) return null;
     const q = filter.trim().toLowerCase();
-    if (!q) return books;
     return books
       .map((b) => ({
         ...b,
-        chapters: b.chapters.filter((c) => `${c.title} ${c.gist}`.toLowerCase().includes(q)),
+        chapters: b.chapters.filter(
+          (c) =>
+            matchesFilter(
+              chapterStatus(nb, refKey({ board, grade, subject: subject.slug, chapter: c.slug })),
+              show,
+            ) && (!q || `${c.title} ${c.gist}`.toLowerCase().includes(q)),
+        ),
       }))
       .filter((b) => b.chapters.length > 0);
-  }, [books, filter]);
+  }, [books, filter, show, nb, board, grade, subject.slug]);
 
-  const totalChapters = books?.reduce((n, b) => n + b.chapters.length, 0) ?? 0;
-  const doneCount =
-    books?.reduce(
-      (n, b) =>
-        n +
-        b.chapters.filter((c) =>
-          done.includes(refKey({ board, grade, subject: subject.slug, chapter: c.slug })),
-        ).length,
-      0,
-    ) ?? 0;
+  const allChapters = useMemo(() => books?.flatMap((b) => b.chapters) ?? [], [books]);
+  const prog = subjectProgress(
+    nb,
+    where,
+    allChapters.map((c) => c.slug),
+  );
+  const nextUp = prog.nextSlug ? allChapters.find((c) => c.slug === prog.nextSlug) : null;
+  const readTotal = prog.done + prog.read;
+
+  const setShow = (next: ChapterFilter) =>
+    navigate({
+      to: "/learn/$board/$grade/$subject",
+      params: { board, grade: String(grade), subject: subject.slug },
+      search: next === "all" ? {} : { show: next },
+      replace: true,
+      resetScroll: false,
+    });
 
   const savedKeys = new Set(saved.map(refKey));
 
@@ -189,16 +206,68 @@ function ChaptersPage() {
           <h1 className="text-4xl font-extrabold sm:text-5xl">{subject.name}</h1>
           <p className="text-lg text-muted-foreground">{subject.hi}</p>
         </div>
-        {books && totalChapters > 0 && (
-          <div className="sticker rounded-2xl bg-card px-5 py-3 text-center">
-            <p className="font-display text-3xl font-extrabold">
-              {doneCount}
-              <span className="text-lg text-muted-foreground">/{totalChapters}</span>
-            </p>
-            <p className="font-hand text-base text-muted-foreground">yaad ho gaye</p>
-          </div>
-        )}
       </header>
+
+      {books && prog.total > 0 && (
+        <section
+          aria-label="Aapki padhai"
+          className="mt-8 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[1fr_auto] sm:items-center"
+        >
+          <div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="font-display text-2xl font-extrabold">
+                {readTotal}
+                <span className="text-base text-muted-foreground">/{prog.total}</span>{" "}
+                <span className="text-lg">chapters padh liye</span>
+              </p>
+              <p className="text-sm font-bold text-muted-foreground">
+                {prog.left === 0 ? "Sab padh liye! 🎉" : `${prog.left} baaki`}
+              </p>
+            </div>
+            <SubjectProgressBar
+              className="mt-3"
+              total={prog.total}
+              done={prog.done}
+              read={prog.read}
+              started={prog.started}
+            />
+            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-muted-foreground">
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-tone-leaf" /> Yaad ho gaye {prog.done}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-tone-leaf/50" /> Padh liye {prog.read}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-tone-sun/60" /> Adhure {prog.started}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-muted ring-1 ring-border" /> Shuru
+                nahi kiye {prog.left - prog.started}
+              </li>
+            </ul>
+          </div>
+          {nextUp && (
+            <Button asChild variant="ink" size="lg" className="h-auto justify-between py-3">
+              <Link
+                to="/learn/$board/$grade/$subject/$chapter"
+                params={{ board, grade: String(grade), subject: subject.slug, chapter: nextUp.slug }}
+                search={lang ? { lang } : {}}
+              >
+                <span className="min-w-0 text-left">
+                  <span className="block text-xs font-semibold uppercase tracking-wider opacity-75">
+                    {statusOf(nextUp.slug) === "started" ? "Adhura chapter poora karo" : "Agla baaki chapter"}
+                  </span>
+                  <span className="block max-w-64 truncate font-display text-base">
+                    {nextUp.number}. {nextUp.title}
+                  </span>
+                </span>
+                <ArrowRight />
+              </Link>
+            </Button>
+          )}
+        </section>
+      )}
 
       {/* Language preference + custom topic */}
       <div className="mt-8 grid gap-4 md:grid-cols-[auto_1fr]">
