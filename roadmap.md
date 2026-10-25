@@ -30,7 +30,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
-- [ ] Re-check the 81 CBSE Class 10–12 Hindi + Class 10 Sanskrit chapters now that their book text is readable (it was in the old Walkman-Chanakya font)
+- [ ] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text — PAUSED by the user on 25 Oct 14:06 UTC. Done: Hindi 36/70, Sanskrit 9/10. Left: 26 Hindi chapters still on old notes, 8 Hindi chapters with no notes (written on first visit), 1 Sanskrit chapter unchecked. Resume: `bun run scripts/verify-notes.ts --board=cbse --grades=10-12 --subject=hindi --rewrite-before=2026-10-25T13:55:32Z` (and `--grades=10-10 --subject=sanskrit`)
 - [ ] Second pass for 24 Class 11–12 Hindi chapters converted late (list in /tmp/verify/second-pass.txt): `--only=<list> --rewrite-before=2026-10-25T14:12:00Z` once the current Hindi runs finish
 - [x] Class 11 History "Nomadic Empires": text split out of the Chapter 2 PDF, textbook link fixed, notes written + checked
 - [x] Class 11 Hindi Vitan: dropped "लेखकों के बारे में" (an appendix, not a chapter)
@@ -40,4 +40,4 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 
 ## Ready next
 - Official covers for Class 1–8 NCERT books
-- Pre-make didi-voice audio for all notes (after the notes check finishes, so audio is never made for notes that change)
+- Pre-make didi-voice audio for all notes with `scripts/audio-batch.ts` (only checked notes; ~1,200 chapters, many hours + AI credits) — not started; user paused work on 25 Oct
