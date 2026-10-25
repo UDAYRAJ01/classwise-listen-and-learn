@@ -65,6 +65,8 @@ interface ChapterMeta {
   bookName: string | null;
   /** Official textbook chapter PDF (NCERT) when known. */
   textbookUrl: string | null;
+  /** The link opens the whole book (chapter files not confirmed). */
+  textbookIsBook?: boolean;
   cover?: string | undefined;
   number: number | null;
   custom: boolean;
