@@ -235,15 +235,21 @@ function ChapterView({
   searchTitle: string | undefined;
 }) {
   const queryClient = useQueryClient();
-  const { saved, done, prefs } = useNotebook();
+  const nb = useNotebook();
+  const { saved, done, prefs } = nb;
   const [cardsOpen, setCardsOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
   const label = gradeLabel(board, grade);
   const tone = TONE_CLASSES[subject.tone];
-  const ref = { board, grade, subject: subject.slug, chapter };
+  const ref = useMemo(
+    () => ({ board, grade, subject: subject.slug, chapter }),
+    [board, grade, subject.slug, chapter],
+  );
   const key = refKey(ref);
   const isSaved = saved.some((s) => refKey(s) === key);
   const isDone = done.includes(key);
+  const status = chapterStatus(nb, key);
+  const isRead = status === "read" || status === "done";
 
   const gen = useGeneration<PartialNote, NoteRecord>({
     key: `note:${board}:${grade}:${subject.slug}:${chapter}:${lang}`,
@@ -306,26 +312,61 @@ function ChapterView({
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [narration.activeBlockId, prefs.follow, narration.status]);
 
-  const sections = SECTIONS.filter((s) => {
-    switch (s.id) {
-      case "summary":
-        return true;
-      case "notes":
-        return (content.keyPoints?.length ?? 0) > 0;
-      case "terms":
-        return (content.keyTerms?.length ?? 0) > 0;
-      case "formulas":
-        return (content.formulas?.length ?? 0) > 0;
-      case "tricks":
-        return (content.tricks?.length ?? 0) > 0;
-      case "questions":
-        return (content.questions?.length ?? 0) > 0;
-      case "revision":
-        return (content.quickRevision?.length ?? 0) > 0;
-      case "tips":
-        return (content.examTips?.length ?? 0) > 0 || !!content.funFact;
-    }
+  const sections = visibleSections(content);
+
+  // ---- "Padh liya" tracking: parts read on screen or heard to the end ----
+  const requiredParts = useMemo(
+    () => (record ? visibleSections(record.content).map((s) => s.id as string) : []),
+    [record],
+  );
+  const seenParts = useMemo(
+    () => (isRead ? requiredParts : (nb.progress[key] ?? [])),
+    [isRead, requiredParts, nb.progress, key],
+  );
+  const seenSet = useMemo(() => new Set(seenParts), [seenParts]);
+
+  const markParts = useCallback(
+    (ids: string[]) => {
+      if (!notebook.markParts(ref, ids, requiredParts)) return;
+      toast.success("Chapter padh liya ✓", {
+        description: "Ab Quiz do ya Flashcards se dohrao — phir “Yaad ho gaya” mark karna.",
+        ...(mcqs.length > 0
+          ? { action: { label: "Quiz do", onClick: () => setQuizOpen(true) } }
+          : {}),
+      });
+    },
+    [ref, requiredParts, mcqs.length],
+  );
+
+  useReadTracker({
+    enabled: !!record && !isRead,
+    parts: requiredParts,
+    alreadyRead: seenParts,
+    onRead: markParts,
   });
+
+  // Audio counts too: a part is heard once every one of its tracks has played through.
+  const played = useRef(new Set<number>());
+  const prevNarration = useRef({ index: 0, playing: false });
+  useEffect(() => {
+    const prev = prevNarration.current;
+    const playing = narration.status === "playing" || narration.status === "loading";
+    if (prev.playing && narration.index === prev.index + 1) played.current.add(prev.index);
+    if (narration.status === "ended") played.current.add(narration.index);
+    prevNarration.current = { index: narration.index, playing };
+    if (isRead || tracks.length === 0 || played.current.size === 0) return;
+    const bySection = new Map<string, number[]>();
+    for (const t of tracks) {
+      const s = sectionForBlock(t.blockId);
+      if (s) bySection.set(s, [...(bySection.get(s) ?? []), t.index]);
+    }
+    const heard = [...bySection.entries()]
+      .filter(([s, idx]) => !seenSet.has(s) && idx.every((i) => played.current.has(i)))
+      .map(([s]) => s);
+    if (heard.length) markParts(heard);
+  }, [narration.index, narration.status, tracks, isRead, seenSet, markParts]);
+
+  const readCount = requiredParts.filter((p) => seenSet.has(p)).length;
 
   const toggleSave = () => {
     const now = notebook.toggleSaved({ ...ref, title: meta.title, custom: meta.custom });
@@ -334,6 +375,10 @@ function ChapterView({
   const toggleDone = () => {
     const now = notebook.toggleDone(ref);
     if (now) toast.success("Shabash! Chapter yaad ho gaya ✓");
+  };
+  const toggleRead = () => {
+    notebook.setRead(ref, !isRead);
+    if (!isRead) toast.success("Chapter “padh liya” mark ho gaya ✓");
   };
 
   const share = async () => {
