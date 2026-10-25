@@ -17,6 +17,7 @@
 - Audio parts come from `buildTracks` (`src/lib/tracks.ts`), shared by browser and server, so the voice service only ever speaks stored note text; changing it shifts track indices and makes stored audio (keyed by note, index, voice) mismatch.
 - Playlists that span chapters (Exam Mode) reuse the same audio by giving each track its own `noteId` + `sourceIndex`; the narration hook resolves audio per track, never per page.
 - Uncached audio streams PCM to the browser (Web Audio) while the server saves a WAV to the private `note-audio` bucket; stored audio is served via short-lived signed URLs.
+- Offline audio download is built in the browser (`src/lib/audio-download.ts`) from the same audio jobs the player uses, joined into one WAV; no extra server route, so nothing is generated twice.
 - The notebook (saved, history, read, per-chapter read parts, done, streak days, prefs) lives in localStorage (`src/lib/notebook-store.ts`) and, when signed in, syncs as one JSON row per user in `user_notebooks` via `src/lib/notebook-sync.ts`; login stays optional.
 - Every fresh AI generation passes the per-visitor hourly limit in `src/lib/server/rate-limit.server.ts`; cached reads never count.
 - Chapter slugs are positional (`b{book}-c{chapter}-title`); typed topics use `t-…-hash` and must match `customTopicSlug(title)` on the server.
