@@ -357,7 +357,8 @@ async function apply(plan: PlanSubject) {
     if (ins.error) throw ins.error;
   }
 
-  // Notes made for chapters the book does not have (or made before the text was stored).
+  // Notes made before the textbook text was stored were written from memory: drop them all so
+  // the next visit writes them from the book.
   const notes = await admin
     .from("notes")
     .select("id, chapter_slug, is_custom")
@@ -365,7 +366,7 @@ async function apply(plan: PlanSubject) {
     .eq("grade", plan.grade)
     .eq("subject", plan.subject);
   const orphan = (notes.data ?? [])
-    .filter((n) => !n.is_custom && !slugs.has(n.chapter_slug))
+    .filter((n) => !n.is_custom)
     .map((n) => n.id);
   if (orphan.length) {
     await purgeNotes(
@@ -374,7 +375,7 @@ async function apply(plan: PlanSubject) {
       orphan,
     );
   }
-  console.log(`  saved: ${slugs.size} chapters, ${rows.length} textbook texts, ${orphan.length} old notes removed`);
+  console.log(`  saved: ${slugs.size} chapters, ${rows.length} textbook texts, ${orphan.length} old notes removed (were not from the book)`);
 }
 
 const todo = PLAN.filter(
