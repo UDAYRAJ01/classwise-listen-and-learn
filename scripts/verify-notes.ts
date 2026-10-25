@@ -4,7 +4,8 @@
  *
  *   bun scripts/verify-notes.ts                 # full run (skips finished chapters)
  *   bun scripts/verify-notes.ts --dry --limit=3 # only check, change nothing
- *   WORKERS=6 bun scripts/verify-notes.ts --board=cbse --grades=9-12
+ *   WORKERS=6 bun scripts/verify-notes.ts --board=cbse --grades=9-12 --subject=science
+ *   bun scripts/verify-notes.ts --reverse          # second run, from the end of the list
  *
  * A chapter counts as finished when its stored notes have the "common mistakes" part
  * and a textbook check newer than the notes. Progress lives in the database, so the run
@@ -261,7 +262,10 @@ async function worker(id: number, queue: Job[], stats: Record<string, number>) {
 }
 
 async function main() {
-  const jobs = (await buildJobs()).slice(0, LIMIT);
+  const all = await buildJobs();
+  // A second run can work from the other end of the list without colliding.
+  if (args.has("reverse")) all.reverse();
+  const jobs = all.slice(0, LIMIT);
   console.log(`${jobs.length} chapter jobs · ${WORKERS} workers${DRY ? " · DRY RUN" : ""}`);
   const stats: Record<string, number> = {};
   const queue = [...jobs];
