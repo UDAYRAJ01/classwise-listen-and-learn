@@ -93,7 +93,7 @@ export function notesPrompt(opts: {
 }): string {
   const board = BOARDS[opts.board];
   const stage = gradeStage(opts.grade);
-  const isLanguageSubject = ["english", "english-language", "english-literature"].includes(
+  const isLanguageSubject = ["english", "english-language", "english-literature", "english-modern"].includes(
     opts.subject.slug,
   );
   const isIndic = ["hindi", "sanskrit"].includes(opts.subject.slug);
