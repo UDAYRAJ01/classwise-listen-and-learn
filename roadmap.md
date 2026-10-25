@@ -31,8 +31,10 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [ ] Re-check the 81 CBSE Class 10–12 Hindi + Class 10 Sanskrit chapters now that their book text is readable (it was in the old Walkman-Chanakya font)
-- [ ] Class 11 History "Nomadic Empires": book text sits inside the Chapter 2 file; split it, fix the textbook link, write + check notes
-- [ ] Class 11 Hindi Vitan: drop "लेखकों के बारे में" (an appendix, not a chapter)
+- [ ] Second pass for 24 Class 11–12 Hindi chapters converted late (list in /tmp/verify/second-pass.txt): `--only=<list> --rewrite-before=2026-10-25T14:12:00Z` once the current Hindi runs finish
+- [x] Class 11 History "Nomadic Empires": text split out of the Chapter 2 PDF, textbook link fixed, notes written + checked
+- [x] Class 11 Hindi Vitan: dropped "लेखकों के बारे में" (an appendix, not a chapter)
+- [x] Bold-word parser: "**=**", "**;**", unclosed highlights and p*** handled; Python/Java stars kept
 - [ ] ICSE/ISC: still unverified — ICSE 9 Hindi split & drama/novel, ICSE 9 Commercial Studies full list, Computer Applications 9–10, ICSE 1–8 lists; ISC 11 Accounts, Chemistry, Geography, Physics, Psychology; ISC 12 Accounts, Business Studies, Commerce, Computer Science, Economics, History titles, Maths, Physics (exact publisher contents pages not reachable; cisce.org blocks downloads from here)
 - [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 
