@@ -7,7 +7,7 @@ export type Segment = { text: string; strong: boolean };
 // a letter and a digit (x**2) is code, not markup, and must survive untouched; so are star
 // patterns like "***; **; *". Inside a word a
 // highlight may still mark letters (stala**G**mite), and "** * **" highlights one operator.
-const OPEN = String.raw`(?:(?<![\p{L}\p{N}*])|(?<=\p{L})(?=\*\*\p{L}))\*\*(?![\s*;,)\]}]|=(?:\s|$))`;
+const OPEN = String.raw`(?:(?<![\p{L}\p{N}*])|(?<=\p{L})(?=\*\*\p{L}))\*\*(?![\s*;,)\]}]|=(?!=))`;
 const EMPHASIS = new RegExp(
   String.raw`${OPEN}(.{1,160}?)(?<=\S)\*\*(?!\*)|\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
   "gu",

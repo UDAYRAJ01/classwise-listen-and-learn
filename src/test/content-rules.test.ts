@@ -75,6 +75,9 @@ describe("text markup", () => {
     );
     expect(stripEmphasis("Sahi term **1 / (i ** 3)** hai; y**2")).toBe("Sahi term 1 / (i ** 3) hai; y**2");
     expect(stripEmphasis("star rows ***; **; *")).toBe("star rows ***; **; *");
+    expect(stripEmphasis("Operators: +=, //=, **=. **==** compares")).toBe(
+      "Operators: +=, //=, **=. == compares",
+    );
   });
 
   it("still highlights letters inside a word and drops an unfinished highlight", () => {
