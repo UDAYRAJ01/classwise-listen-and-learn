@@ -3,10 +3,14 @@
 export type Segment = { text: string; strong: boolean };
 
 // A highlight is **word**: the opening ** touches the next character and the closing ** touches
-// the previous one. A bare ** with spaces around it (Python's x ** 2), **= (x **= 3) or ** inside a
-// word (x**2) is code, not markup, and must survive untouched.
-const OPEN = String.raw`(?<![\p{L}\p{N}*])\*\*(?![\s*]|=(?:\s|$))`;
-const EMPHASIS = new RegExp(String.raw`${OPEN}(.+?)(?<=[^\s*])\*\*(?!\*)`, "gu");
+// the previous one. A bare ** with spaces around it (Python's x ** 2), **= (x **= 3) or ** between
+// a letter and a digit (x**2) is code, not markup, and must survive untouched. Inside a word a
+// highlight may still mark letters (stala**G**mite), and "** * **" highlights one operator.
+const OPEN = String.raw`(?:(?<![\p{L}\p{N}*])|(?<=\p{L})(?=\*\*\p{L}))\*\*(?![\s*]|=(?:\s|$))`;
+const EMPHASIS = new RegExp(
+  String.raw`${OPEN}(.+?)(?<=\S)\*\*(?!\*)|\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
+  "gu",
+);
 const DANGLING = new RegExp(OPEN, "gu");
 
 export function splitEmphasis(input: string): Segment[] {
@@ -15,7 +19,7 @@ export function splitEmphasis(input: string): Segment[] {
   for (const m of input.matchAll(EMPHASIS)) {
     const at = m.index ?? 0;
     if (at > last) out.push({ text: input.slice(last, at), strong: false });
-    out.push({ text: m[1] ?? "", strong: true });
+    out.push({ text: m[1] ?? m[2] ?? "", strong: true });
     last = at + m[0].length;
   }
   if (last < input.length) out.push({ text: input.slice(last), strong: false });
