@@ -93,7 +93,12 @@ function resolveMeta(
       : null;
   }
   const all = (syllabus?.books ?? []).flatMap((b) =>
-    b.chapters.map((c) => ({ c, book: b.name, code: b.code })),
+    b.chapters.map((c) => ({
+      c,
+      book: b.name,
+      code: b.code,
+      bookPage: b.chapterPdfs === false ? b.chapters.length : 0,
+    })),
   );
   const i = all.findIndex((x) => x.c.slug === chapter);
   if (i < 0) {
@@ -114,9 +119,12 @@ function resolveMeta(
     title: cur.c.title,
     bookName: cur.book,
     cover: coverFor(cur.code),
-    textbookUrl: cur.code
-      ? `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`
-      : null,
+    textbookUrl: !cur.code
+      ? null
+      : cur.bookPage
+        ? `https://ncert.nic.in/textbook.php?${cur.code}=0-${cur.bookPage}`
+        : `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`,
+    textbookIsBook: !!cur.code && cur.bookPage > 0,
     number: cur.c.number,
     custom: false,
     prev: all[i - 1]?.c ?? null,
@@ -482,7 +490,8 @@ function ChapterView({
                 rel="noopener noreferrer"
                 className="no-print inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
               >
-                <ExternalLink className="h-4 w-4" /> NCERT textbook (PDF)
+                <ExternalLink className="h-4 w-4" />{" "}
+                {meta.textbookIsBook ? "NCERT textbook" : "NCERT textbook (PDF)"}
               </a>
             ) : (
               board === "icse" &&

@@ -13,6 +13,8 @@ export interface SyllabusBook {
   name: string;
   /** NCERT book code; chapter n is the PDF {code}{nn}.pdf on ncert.nic.in. */
   code?: string;
+  /** false when NCERT's per-chapter PDF numbering is not confirmed: link the book page instead. */
+  chapterPdfs?: boolean;
   chapters: SyllabusChapter[];
 }
 
