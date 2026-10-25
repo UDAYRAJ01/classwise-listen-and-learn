@@ -1,9 +1,9 @@
 import type { BoardId, SubjectMeta } from "@/lib/catalog";
 import { BOARDS } from "@/lib/catalog";
+import { stripEmphasis } from "@/lib/text";
 import type { NoteContent } from "@/lib/types";
 
 import { streamStructured } from "./ai.server";
-import { stripEmphasis } from "@/lib/text";
 
 export const CHECK_SECTIONS = [
   "summary",
