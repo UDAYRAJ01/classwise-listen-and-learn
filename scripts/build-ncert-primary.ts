@@ -141,6 +141,53 @@ const lessonCache: Record<string, Lesson[]> = existsSync(CACHE)
 interface Lesson {
   title: string;
   gist: string;
+  noText?: boolean;
+}
+
+/** Letters only, so OCR spacing/punctuation differences do not matter. */
+const letters = (s: string) => s.replace(/[^\p{L}\p{M}]/gu, "").toLowerCase();
+
+/** Dice similarity of character pairs. */
+function similar(a: string, b: string): number {
+  const x = letters(a);
+  const y = letters(b);
+  if (!x || !y) return 0;
+  if (x.includes(y) || y.includes(x)) return 1;
+  const pairs = (s: string) => {
+    const m = new Map<string, number>();
+    for (let i = 0; i < s.length - 1; i++) m.set(s.slice(i, i + 2), (m.get(s.slice(i, i + 2)) ?? 0) + 1);
+    return m;
+  };
+  const px = pairs(x);
+  const py = pairs(y);
+  let hit = 0;
+  for (const [k, n] of px) hit += Math.min(n, py.get(k) ?? 0);
+  return (2 * hit) / Math.max(1, x.length - 1 + y.length - 1);
+}
+
+/**
+ * The contents page can list a lesson whose text is not extractable (a poem printed as a
+ * picture). Keep every lesson the contents page names, in its order.
+ */
+function withHintLessons(hint: string, lessons: Lesson[]): Lesson[] {
+  const parts = hint
+    .split("|")
+    .map((p) => clean(p.replace(/^unit\s+[\divx]+\s*:[^–-]*[–-]\s*/i, "")))
+    .filter(Boolean);
+  if (parts.length < 2 || parts.length <= lessons.length) return lessons;
+  const out: Lesson[] = [];
+  const used = new Set<Lesson>();
+  for (const part of parts) {
+    const match = lessons.find((l) => !used.has(l) && similar(l.title, part) >= 0.6);
+    if (match) {
+      used.add(match);
+      out.push(match);
+    } else {
+      out.push({ title: part, gist: "", noText: true });
+    }
+  }
+  for (const l of lessons) if (!used.has(l)) out.push(l);
+  return out;
 }
 
 const clean = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -252,13 +299,14 @@ async function buildBook(plan: PlanSubject, book: PlanBook): Promise<BuiltChapte
     if (text.length < 200) throw new Error(`text too short ${pdfCode}`);
     const lessons = await lessonsOf(plan, book, pdfCode, hint, text);
     const pdf = Number(pdfCode.slice(-2));
-    for (const l of lessons) {
+    for (const l of withHintLessons(hint, lessons)) {
       chapters.push({
         title: l.title,
         gist: l.gist,
         pdf,
         pdfCode,
-        source: text,
+        // A lesson the contents page lists but whose text is not in the PDF (printed as a picture).
+        source: l.noText ? null : text,
         shared: lessons.length > 1,
       });
     }
