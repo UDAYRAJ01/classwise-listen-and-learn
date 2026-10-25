@@ -311,6 +311,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      search_book_passages: {
+        Args: { b?: string; g?: number; n?: number; q: string }
+        Returns: {
+          board: string
+          chapter_slug: string
+          grade: number
+          rank: number
+          snippet: string
+          source_url: string
+          subject: string
+        }[]
+      }
       search_chapter_sources: {
         Args: { n?: number; q: string }
         Returns: {
