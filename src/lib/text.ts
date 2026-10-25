@@ -4,11 +4,12 @@ export type Segment = { text: string; strong: boolean };
 
 // A highlight is **word**: the opening ** touches the next character and the closing ** touches
 // the previous one. A bare ** with spaces around it (Python's x ** 2), **= (x **= 3) or ** between
-// a letter and a digit (x**2) is code, not markup, and must survive untouched. Inside a word a
+// a letter and a digit (x**2) is code, not markup, and must survive untouched; so are star
+// patterns like "***; **; *". Inside a word a
 // highlight may still mark letters (stala**G**mite), and "** * **" highlights one operator.
-const OPEN = String.raw`(?:(?<![\p{L}\p{N}*])|(?<=\p{L})(?=\*\*\p{L}))\*\*(?![\s*]|=(?:\s|$))`;
+const OPEN = String.raw`(?:(?<![\p{L}\p{N}*])|(?<=\p{L})(?=\*\*\p{L}))\*\*(?![\s*;,)\]}]|=(?:\s|$))`;
 const EMPHASIS = new RegExp(
-  String.raw`${OPEN}(.+?)(?<=\S)\*\*(?!\*)|\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
+  String.raw`${OPEN}(.{1,160}?)(?<=\S)\*\*(?!\*)|\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
   "gu",
 );
 const DANGLING = new RegExp(OPEN, "gu");
