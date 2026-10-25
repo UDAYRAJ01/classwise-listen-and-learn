@@ -25,15 +25,31 @@ export interface Prefs {
 export interface NotebookState {
   saved: ChapterRef[];
   recent: ChapterRef[];
+  /** Chapters the student marked "yaad ho gaya" (memorised). */
   done: string[];
+  /** Chapters fully read: every part read or heard, or marked by hand. */
+  read: string[];
+  /** Parts already read of chapters that are not finished yet. */
+  progress: Record<string, string[]>;
   /** Local dates (YYYY-MM-DD) on which a chapter was opened. */
   days: string[];
   prefs: Prefs;
 }
 
+export type ChapterStatus = "done" | "read" | "started" | "new";
+
 const KEY = "padhosuno:v1";
+const MAX_PROGRESS = 400;
 const DEFAULT_PREFS: Prefs = { lang: null, voice: "didi", rate: 1, follow: true };
-const EMPTY: NotebookState = { saved: [], recent: [], done: [], days: [], prefs: DEFAULT_PREFS };
+const EMPTY: NotebookState = {
+  saved: [],
+  recent: [],
+  done: [],
+  read: [],
+  progress: {},
+  days: [],
+  prefs: DEFAULT_PREFS,
+};
 
 let state: NotebookState = EMPTY;
 let loaded = false;
