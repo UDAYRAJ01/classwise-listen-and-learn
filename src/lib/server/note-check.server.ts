@@ -3,6 +3,7 @@ import { BOARDS } from "@/lib/catalog";
 import type { NoteContent } from "@/lib/types";
 
 import { streamStructured } from "./ai.server";
+import { stripEmphasis } from "@/lib/text";
 
 export const CHECK_SECTIONS = [
   "summary",
@@ -96,7 +97,8 @@ export function noteAsText(c: NoteContent): string {
     c.examTips.map((t) => `- ${t}`),
   );
   sec("funfact", c.funFact ? [c.funFact] : []);
-  return out.join("\n").replace(/\*\*/g, "");
+  // Drop highlight marks only: the checker must see code operators like ** exactly as written.
+  return out.map(stripEmphasis).join("\n");
 }
 
 const INSTRUCTIONS = [

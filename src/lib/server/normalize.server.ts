@@ -1,10 +1,12 @@
 import { chapterSlug } from "@/lib/slugs";
+import { stripEmphasis } from "@/lib/text";
 import type { NoteContent, SyllabusBook, TrickKind } from "@/lib/types";
 
 const clean = (v: unknown, max = 2000): string =>
   typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, max) : "";
 
-const plain = (v: unknown, max = 2000): string => clean(v, max).replace(/\*\*/g, "");
+// Highlights are not wanted in titles, formulas and quiz options; code such as x ** 2 stays.
+const plain = (v: unknown, max = 2000): string => stripEmphasis(clean(v, max));
 
 const list = <T>(v: unknown): T[] => (Array.isArray(v) ? (v as T[]) : []);
 
