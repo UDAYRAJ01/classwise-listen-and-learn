@@ -195,8 +195,24 @@ function withHintLessons(hint: string, lessons: Lesson[], text: string): Lesson[
 }
 
 /** PDFs whose first heading is not the chapter (e.g. a book introduction before chapter 1). */
-const OVERRIDES: Record<string, string[]> = {
-  fees101: ["Locating Places on the Earth"],
+const OVERRIDES: Record<string, Lesson[]> = {
+  fees101: [
+    {
+      title: "Locating Places on the Earth",
+      gist: "How maps, the globe, latitudes and longitudes help us locate places on Earth.",
+    },
+  ],
+  // The contents page misspells both titles; the printed lesson reads like this.
+  hhml110: [
+    {
+      title: "तरुण के स्वप्न",
+      gist: "Subhas Chandra Bose shares his dream of a free, equal and strong India with the youth.",
+    },
+    {
+      title: "भारति, जय, विजय करे!",
+      gist: "Nirala's musical poem praising Mother India; given for reading pleasure.",
+    },
+  ],
 };
 
 const clean = (s: string) => s.replace(/\s+/g, " ").trim();
@@ -306,10 +322,8 @@ async function buildBook(plan: PlanSubject, book: PlanBook): Promise<BuiltChapte
     if (!existsSync(path)) throw new Error(`missing text ${pdfCode}`);
     const text = cleanSource(readFileSync(path, "utf8"));
     if (text.length < 200) throw new Error(`text too short ${pdfCode}`);
-    const found = OVERRIDES[pdfCode]
-      ? OVERRIDES[pdfCode]!.map((title) => ({ title, gist: "" }))
-      : await lessonsOf(plan, book, pdfCode, hint, text);
-    const lessons = withHintLessons(hint, found, text);
+    const lessons =
+      OVERRIDES[pdfCode] ?? withHintLessons(hint, await lessonsOf(plan, book, pdfCode, hint, text), text);
     const pdf = Number(pdfCode.slice(-2));
     const appendix = /परिशिष्ट|अतिरिक्तम्/.test(hint);
     for (const l of lessons) {
