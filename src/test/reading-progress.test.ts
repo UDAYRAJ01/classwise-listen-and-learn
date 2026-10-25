@@ -2,12 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { dwellNeeded } from "@/hooks/use-read-tracker";
 import { sectionForBlock, visibleSections } from "@/lib/note-sections";
-import {
-  allPartsRead,
-  chapterStatus,
-  mergeNotebooks,
-  sanitize,
-} from "@/lib/notebook-store";
+import { allPartsRead, chapterStatus, mergeNotebooks, sanitize } from "@/lib/notebook-store";
 import { matchesFilter, subjectProgress } from "@/lib/progress";
 import { buildTracks } from "@/lib/tracks";
 import type { NoteContent } from "@/lib/types";

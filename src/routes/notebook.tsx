@@ -161,7 +161,9 @@ function NotebookPage() {
       ) : list.length === 0 ? (
         <EmptyCard
           title={
-            tab === "saved" ? "Abhi koi chapter save nahi kiya." : "Abhi tak koi chapter nahi padha."
+            tab === "saved"
+              ? "Abhi koi chapter save nahi kiya."
+              : "Abhi tak koi chapter nahi padha."
           }
           body={
             tab === "saved"
@@ -259,7 +261,10 @@ function ProgressTab() {
             const readN = prog ? prog.done + prog.read : touched.done + touched.read;
             const params = { board: g.board, grade: String(g.grade), subject: g.subject };
             return (
-              <li key={`${g.board}/${g.grade}/${g.subject}`} className="rounded-2xl border border-border bg-card p-5">
+              <li
+                key={`${g.board}/${g.grade}/${g.subject}`}
+                className="rounded-2xl border border-border bg-card p-5"
+              >
                 <div className="flex items-center gap-3">
                   <span
                     className={cn(
@@ -294,7 +299,9 @@ function ProgressTab() {
                   {prog ? (
                     <>
                       {" · "}
-                      <strong className={cn(prog.left === 0 ? "text-tone-leaf" : "text-foreground")}>
+                      <strong
+                        className={cn(prog.left === 0 ? "text-tone-leaf" : "text-foreground")}
+                      >
                         {prog.left === 0 ? "sab ho gaye ✓" : `${prog.left} baaki`}
                       </strong>
                     </>
@@ -304,14 +311,22 @@ function ProgressTab() {
                 <div className="mt-4 flex flex-wrap gap-2">
                   {(!prog || prog.left > 0) && (
                     <Button asChild variant="ink" size="sm">
-                      <Link to="/learn/$board/$grade/$subject" params={params} search={{ show: "left" }}>
+                      <Link
+                        to="/learn/$board/$grade/$subject"
+                        params={params}
+                        search={{ show: "left" }}
+                      >
                         Baaki chapters <ArrowRight />
                       </Link>
                     </Button>
                   )}
                   {readN > 0 && (
                     <Button asChild variant="paper" size="sm">
-                      <Link to="/learn/$board/$grade/$subject" params={params} search={{ show: "read" }}>
+                      <Link
+                        to="/learn/$board/$grade/$subject"
+                        params={params}
+                        search={{ show: "read" }}
+                      >
                         Padhe hue
                       </Link>
                     </Button>

@@ -1,12 +1,6 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  BookmarkCheck,
-  Search,
-  Sparkles,
-  WandSparkles,
-} from "lucide-react";
+import { ArrowRight, BookmarkCheck, Search, Sparkles, WandSparkles } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { Crumbs } from "@/components/crumbs";
@@ -131,7 +125,8 @@ function ChaptersPage() {
             matchesFilter(
               chapterStatus(nb, refKey({ board, grade, subject: subject.slug, chapter: c.slug })),
               show,
-            ) && (!q || `${c.title} ${c.gist}`.toLowerCase().includes(q)),
+            ) &&
+            (!q || `${c.title} ${c.gist}`.toLowerCase().includes(q)),
         ),
       }))
       .filter((b) => b.chapters.length > 0);
@@ -239,8 +234,8 @@ function ChaptersPage() {
                 <span className="h-2.5 w-2.5 rounded-full bg-tone-sun/60" /> Adhure {prog.started}
               </li>
               <li className="flex items-center gap-1.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-muted ring-1 ring-border" /> Shuru
-                nahi kiye {prog.left - prog.started}
+                <span className="h-2.5 w-2.5 rounded-full bg-muted ring-1 ring-border" /> Shuru nahi
+                kiye {prog.left - prog.started}
               </li>
             </ul>
           </div>
@@ -248,12 +243,19 @@ function ChaptersPage() {
             <Button asChild variant="ink" size="lg" className="h-auto justify-between py-3">
               <Link
                 to="/learn/$board/$grade/$subject/$chapter"
-                params={{ board, grade: String(grade), subject: subject.slug, chapter: nextUp.slug }}
+                params={{
+                  board,
+                  grade: String(grade),
+                  subject: subject.slug,
+                  chapter: nextUp.slug,
+                }}
                 search={lang ? { lang } : {}}
               >
                 <span className="min-w-0 text-left">
                   <span className="block text-xs font-semibold uppercase tracking-wider opacity-75">
-                    {statusOf(nextUp.slug) === "started" ? "Adhura chapter poora karo" : "Agla baaki chapter"}
+                    {statusOf(nextUp.slug) === "started"
+                      ? "Adhura chapter poora karo"
+                      : "Agla baaki chapter"}
                   </span>
                   <span className="block max-w-64 truncate font-display text-base">
                     {nextUp.number}. {nextUp.title}

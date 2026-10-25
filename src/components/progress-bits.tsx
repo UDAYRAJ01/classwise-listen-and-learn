@@ -80,7 +80,13 @@ export function StatusBadge({
 }) {
   const s = STATUS_STYLE[status];
   const Icon =
-    status === "done" ? CheckCircle2 : status === "read" ? BookCheck : status === "started" ? CircleDashed : null;
+    status === "done"
+      ? CheckCircle2
+      : status === "read"
+        ? BookCheck
+        : status === "started"
+          ? CircleDashed
+          : null;
   return (
     <span
       className={cn(

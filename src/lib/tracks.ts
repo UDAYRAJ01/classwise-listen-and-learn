@@ -158,8 +158,7 @@ export function buildTracks(note: NoteContent, lang: Lang): Track[] {
       text: [
         sentence(L.mistakes),
         ...mistakes.map(
-          (m) =>
-            `${L.wrong}: ${sentence(m.mistake)} ${L.right}: ${sentence(m.correct)}`,
+          (m) => `${L.wrong}: ${sentence(m.mistake)} ${L.right}: ${sentence(m.correct)}`,
         ),
       ].join(" "),
     });

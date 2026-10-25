@@ -81,10 +81,20 @@ function resolveMeta(
   if (isCustomSlug(chapter)) {
     const t = note?.chapter_title ?? (title && customTopicSlug(title) === chapter ? title : null);
     return t
-      ? { title: t, bookName: null, textbookUrl: null, number: null, custom: true, prev: null, next: null }
+      ? {
+          title: t,
+          bookName: null,
+          textbookUrl: null,
+          number: null,
+          custom: true,
+          prev: null,
+          next: null,
+        }
       : null;
   }
-  const all = (syllabus?.books ?? []).flatMap((b) => b.chapters.map((c) => ({ c, book: b.name, code: b.code })));
+  const all = (syllabus?.books ?? []).flatMap((b) =>
+    b.chapters.map((c) => ({ c, book: b.name, code: b.code })),
+  );
   const i = all.findIndex((x) => x.c.slug === chapter);
   if (i < 0) {
     return note
