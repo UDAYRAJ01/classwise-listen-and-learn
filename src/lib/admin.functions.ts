@@ -157,3 +157,80 @@ export const rebuildChapter = createServerFn({ method: "POST" })
       .eq("status", "resolved");
     return { removed };
   });
+
+export interface CheckLeftover {
+  noteId: string;
+  board: string;
+  grade: number;
+  subject: string;
+  chapterSlug: string;
+  chapterTitle: string;
+  language: string;
+  checkedAt: string;
+  issues: { section: string; kind: string; wrong: string; correct: string }[];
+}
+
+export interface CheckSummary {
+  notes: number;
+  checked: number;
+  withTextbook: number;
+  textbookFixes: number;
+  leftovers: CheckLeftover[];
+}
+
+/** How far the chapter-by-chapter textbook check has got, and what it could not fix. */
+export const checkSummary = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<CheckSummary> => {
+    await assertAdmin(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const head = { count: "exact" as const, head: true };
+    const [notes, checked, sources, fixes, left] = await Promise.all([
+      supabaseAdmin.from("notes").select("id", head),
+      supabaseAdmin.from("note_checks").select("note_id", head),
+      supabaseAdmin.from("chapter_sources").select("chapter_slug", head),
+      supabaseAdmin
+        .from("note_reports")
+        .select("id", head)
+        .like("message", "[Textbook check%"),
+      supabaseAdmin
+        .from("note_checks")
+        .select(
+          "note_id, checked_at, issues, notes(board, grade, subject, chapter_slug, chapter_title, language)",
+        )
+        .neq("issues", "[]")
+        .order("checked_at", { ascending: false })
+        .limit(100),
+    ]);
+    if (left.error) throw new Error("Check ki jaankari load nahi hui.");
+    return {
+      notes: notes.count ?? 0,
+      checked: checked.count ?? 0,
+      withTextbook: sources.count ?? 0,
+      textbookFixes: fixes.count ?? 0,
+      leftovers: (left.data ?? []).flatMap((r) => {
+        const n = r.notes as unknown as {
+          board: string;
+          grade: number;
+          subject: string;
+          chapter_slug: string;
+          chapter_title: string;
+          language: string;
+        } | null;
+        if (!n) return [];
+        return [
+          {
+            noteId: r.note_id,
+            board: n.board,
+            grade: n.grade,
+            subject: n.subject,
+            chapterSlug: n.chapter_slug,
+            chapterTitle: n.chapter_title,
+            language: n.language,
+            checkedAt: r.checked_at,
+            issues: (Array.isArray(r.issues) ? r.issues : []) as CheckLeftover["issues"],
+          },
+        ];
+      }),
+    };
+  });
