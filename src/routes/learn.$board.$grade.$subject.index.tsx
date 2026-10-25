@@ -2,10 +2,7 @@ import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import {
   ArrowRight,
-  BookCheck,
   BookmarkCheck,
-  CheckCircle2,
-  CircleDashed,
   Search,
   Sparkles,
   WandSparkles,
@@ -476,15 +473,7 @@ function ChaptersPage() {
                         )}
                         aria-hidden
                       >
-                        {st === "done" ? (
-                          <CheckCircle2 className="h-5 w-5" />
-                        ) : st === "read" ? (
-                          <BookCheck className="h-5 w-5" />
-                        ) : st === "started" ? (
-                          <CircleDashed className="h-5 w-5" />
-                        ) : (
-                          c.number
-                        )}
+                        {c.number}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-display text-lg font-bold leading-snug">
