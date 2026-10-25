@@ -50,13 +50,13 @@ const LANG_RULES: Record<Lang, string> = {
 
 const STAGE_RULES = {
   primary:
-    "Student is a young child (Class 1-5). Use very short, friendly sentences and examples from daily life. Sizes: keyPoints 3-5 groups with 2-4 points each; keyTerms 4-8; tricks 3-5 (rhymes, tiny stories, picture-in-mind); questions 5-8 worth 1-2 marks; quickRevision 5-7; examTips 2-3.",
+    "Student is a young child (Class 1-5). Use very short, friendly sentences and examples from daily life. Sizes: keyPoints 3-5 groups with 2-4 points each; keyTerms 4-8; tricks 4-6 (rhymes, tiny stories, picture-in-mind, finger counting); questions 5-8 worth 1-2 marks; quickRevision 5-7; examTips 3-4 (simple tips for the child and how to write neat answers); mistakes 3-4.",
   middle:
-    "Student is in middle school (Class 6-8). Clear explanations with examples. Sizes: keyPoints 4-6 groups with 3-5 points each; keyTerms 6-10; tricks 4-6; questions 6-10 worth 1-3 marks; quickRevision 6-9; examTips 3-4.",
+    "Student is in middle school (Class 6-8). Clear explanations with examples. Sizes: keyPoints 4-6 groups with 3-5 points each; keyTerms 6-10; tricks 6-8; questions 6-10 worth 1-3 marks; quickRevision 6-9; examTips 4-6; mistakes 4-5.",
   secondary:
-    "Student is preparing for board exams (Class 9-10). Be exam-focused and complete. Sizes: keyPoints 5-8 groups with 3-6 points each; keyTerms 8-14; tricks 5-8; questions 8-12 mixing 1, 2, 3 and 5 marks including at least one case/competency-based question; quickRevision 8-12; examTips 3-5.",
+    "Student is preparing for board exams (Class 9-10). Be exam-focused and complete. Sizes: keyPoints 5-8 groups with 3-6 points each; keyTerms 8-14; tricks 8-10; questions 8-12 mixing 1, 2, 3 and 5 marks including at least one case/competency-based question; quickRevision 8-12; examTips 5-7; mistakes 5-6.",
   senior:
-    "Student is in Class 11-12 (board + entrance level). Be rigorous: include key definitions, laws, derivation results, diagrams described in words, and differences. Sizes: keyPoints 6-9 groups with 3-6 points each; keyTerms 10-15; tricks 6-8; questions 10-12 mixing 1, 2, 3 and 5 marks in previous-year board style; quickRevision 10-14; examTips 4-5.",
+    "Student is in Class 11-12 (board + entrance level). Be rigorous: include key definitions, laws, derivation results, diagrams described in words, and differences. Sizes: keyPoints 6-9 groups with 3-6 points each; keyTerms 10-15; tricks 8-12; questions 10-12 mixing 1, 2, 3 and 5 marks in previous-year board style; quickRevision 10-14; examTips 6-8; mistakes 5-7.",
 } as const;
 
 const QUIZ_SIZE = { primary: "5", middle: "6-8", secondary: "8-10", senior: "10-12" } as const;
@@ -64,11 +64,13 @@ const QUIZ_SIZE = { primary: "5", middle: "6-8", secondary: "8-10", senior: "10-
 export function notesInstructions(): string {
   return [
     "You are India's favourite school teacher and topper-notes writer. You turn a textbook chapter into short, high-yield notes plus memory tricks that make students remember instantly.",
-    "Stay faithful to the textbook chapter content for the given board and class. Never invent facts, dates, names or formulas.",
+    "Stay faithful to the textbook chapter content for the given board and class. Never invent facts, dates, names or formulas. If you are not sure a fact is in the syllabus, leave it out.",
     "Formatting rules for every string: plain text only. Wrap the 1-3 most important keywords of a point in **double asterisks** so they can be highlighted. No other markdown, no bullet characters, no headings, no LaTeX. Use Unicode for maths and chemistry (x², √, π, ≤, ≥, →, ⇌, H₂O, CO₂, Δ, θ).",
-    "Tricks must be genuine memory devices tied to this chapter's facts: acronyms or mnemonic sentences (like VIBGYOR or 'My Very Educated Mother…'), rhymes, mini stories or vivid mental pictures, number patterns, or shortcuts. Each trick explains exactly how to use it. Never give generic advice such as 'revise daily'.",
+    "Tricks must be genuine memory devices tied to this chapter's facts: acronyms or mnemonic sentences (like VIBGYOR or 'My Very Educated Mother…'), rhymes, mini stories or vivid mental pictures, number patterns, or shortcuts. Cover the hardest-to-remember facts first: lists, sequences, dates, names, formulas, differences, exceptions and spellings. Spread tricks across the whole chapter (ideally one for every short-notes group) and mix at least three different kinds. Each trick explains exactly how to use it and which fact it unlocks. Never give generic advice such as 'revise daily'.",
+    "examTips: specific to THIS chapter — which topics are asked most, the exact keywords or diagram labels examiners look for, how to structure a long answer for full marks, units and steps not to skip, and quick checks. Never write generic tips like 'manage your time' or 'read the question carefully'.",
+    "mistakes: common mistakes students really make in THIS chapter — wrong ideas, mixed-up terms, wrong formula use, sign or unit slips, spelling of names, wrong dates. 'mistake' states the wrong version briefly; 'correct' gives the right version with a one-line reason or memory hook.",
     "formulas: include only real formulas, equations, laws, chemical reactions, accounting equations or grammar rules that the chapter teaches; otherwise return an empty list. 'spoken' is how a teacher reads the formula aloud in the chosen language (e.g. 'v equals u plus a t').",
-    "questions: realistic exam questions with crisp model answers sized by marks (1 mark: one line; 2 marks: 2-3 lines; 3 marks: 3-4 points; 5 marks: 5-6 points). marks is an integer.",
+    "questions: realistic exam questions with crisp model answers sized by marks (1 mark: one line; 2 marks: 2-3 lines; 3 marks: 3-4 points; 5 marks: 5-6 points). marks is an integer. Solve numerical questions step by step with the formula, substitution, units and final answer.",
     "funFact: one surprising but true fact related to the chapter.",
     "oneLiner: the whole chapter in one memorable sentence. summary: 3-5 sentences introducing the chapter.",
   ].join("\n");
@@ -125,7 +127,7 @@ export function notesPrompt(opts: {
       ? "This request writes ONLY the first half of the notes: title, oneLiner, summary, keyPoints, keyTerms and formulas. Cover the whole chapter in keyPoints, in textbook order."
       : opts.part === "practice"
         ? "This request writes ONLY the second half of the notes: tricks, questions, quickRevision, examTips and funFact. Base them on the full chapter content in textbook order."
-        : `This request writes ONLY a multiple-choice quiz (mcqs) covering the whole chapter: ${QUIZ_SIZE[stage]} questions, each with exactly 4 options, 'answer' is the 0-based index of the single correct option, plausible wrong options based on common student mistakes, and a one-line explanation of why the answer is right. Vary the position of the correct option.`,
+        : `This request writes ONLY two self-check lists covering the whole chapter. (1) mcqs: ${QUIZ_SIZE[stage]} multiple-choice questions, each with exactly 4 options, 'answer' is the 0-based index of the single correct option, plausible wrong options based on common student mistakes, and a one-line explanation of why the answer is right. Vary the position of the correct option. (2) mistakes: the common mistakes list sized as above.`,
   ]
     .filter((line) => line !== null)
     .join("\n");

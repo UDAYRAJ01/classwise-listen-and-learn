@@ -164,13 +164,13 @@ export const Route = createFileRoute("/api/notes")({
                   partial.push({ ...halves.core, ...halves.practice, ...halves.quiz });
                 },
               });
-            // The quiz is a bonus: if only it fails, still save the notes.
+            // The quiz + mistakes part is a bonus: if only it fails, still save the notes.
             const [core, practice, quiz] = await Promise.all([
               run("core"),
               run("practice"),
               run("quiz").catch((error: unknown) => {
                 console.error("quiz generation failed", error);
-                return { mcqs: [] };
+                return { mcqs: [], mistakes: [] };
               }),
             ]);
             partial.cancel();
