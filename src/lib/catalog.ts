@@ -307,6 +307,12 @@ export function getSubject(board: BoardId, grade: number, slug: string): Subject
   return subjectsFor(board, grade).includes(slug) ? (SUBJECTS[slug] ?? null) : null;
 }
 
+/** Where an old subject link now lives, after the board renamed the subject. */
+export function renamedSubject(board: BoardId, grade: number, slug: string): string | null {
+  if (board === "icse" && grade === 11 && slug === "commerce") return "business-studies";
+  return null;
+}
+
 export function gradeLabel(board: BoardId, grade: number): string {
   if (board === "icse" && grade >= 11) return `ISC Class ${grade}`;
   return `Class ${grade}`;

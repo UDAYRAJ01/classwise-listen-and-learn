@@ -1,5 +1,5 @@
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, BookmarkCheck, Search, Sparkles, WandSparkles } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 
@@ -12,16 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeneration } from "@/hooks/use-generation";
 import {
+  type BoardId,
   BOARDS,
   DEFAULT_LANG,
   getSubject,
   gradeLabel,
   isBoard,
+  type Lang,
   LANGS,
   parseGrade,
+  renamedSubject,
   TONE_CLASSES,
-  type BoardId,
-  type Lang,
 } from "@/lib/catalog";
 import { coverFor } from "@/lib/ncert-covers";
 import { chapterStatus, notebook, refKey, useNotebook } from "@/lib/notebook-store";
@@ -51,7 +52,15 @@ export const Route = createFileRoute("/learn/$board/$grade/$subject/")({
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
     const subject = getSubject(params.board, grade, params.subject);
-    if (!subject) throw notFound();
+    if (!subject) {
+      const moved = renamedSubject(params.board, grade, params.subject);
+      if (moved)
+        throw redirect({
+          to: "/learn/$board/$grade/$subject",
+          params: { board: params.board, grade: String(grade), subject: moved },
+        });
+      throw notFound();
+    }
     await context.queryClient.ensureQueryData(syllabusQuery(params.board, grade, subject.slug));
     return { board: params.board as BoardId, grade, subjectSlug: subject.slug };
   },

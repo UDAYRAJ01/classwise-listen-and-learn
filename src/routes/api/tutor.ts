@@ -25,9 +25,7 @@ export const Route = createFileRoute("/api/tutor")({
         const messages: Msg[] = raw
           .filter(
             (m): m is Msg =>
-              !!m &&
-              (m.role === "user" || m.role === "assistant") &&
-              typeof m.content === "string",
+              !!m && (m.role === "user" || m.role === "assistant") && typeof m.content === "string",
           )
           .slice(-10)
           .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
@@ -39,7 +37,8 @@ export const Route = createFileRoute("/api/tutor")({
         const named = /\bclass\s*(1[0-2]|[1-9])\b/i.exec(last.content);
         const picked = typeof body.grade === "number" ? body.grade : Number(body.grade);
         const gradeNum = named ? Number(named[1]) : picked;
-        const grade = Number.isInteger(gradeNum) && gradeNum >= 1 && gradeNum <= 12 ? gradeNum : null;
+        const grade =
+          Number.isInteger(gradeNum) && gradeNum >= 1 && gradeNum <= 12 ? gradeNum : null;
         const board = body.board === "cbse" || body.board === "icse" ? body.board : null;
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -74,9 +73,8 @@ export const Route = createFileRoute("/api/tutor")({
 
         const { createOpenAI } = await import("@ai-sdk/openai");
         const { streamText } = await import("ai");
-        const { GATEWAY_URL, TEXT_MODEL, toGatewayError, friendlyMessage } = await import(
-          "@/lib/server/ai.server"
-        );
+        const { GATEWAY_URL, TEXT_MODEL, toGatewayError, friendlyMessage } =
+          await import("@/lib/server/ai.server");
         const apiKey = process.env["LOVABLE_API_KEY"];
         if (!apiKey) return jsonError(500, "AI service is not configured.");
         const provider = createOpenAI({
@@ -86,7 +84,13 @@ export const Route = createFileRoute("/api/tutor")({
         });
 
         const boardName =
-          board === "icse" ? (grade && grade >= 11 ? "ISC " : "ICSE ") : board === "cbse" ? "CBSE " : "";
+          board === "icse"
+            ? grade && grade >= 11
+              ? "ISC "
+              : "ICSE "
+            : board === "cbse"
+              ? "CBSE "
+              : "";
         const who = grade
           ? `Student ${boardName}Class ${grade} mein hai — jawab usi class ke level aur syllabus ke hisaab se do.`
           : null;

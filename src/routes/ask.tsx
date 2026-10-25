@@ -116,7 +116,8 @@ function AskPage() {
       }
       if (!acc) put("⚠️ Jawab khali aaya. Sawal thoda badal ke poochho.");
     } catch (e) {
-      if ((e as Error).name !== "AbortError") put("⚠️ Internet ya server mein dikkat. Dobara try karein.");
+      if ((e as Error).name !== "AbortError")
+        put("⚠️ Internet ya server mein dikkat. Dobara try karein.");
     } finally {
       setBusy(false);
       abort.current = null;
@@ -144,7 +145,11 @@ function AskPage() {
 
       <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-2 pl-3">
         <span className="text-sm font-bold">Meri class:</span>
-        <div className="inline-flex gap-1 rounded-lg bg-muted p-0.5" role="group" aria-label="Board">
+        <div
+          className="inline-flex gap-1 rounded-lg bg-muted p-0.5"
+          role="group"
+          aria-label="Board"
+        >
           {(["cbse", "icse"] as const).map((b) => (
             <button
               key={b}
@@ -197,7 +202,10 @@ function AskPage() {
       <div className="space-y-4">
         {msgs.map((m, i) =>
           m.role === "user" ? (
-            <div key={i} className="ml-auto max-w-[85%] rounded-2xl bg-primary px-4 py-2 text-primary-foreground">
+            <div
+              key={i}
+              className="ml-auto max-w-[85%] rounded-2xl bg-primary px-4 py-2 text-primary-foreground"
+            >
               {m.content}
             </div>
           ) : (
@@ -207,7 +215,9 @@ function AskPage() {
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
                 </div>
               ) : (
-                <span className="animate-pulse text-sm text-muted-foreground">Guru soch rahe hain…</span>
+                <span className="animate-pulse text-sm text-muted-foreground">
+                  Guru soch rahe hain…
+                </span>
               )}
             </div>
           ),
@@ -237,7 +247,12 @@ function AskPage() {
           aria-label="Sawal"
         />
         {busy ? (
-          <Button type="button" variant="outline" onClick={() => abort.current?.abort()} aria-label="Roko">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => abort.current?.abort()}
+            aria-label="Roko"
+          >
             <Square className="h-4 w-4" />
           </Button>
         ) : (
