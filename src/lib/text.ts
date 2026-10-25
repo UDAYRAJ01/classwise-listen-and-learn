@@ -8,8 +8,17 @@ export type Segment = { text: string; strong: boolean };
 // patterns like "***; **; *". Inside a word a
 // highlight may still mark letters (stala**G**mite), and "** * **" highlights one operator.
 const OPEN = String.raw`(?:(?<![\p{L}\p{N}*])|(?<=\p{L})(?=\*\*\p{L}))\*\*(?![\s*;,)\]}]|=(?!=))`;
+// Inside a highlight: anything but a new "**", except a spaced Python operator (i ** 3) or the
+// star of a starred symbol right before the closing marks (p*** = highlighted "p*").
+const BODY = String.raw`(?:[^*]|\*(?!\*)|\*(?=\*\*(?!\*))|(?<=\s)\*\*(?=\s))`;
 const EMPHASIS = new RegExp(
-  String.raw`${OPEN}(.{1,160}?)(?<=\S)\*\*(?!\*)|\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
+  [
+    String.raw`${OPEN}(${BODY}{1,160}?)(?<=\S)\*\*(?!\*)`,
+    // "** * **" highlights a lone operator.
+    String.raw`\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
+    // "**=**" or "**= aur ==**" highlights the = sign; a bare "x **= 3" stays code.
+    String.raw`\*\*(=(?:[^*]{0,40}?[^\s*])?)\*\*(?!\*)`,
+  ].join("|"),
   "gu",
 );
 const DANGLING = new RegExp(OPEN, "gu");
@@ -20,7 +29,7 @@ export function splitEmphasis(input: string): Segment[] {
   for (const m of input.matchAll(EMPHASIS)) {
     const at = m.index ?? 0;
     if (at > last) out.push({ text: input.slice(last, at), strong: false });
-    out.push({ text: m[1] ?? m[2] ?? "", strong: true });
+    out.push({ text: m[1] ?? m[2] ?? m[3] ?? "", strong: true });
     last = at + m[0].length;
   }
   if (last < input.length) out.push({ text: input.slice(last), strong: false });

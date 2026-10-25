@@ -73,7 +73,9 @@ describe("text markup", () => {
     expect(stripEmphasis("**Power** ke liye 3 ** 4 = 81 aur x **= 3")).toBe(
       "Power ke liye 3 ** 4 = 81 aur x **= 3",
     );
-    expect(stripEmphasis("Sahi term **1 / (i ** 3)** hai; y**2")).toBe("Sahi term 1 / (i ** 3) hai; y**2");
+    expect(stripEmphasis("Sahi term **1 / (i ** 3)** hai; y**2")).toBe(
+      "Sahi term 1 / (i ** 3) hai; y**2",
+    );
     expect(stripEmphasis("star rows ***; **; *")).toBe("star rows ***; **; *");
     expect(stripEmphasis("Operators: +=, //=, **=. **==** compares")).toBe(
       "Operators: +=, //=, **=. == compares",
@@ -82,6 +84,18 @@ describe("text markup", () => {
 
   it("still highlights letters inside a word and drops an unfinished highlight", () => {
     expect(stripEmphasis("stala**G**mite")).toBe("stalaGmite");
+    expect(splitEmphasis("**=** ke dono taraf")).toEqual([
+      { text: "=", strong: true },
+      { text: " ke dono taraf", strong: false },
+    ]);
+    expect(stripEmphasis("**= aur ==** mein farq; x **= 3 aur **Power**")).toBe(
+      "= aur == mein farq; x **= 3 aur Power",
+    );
+    expect(splitEmphasis("**p*** equilibrium price")[0]).toEqual({ text: "p*", strong: true });
+    // An unclosed highlight must not swallow the next one.
+    expect(stripEmphasis("'**Haathi daali!' patte **khaati** hai")).toBe(
+      "'Haathi daali!' patte khaati hai",
+    );
     expect(stripEmphasis("Photo **synth")).toBe("Photo synth");
   });
 });
@@ -91,7 +105,14 @@ describe("saved notes", () => {
     const n = normalizeNote(
       {
         formulas: [{ name: "**Cube**", formula: "cube = x ** 3", spoken: "", note: "" }],
-        mcqs: [{ question: "q", options: ["x ** 2", "x * 2", "x // 2", "x % 2"], answer: 0, explanation: "" }],
+        mcqs: [
+          {
+            question: "q",
+            options: ["x ** 2", "x * 2", "x // 2", "x % 2"],
+            answer: 0,
+            explanation: "",
+          },
+        ],
       } as never,
       "Python",
     );
