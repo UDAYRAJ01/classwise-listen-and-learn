@@ -7,6 +7,9 @@
  *   WORKERS=6 bun scripts/verify-notes.ts --board=cbse --grades=9-12 --subject=science
  *   bun scripts/verify-notes.ts --reverse          # second run, from the end of the list
  *   bun scripts/verify-notes.ts --from=350         # third run, from the middle
+ *   bun scripts/verify-notes.ts --subject=hindi --rewrite-before=2026-10-25T14:00:00Z
+ *                                                  # rewrite notes made before a date (e.g. after
+ *                                                  # the chapter's textbook text was repaired)
  *
  * A chapter counts as finished when its stored notes have the "common mistakes" part
  * and a textbook check newer than the notes. Progress lives in the database, so the run
@@ -39,6 +42,7 @@ const WORKERS = Number(process.env["WORKERS"] ?? 6);
 const MAX_FIX_ROUNDS = 2;
 const ONLY_BOARD = args.get("board");
 const ONLY_SUBJECT = args.get("subject");
+const REWRITE_BEFORE = args.get("rewrite-before");
 const [G_FROM, G_TO] = (args.get("grades") ?? "1-12").split("-").map(Number);
 const LOG_DIR = "/tmp/verify";
 mkdirSync(LOG_DIR, { recursive: true });
@@ -173,7 +177,11 @@ async function runJob(job: Job): Promise<string> {
   if (!subject) return "skip:no-subject";
   const where = { board: job.board, grade: job.grade, subject, chapter: job.chapter };
 
-  const existing = (await findNote(admin, where, job.lang)).data as unknown as NoteRecord | null;
+  const found = (await findNote(admin, where, job.lang)).data as unknown as NoteRecord | null;
+  // Notes written before --rewrite-before are thrown away and written again from the textbook.
+  const stale = !!found && !!REWRITE_BEFORE && found.created_at < REWRITE_BEFORE;
+  if (stale && !DRY) await purgeNotes(admin, { ...job, subject: job.subject }, [found.id]);
+  const existing = stale ? null : found;
   if (existing && existing.content.mistakes) {
     const chk = await lastCheck(existing.id);
     if (chk && chk.checked_at >= existing.created_at) return "skip:done";
