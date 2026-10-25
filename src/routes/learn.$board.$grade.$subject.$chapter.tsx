@@ -539,7 +539,22 @@ function ChapterView({
               {isSaved ? <BookmarkCheck className="text-accent" /> : <Bookmark />}
               {isSaved ? "Saved" : "Save"}
             </Button>
-            <Button variant={isDone ? "ink" : "paper"} onClick={toggleDone} aria-pressed={isDone}>
+            <Button
+              variant={isRead ? "ink" : "paper"}
+              onClick={toggleRead}
+              aria-pressed={isRead}
+              disabled={!record && !isRead}
+              title="Poora chapter padh ya sun liya? Ye apne aap bhi mark hota hai."
+            >
+              {isRead ? <BookCheck /> : <BookOpen />}
+              {isRead ? "Padh liya" : "Padh liya?"}
+            </Button>
+            <Button
+              variant={isDone ? "ink" : "paper"}
+              onClick={toggleDone}
+              aria-pressed={isDone}
+              title="Quiz ke baad, jab chapter achhe se yaad ho jaye"
+            >
               {isDone ? <CheckCircle2 /> : <Circle />}
               {isDone ? "Yaad ho gaya" : "Yaad ho gaya?"}
             </Button>
@@ -563,24 +578,54 @@ function ChapterView({
               <Printer /> <span className="hidden sm:inline">Print / PDF</span>
             </Button>
           </div>
+
+          {record && (
+            <ReadMeter
+              className="no-print mt-5 lg:hidden"
+              read={readCount}
+              total={requiredParts.length}
+              done={isRead}
+            />
+          )}
         </header>
       </div>
 
       <div className="mx-auto mt-10 grid max-w-6xl gap-10 px-4 lg:grid-cols-[200px_1fr]">
         <aside className="no-print hidden lg:block">
           <nav aria-label="Is chapter mein" className="sticky top-24 space-y-1">
+            {record && (
+              <ReadMeter
+                className="mb-4"
+                read={readCount}
+                total={requiredParts.length}
+                done={isRead}
+                compact
+              />
+            )}
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Is chapter mein
             </p>
-            {sections.map((s) => (
-              <a
-                key={s.id}
-                href={`#sec-${s.id}`}
-                className="block rounded-lg px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                {s.label}
-              </a>
-            ))}
+            {sections.map((s) => {
+              const seen = seenSet.has(s.id);
+              return (
+                <a
+                  key={s.id}
+                  href={`#sec-${s.id}`}
+                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  {record &&
+                    (seen ? (
+                      <CheckCircle2
+                        className="h-3.5 w-3.5 shrink-0 text-tone-leaf"
+                        aria-label="padh liya"
+                      />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 opacity-40" aria-hidden />
+                    ))}
+                  <span className={cn(seen && "text-foreground")}>{s.label}</span>
+                </a>
+              );
+            })}
             {record && (
               <button
                 type="button"
@@ -608,11 +653,51 @@ function ChapterView({
               streaming={streaming}
               activeBlockId={narration.activeBlockId}
               playable={!!record}
+              seen={record ? seenSet : undefined}
               onPlayBlock={(id) => {
                 const i = blockToTrack.get(id);
                 if (i !== undefined) narration.playAt(i);
               }}
             />
+          )}
+
+          {record && (
+            <div
+              className={cn(
+                "no-print flex flex-col items-start justify-between gap-4 rounded-3xl border border-border p-6 sm:flex-row sm:items-center sm:p-8",
+                isRead ? "bg-tone-leaf/10" : "bg-card",
+              )}
+            >
+              <div>
+                <p className="flex items-center gap-2 font-display text-2xl font-extrabold">
+                  {isRead ? (
+                    <>
+                      <BookCheck className="h-6 w-6 text-tone-leaf" /> Chapter padh liya!
+                    </>
+                  ) : (
+                    "Poora chapter padh liya?"
+                  )}
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  {isRead
+                    ? isDone
+                      ? "Ye chapter yaad bhi ho gaya hai. Agle chapter par chalo."
+                      : "Ab quiz do. Achhe number aayein to “Yaad ho gaya” mark karo."
+                    : `${readCount}/${requiredParts.length} hisse padhe. Har hissa padhne ya sunne par ye apne aap mark ho jayega.`}
+                </p>
+              </div>
+              {isRead ? (
+                !isDone && (
+                  <Button variant="ink" size="lg" onClick={toggleDone}>
+                    <CheckCircle2 /> Yaad ho gaya
+                  </Button>
+                )
+              ) : (
+                <Button variant="ink" size="lg" onClick={toggleRead}>
+                  <BookCheck /> Haan, padh liya
+                </Button>
+              )}
+            </div>
           )}
 
           {record && mcqs.length > 0 && (
