@@ -120,8 +120,10 @@ export function notesPrompt(opts: {
       ? `Verified corrections from the teacher — these facts are correct and MUST be followed wherever relevant:\n${opts.corrections.map((c) => `- ${c}`).join("\n")}`
       : null,
     opts.source
-      ? `OFFICIAL TEXTBOOK CHAPTER TEXT (extracted from the PDF; may contain layout noise). Base every fact, definition, date, name, formula, example and the chapter order on this text; do not add facts that contradict it, and cover what it covers:\n<<<\n${opts.source}\n>>>`
-      : null,
+      ? `OFFICIAL TEXTBOOK CHAPTER TEXT (extracted from the PDF; may contain layout noise and broken Devanagari matras — read through them). Base every fact, definition, date, name, formula, example and the chapter order on this text; do not add facts that contradict it, and cover what it covers. If the text holds several lessons, write notes ONLY for the chapter named above:\n<<<\n${opts.source}\n>>>`
+      : opts.custom
+        ? null
+        : "No textbook text is available for this chapter. Use only what you reliably know about this exact chapter of this book; if you are unsure of story details (character names, events, numbers), explain the chapter's topic and ideas without inventing such details.",
     "Make the notes complete enough that a student who reads and listens once can answer exam questions from this chapter.",
     opts.part === "core"
       ? "This request writes ONLY the first half of the notes: title, oneLiner, summary, keyPoints, keyTerms and formulas. Cover the whole chapter in keyPoints, in textbook order."
