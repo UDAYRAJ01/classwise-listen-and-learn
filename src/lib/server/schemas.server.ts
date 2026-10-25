@@ -47,6 +47,7 @@ export const noteJsonSchema = {
     "examTips",
     "funFact",
     "mcqs",
+    "mistakes",
   ],
   properties: {
     title: str,
@@ -122,10 +123,19 @@ export const noteJsonSchema = {
         },
       },
     },
+    mistakes: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["mistake", "correct"],
+        properties: { mistake: str, correct: str },
+      },
+    },
   },
 } as const;
 
-/** Notes are written in two halves at the same time to halve waiting time. */
+/** Notes are written in three parts at the same time to cut waiting time. */
 const pick = (keys: readonly (keyof typeof noteJsonSchema.properties)[]) => ({
   type: "object",
   additionalProperties: false,
@@ -136,7 +146,7 @@ const pick = (keys: readonly (keyof typeof noteJsonSchema.properties)[]) => ({
 export const NOTE_PART_KEYS = {
   core: ["title", "oneLiner", "summary", "keyPoints", "keyTerms", "formulas"],
   practice: ["tricks", "questions", "quickRevision", "examTips", "funFact"],
-  quiz: ["mcqs"],
+  quiz: ["mcqs", "mistakes"],
 } as const;
 
 export const notePartSchemas = {

@@ -26,6 +26,9 @@ const SPOKEN: Record<
     terms: string;
     formulas: string;
     trick: string;
+    mistakes: string;
+    wrong: string;
+    right: string;
     question: string;
     answer: string;
     revision: string;
@@ -39,6 +42,9 @@ const SPOKEN: Record<
     terms: "Important terms",
     formulas: "Formulas",
     trick: "Memory trick",
+    mistakes: "Common mistakes to avoid",
+    wrong: "Mistake",
+    right: "Correct",
     question: "Question",
     answer: "Answer",
     revision: "Quick revision",
@@ -51,6 +57,9 @@ const SPOKEN: Record<
     terms: "महत्वपूर्ण शब्द",
     formulas: "सूत्र",
     trick: "याद करने की ट्रिक",
+    mistakes: "ये गलतियाँ मत करना",
+    wrong: "गलती",
+    right: "सही",
     question: "प्रश्न",
     answer: "उत्तर",
     revision: "झटपट दोहराव",
@@ -63,6 +72,9 @@ const SPOKEN: Record<
     terms: "Important words",
     formulas: "Formulas",
     trick: "Yaad karne ki trick",
+    mistakes: "Ye galtiyan mat karna",
+    wrong: "Galti",
+    right: "Sahi",
     question: "Sawaal",
     answer: "Jawaab",
     revision: "Quick revision",
@@ -136,6 +148,22 @@ export function buildTracks(note: NoteContent, lang: Lang): Track[] {
         .join(" "),
     });
   });
+
+  // Older notes have no mistakes list, so their part numbers stay unchanged.
+  const mistakes = note.mistakes ?? [];
+  if (mistakes.length > 0) {
+    tracks.push({
+      blockId: "mistakes",
+      label: L.mistakes,
+      text: [
+        sentence(L.mistakes),
+        ...mistakes.map(
+          (m) =>
+            `${L.wrong}: ${sentence(m.mistake)} ${L.right}: ${sentence(m.correct)}`,
+        ),
+      ].join(" "),
+    });
+  }
 
   note.questions.forEach((q, i) => {
     tracks.push({
