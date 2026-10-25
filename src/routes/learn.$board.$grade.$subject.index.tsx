@@ -1,11 +1,20 @@
-import { coverFor } from "@/lib/ncert-covers";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { BookmarkCheck, CheckCircle2, Search, Sparkles, WandSparkles } from "lucide-react";
+import {
+  ArrowRight,
+  BookCheck,
+  BookmarkCheck,
+  CheckCircle2,
+  CircleDashed,
+  Search,
+  Sparkles,
+  WandSparkles,
+} from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { Crumbs } from "@/components/crumbs";
 import { ExamMode } from "@/components/exam-mode";
+import { StatusBadge, SubjectProgressBar } from "@/components/progress-bits";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
@@ -23,7 +32,14 @@ import {
   type BoardId,
   type Lang,
 } from "@/lib/catalog";
-import { notebook, refKey, useNotebook } from "@/lib/notebook-store";
+import { coverFor } from "@/lib/ncert-covers";
+import {
+  chapterStatus,
+  notebook,
+  refKey,
+  useNotebook,
+  type ChapterStatus,
+} from "@/lib/notebook-store";
 import { syllabusQuery } from "@/lib/queries";
 import { customTopicSlug, normalizeTopic, TOPIC_MAX, TOPIC_MIN } from "@/lib/slugs";
 import type { PartialSyllabus, SyllabusRecord } from "@/lib/types";
@@ -35,7 +51,28 @@ const SYLLABUS_STEPS = [
   "Har chapter ka gist likh rahe hain…",
 ];
 
+/** Which chapters the list shows. "left" = not read yet, "read" = read or memorised. */
+export type ChapterFilter = "all" | "left" | "read" | "done";
+const FILTERS: ChapterFilter[] = ["all", "left", "read", "done"];
+
+export function matchesFilter(status: ChapterStatus, filter: ChapterFilter): boolean {
+  switch (filter) {
+    case "all":
+      return true;
+    case "left":
+      return status === "new" || status === "started";
+    case "read":
+      return status === "read" || status === "done";
+    case "done":
+      return status === "done";
+  }
+}
+
 export const Route = createFileRoute("/learn/$board/$grade/$subject/")({
+  validateSearch: (s: Record<string, unknown>): { show?: Exclude<ChapterFilter, "all"> } =>
+    FILTERS.includes(s["show"] as ChapterFilter) && s["show"] !== "all"
+      ? { show: s["show"] as Exclude<ChapterFilter, "all"> }
+      : {},
   loader: async ({ params, context }) => {
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
