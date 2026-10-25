@@ -77,15 +77,21 @@ async function buildJobs(): Promise<Job[]> {
   };
 
   // 1) Every CBSE chapter that has official textbook text, in Hinglish (the default language).
-  const sources = await admin
-    .from("chapter_sources")
-    .select("board, grade, subject, chapter_slug")
-    .order("grade")
-    .order("subject")
-    .order("chapter_slug")
-    .limit(5000);
-  if (sources.error) throw sources.error;
-  for (const s of sources.data ?? []) {
+  // The backend returns at most 1000 rows per request, so read the list page by page.
+  const sourceRows: { board: string; grade: number; subject: string; chapter_slug: string }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const page = await admin
+      .from("chapter_sources")
+      .select("board, grade, subject, chapter_slug")
+      .order("grade")
+      .order("subject")
+      .order("chapter_slug")
+      .range(from, from + 999);
+    if (page.error) throw page.error;
+    sourceRows.push(...(page.data ?? []));
+    if ((page.data ?? []).length < 1000) break;
+  }
+  for (const s of sourceRows) {
     if (!isBoard(s.board) || !inScope(s.board, s.grade, s.subject)) continue;
     add({
       board: s.board,
@@ -97,15 +103,27 @@ async function buildJobs(): Promise<Job[]> {
   }
 
   // 2) Every other stored note (other languages, ICSE/ISC, lower classes) gets upgraded + checked.
-  const notes = await admin
-    .from("notes")
-    .select("board, grade, subject, chapter_slug, language, is_custom")
-    .eq("is_custom", false)
-    .order("board")
-    .order("grade")
-    .limit(5000);
-  if (notes.error) throw notes.error;
-  for (const n of notes.data ?? []) {
+  const noteRows: {
+    board: string;
+    grade: number;
+    subject: string;
+    chapter_slug: string;
+    language: string;
+  }[] = [];
+  for (let from = 0; ; from += 1000) {
+    const page = await admin
+      .from("notes")
+      .select("board, grade, subject, chapter_slug, language")
+      .eq("is_custom", false)
+      .order("board")
+      .order("grade")
+      .order("id")
+      .range(from, from + 999);
+    if (page.error) throw page.error;
+    noteRows.push(...(page.data ?? []));
+    if ((page.data ?? []).length < 1000) break;
+  }
+  for (const n of noteRows) {
     if (!isBoard(n.board) || !isLang(n.language) || !inScope(n.board, n.grade, n.subject)) continue;
     add({
       board: n.board,
