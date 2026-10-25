@@ -25,12 +25,14 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Offline audio: "Audio download karo" saves the whole chapter (or Exam Mode revision) as one file to play without internet
 - [x] ISC Class 11–12 lists corrected against 2026-27 school syllabi + current syllabus transcriptions: Class 11 Biology, Business Studies (857, Commerce renamed), new Entrepreneurship (859), Computer Science (Java + Python), Economics, History, Maths, Political Science, Sociology, English title, Hindi split + Sara Aakash; Class 12 Hindi titles; new English Literature (Modern, 891) for 11 and 12
 - [x] Old ISC Class 11 Commerce links open Business Studies
+- [x] CBSE Class 1–8 (496) and Class 9–12 (613 of 614) chapter notes written and checked against the textbook
 - [x] Fixed: Python power sign ** was disappearing from notes, quiz options and the checker (affected programming chapters re-checked)
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
-- [ ] Background run `scripts/verify-notes.ts` for CBSE Class 1–8 (496 chapters, started 25 Oct)
-- [ ] Background run `scripts/verify-notes.ts`: every CBSE 9–12 chapter (Hinglish) + every stored note rewritten in the new format, checked against the textbook and fixed (749 jobs; reruns skip finished chapters)
+- [ ] Re-check the 81 CBSE Class 10–12 Hindi + Class 10 Sanskrit chapters now that their book text is readable (it was in the old Walkman-Chanakya font)
+- [ ] Class 11 History "Nomadic Empires": book text sits inside the Chapter 2 file; split it, fix the textbook link, write + check notes
+- [ ] Class 11 Hindi Vitan: drop "लेखकों के बारे में" (an appendix, not a chapter)
 - [ ] ICSE/ISC: still unverified — ICSE 9 Hindi split & drama/novel, ICSE 9 Commercial Studies full list, Computer Applications 9–10, ICSE 1–8 lists; ISC 11 Accounts, Chemistry, Geography, Physics, Psychology; ISC 12 Accounts, Business Studies, Commerce, Computer Science, Economics, History titles, Maths, Physics (exact publisher contents pages not reachable; cisce.org blocks downloads from here)
 - [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 
