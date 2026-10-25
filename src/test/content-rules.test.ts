@@ -68,6 +68,34 @@ describe("text markup", () => {
     ]);
     expect(stripMarkup("**Ohm's law** V = IR")).toBe("Ohm's law V = IR");
   });
+
+  it("keeps Python's power operator ** and **= in notes", () => {
+    expect(stripEmphasis("**Power** ke liye 3 ** 4 = 81 aur x **= 3")).toBe(
+      "Power ke liye 3 ** 4 = 81 aur x **= 3",
+    );
+    expect(stripEmphasis("Sahi term **1 / (i ** 3)** hai; y**2")).toBe("Sahi term 1 / (i ** 3) hai; y**2");
+    expect(stripEmphasis("star rows ***; **; *")).toBe("star rows ***; **; *");
+  });
+
+  it("still highlights letters inside a word and drops an unfinished highlight", () => {
+    expect(stripEmphasis("stala**G**mite")).toBe("stalaGmite");
+    expect(stripEmphasis("Photo **synth")).toBe("Photo synth");
+  });
+});
+
+describe("saved notes", () => {
+  it("keep code operators in formulas and quiz options", () => {
+    const n = normalizeNote(
+      {
+        formulas: [{ name: "**Cube**", formula: "cube = x ** 3", spoken: "", note: "" }],
+        mcqs: [{ question: "q", options: ["x ** 2", "x * 2", "x // 2", "x % 2"], answer: 0, explanation: "" }],
+      } as never,
+      "Python",
+    );
+    expect(n.formulas[0]?.name).toBe("Cube");
+    expect(n.formulas[0]?.formula).toBe("cube = x ** 3");
+    expect(n.mcqs?.[0]?.options[0]).toBe("x ** 2");
+  });
 });
 
 const NOTE: NoteContent = {
