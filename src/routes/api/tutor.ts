@@ -85,11 +85,10 @@ export const Route = createFileRoute("/api/tutor")({
           headers: { "Lovable-API-Key": apiKey, "X-Lovable-AIG-SDK": "vercel-ai-sdk" },
         });
 
+        const boardName =
+          board === "icse" ? (grade && grade >= 11 ? "ISC " : "ICSE ") : board === "cbse" ? "CBSE " : "";
         const who = grade
-          ? `Student ${board === "icse" ? (grade >= 11 ? "ISC" : "ICSE") : board === "cbse" ? "CBSE" : ""} Class ${grade} mein hai — jawab usi class ke level aur syllabus ke hisaab se do.`.replace(
-              "  ",
-              " ",
-            )
+          ? `Student ${boardName}Class ${grade} mein hai — jawab usi class ke level aur syllabus ke hisaab se do.`
           : null;
         const prompt = context
           ? [
