@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { BOARD_IDS, GRADES, getSubject, getSubjects, gradeLabel } from "@/lib/catalog";
 import { normalizeNote, normalizeSyllabus } from "@/lib/server/normalize.server";
 import { chapterSlug, customTopicSlug, isCustomSlug } from "@/lib/slugs";
-import { splitEmphasis, stripMarkup } from "@/lib/text";
+import { splitEmphasis, stripEmphasis, stripMarkup } from "@/lib/text";
 import { buildTracks, TERMS_PER_TRACK } from "@/lib/tracks";
 import type { NoteContent } from "@/lib/types";
 
