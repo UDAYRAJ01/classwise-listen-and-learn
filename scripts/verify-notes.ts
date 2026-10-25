@@ -43,6 +43,8 @@ const MAX_FIX_ROUNDS = 2;
 const ONLY_BOARD = args.get("board");
 const ONLY_SUBJECT = args.get("subject");
 const REWRITE_BEFORE = args.get("rewrite-before");
+// --only=11/hindi/b1-c1,12/hindi/b2-c3 limits the run to those chapters.
+const ONLY = args.get("only") ? new Set(args.get("only")!.split(",")) : null;
 const [G_FROM, G_TO] = (args.get("grades") ?? "1-12").split("-").map(Number);
 const LOG_DIR = "/tmp/verify";
 mkdirSync(LOG_DIR, { recursive: true });
@@ -72,6 +74,7 @@ async function buildJobs(): Promise<Job[]> {
   const add = (j: Job) => {
     const k = `${j.board}/${j.grade}/${j.subject}/${j.chapter}/${j.lang}`;
     if (seen.has(k)) return;
+    if (ONLY && !ONLY.has(`${j.grade}/${j.subject}/${j.chapter}`)) return;
     seen.add(k);
     jobs.push(j);
   };

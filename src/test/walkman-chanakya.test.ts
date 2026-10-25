@@ -34,5 +34,6 @@ describe("Walkman-Chanakya to Unicode (NCERT Hindi PDFs)", () => {
     expect(looksLikeChanakya("Hkkjr esa osQ fd gSA ugha dk dh ".repeat(4))).toBe(true);
     expect(looksLikeChanakya("भारत में के कि है। नहीं का की ".repeat(4))).toBe(false);
     expect(looksLikeChanakya("The cat sat on the mat. ".repeat(20))).toBe(false);
+    expect(looksLikeChanakya("The Mughal army met the Mughal state. ".repeat(20))).toBe(false);
   });
 });

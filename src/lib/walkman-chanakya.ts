@@ -290,7 +290,9 @@ export function chanakyaToUnicode(input: string): string {
  * spellings of very common Hindi words ("के", "में", "है", "नहीं") outnumber real Devanagari.
  */
 export function looksLikeChanakya(text: string): boolean {
-  const hints = (text.match(/osQ|esa |gSA|ugha|fd |gqvk|dk |dh /g) ?? []).length;
+  // Whole words only: English text has "Mughal" (…ugha…) but never the word "ugha".
+  const hints = (text.match(/(?<=^|\s)(?:osQ|esa|gSA|ugha|fd|gqvk|dk|dh)(?=[\s,]|$)/g) ?? [])
+    .length;
   const devanagari = (text.match(/[\u0900-\u097F]/g) ?? []).length;
   return hints >= 10 && devanagari < hints * 5;
 }
