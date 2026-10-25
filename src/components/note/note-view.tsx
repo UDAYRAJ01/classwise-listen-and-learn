@@ -1,6 +1,8 @@
 import {
   BookMarked,
   CheckCheck,
+  CheckCircle2,
+  CircleAlert,
   Eye,
   EyeOff,
   FlaskRound,
@@ -12,23 +14,14 @@ import {
   Target,
   Volume2,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 
 import { Emph } from "@/components/emph";
 import { cn } from "@/lib/utils";
 import { TERMS_PER_TRACK } from "@/lib/tracks";
 import type { PartialNote, TrickKind } from "@/lib/types";
 
-export const SECTIONS = [
-  { id: "summary", label: "Summary" },
-  { id: "notes", label: "Short Notes" },
-  { id: "terms", label: "Important Words" },
-  { id: "formulas", label: "Formulas" },
-  { id: "tricks", label: "Tricks" },
-  { id: "questions", label: "Important Q&A" },
-  { id: "revision", label: "1-Min Revision" },
-  { id: "tips", label: "Exam Tips" },
-] as const;
+export { SECTIONS } from "@/lib/note-sections";
 
 const TRICK_LABEL: Record<TrickKind, string> = {
   acronym: "Short-form",
@@ -40,7 +33,8 @@ const TRICK_LABEL: Record<TrickKind, string> = {
 };
 
 const STICKY_TONES = ["bg-sticky", "bg-tone-sky/25", "bg-tone-rose/20", "bg-tone-leaf/20"];
-const TILTS = ["", "", "", ""];
+
+const SeenContext = createContext<ReadonlySet<string>>(new Set());
 
 interface Props {
   content: PartialNote;
@@ -48,6 +42,8 @@ interface Props {
   activeBlockId: string | null;
   playable: boolean;
   onPlayBlock: (blockId: string) => void;
+  /** Parts the student has already read (shows a small tick next to the title). */
+  seen?: ReadonlySet<string>;
 }
 
 function Block({
