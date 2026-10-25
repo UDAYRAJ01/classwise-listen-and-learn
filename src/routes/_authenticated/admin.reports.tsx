@@ -352,7 +352,7 @@ function TextbookCheckPanel() {
       </p>
       {s.leftovers.length > 0 && (
         <div className="mt-5">
-          <h3 className="font-display text-lg font-bold">Do baar sudharne ke baad bhi doubt</h3>
+          <h3 className="font-display text-lg font-bold">Check mein bache hue doubt (inhe khud dekh lo)</h3>
           <ul className="mt-2 space-y-3">
             {s.leftovers.slice(0, 20).map((l) => (
               <LeftoverItem key={l.noteId} l={l} />
