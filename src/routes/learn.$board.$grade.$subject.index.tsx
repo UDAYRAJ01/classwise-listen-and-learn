@@ -203,7 +203,7 @@ function ChaptersPage() {
       {books && prog.total > 0 && (
         <section
           aria-label="Aapki padhai"
-          className="mt-8 grid gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[1fr_auto] sm:items-center"
+          className="mt-8 grid grid-cols-1 gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center [&>*]:min-w-0"
         >
           <div>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -251,13 +251,13 @@ function ChaptersPage() {
                 }}
                 search={lang ? { lang } : {}}
               >
-                <span className="min-w-0 text-left">
+                <span className="min-w-0 flex-1 text-left">
                   <span className="block text-xs font-semibold uppercase tracking-wider opacity-75">
                     {statusOf(nextUp.slug) === "started"
                       ? "Adhura chapter poora karo"
                       : "Agla baaki chapter"}
                   </span>
-                  <span className="block max-w-64 truncate font-display text-base">
+                  <span className="block truncate font-display text-base sm:max-w-64">
                     {nextUp.number}. {nextUp.title}
                   </span>
                 </span>
