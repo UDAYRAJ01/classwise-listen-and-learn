@@ -130,15 +130,21 @@ async function apply(list: InList) {
     : await admin.from("syllabi").insert(row);
   if (res.error) throw res.error;
 
-  // Notes for chapters that are no longer in the book.
+  // Notes for chapters that are no longer in the book. Slugs of Hindi/Sanskrit titles are only
+  // positional ("b1-c3"), so a slug can now point at a different lesson: drop those notes too.
+  const titleBySlug = new Map(books.flatMap((b) => b.chapters.map((c) => [c.slug, c.title] as const)));
   const notes = await admin
     .from("notes")
-    .select("id, chapter_slug, is_custom")
+    .select("id, chapter_slug, chapter_title, is_custom")
     .eq("board", list.board)
     .eq("grade", list.grade)
     .eq("subject", list.subject);
   const orphan = (notes.data ?? [])
-    .filter((n) => !n.is_custom && !slugs.has(n.chapter_slug))
+    .filter(
+      (n) =>
+        !n.is_custom &&
+        (!slugs.has(n.chapter_slug) || clean(n.chapter_title) !== titleBySlug.get(n.chapter_slug)),
+    )
     .map((n) => n.id);
   if (orphan.length) {
     await purgeNotes(
