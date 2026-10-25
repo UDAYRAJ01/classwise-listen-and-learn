@@ -112,28 +112,37 @@ async function buildJobs(): Promise<{ jobs: Job[]; notes: number; waiting: numbe
   const jobs: Job[] = [];
   let waiting = 0;
   let count = 0;
-  for (const n of ready) {
+  const todo = ready.filter((n) => {
     const checked = checks.get(n.id);
-    if (!checked || checked < n.created_at) {
-      waiting++;
-      continue;
+    if (checked && checked >= n.created_at) return true;
+    waiting++;
+    return false;
+  });
+  // Read note text in small batches (it is large) and queue every part still missing audio.
+  for (let i = 0; i < todo.length; i += 20) {
+    const batch = todo.slice(i, i + 20);
+    const full = await admin
+      .from("notes")
+      .select("id, content")
+      .in(
+        "id",
+        batch.map((n) => n.id),
+      );
+    if (full.error) throw full.error;
+    const content = new Map((full.data ?? []).map((r) => [r.id, r.content]));
+    for (const n of batch) {
+      const c = content.get(n.id);
+      if (!c) continue;
+      const done = have.get(n.id) ?? new Set<number>();
+      const label = `${n.board}/${n.grade}/${n.subject}/${n.chapter_slug}`;
+      let missing = 0;
+      for (const t of buildTracks(c as unknown as NoteContent, LANG)) {
+        if (done.has(t.index)) continue;
+        missing++;
+        jobs.push({ noteId: n.id, label, index: t.index, text: t.text });
+      }
+      if (missing) count++;
     }
-    const done = have.get(n.id) ?? new Set<number>();
-    // Content is read only for notes that still miss audio (it is large).
-    if (done.size > 0 && done.size >= 8) {
-      // Cheap pre-check failed to prove completeness; fall through to an exact count below.
-    }
-    const full = await admin.from("notes").select("content").eq("id", n.id).maybeSingle();
-    if (!full.data) continue;
-    const tracks = buildTracks(full.data.content as unknown as NoteContent, LANG);
-    const label = `${n.board}/${n.grade}/${n.subject}/${n.chapter_slug}`;
-    let missing = 0;
-    for (const t of tracks) {
-      if (done.has(t.index)) continue;
-      missing++;
-      jobs.push({ noteId: n.id, label, index: t.index, text: t.text });
-    }
-    if (missing) count++;
   }
   return { jobs, notes: count, waiting };
 }
