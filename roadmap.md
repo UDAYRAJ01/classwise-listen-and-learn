@@ -24,6 +24,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] ICSE Class 9–10 lists corrected against current textbook contents + 2026-27 school syllabi (Biology, Maths, History & Civics, Geography, Economics, Chemistry, Commercial Studies 10, Hindi 10 split)
 - [x] Offline audio: "Audio download karo" saves the whole chapter (or Exam Mode revision) as one file to play without internet
 - [x] ISC Class 11–12 lists corrected against 2026-27 school syllabi + current syllabus transcriptions: Class 11 Biology, Business Studies (857, Commerce renamed), new Entrepreneurship (859), Computer Science (Java + Python), Economics, History, Maths, Political Science, Sociology, English title, Hindi split + Sara Aakash; Class 12 Hindi titles; new English Literature (Modern, 891) for 11 and 12
+- [x] Old ISC Class 11 Commerce links open Business Studies
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
@@ -33,6 +34,5 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 
 ## Ready next
-- Old links to ISC Class 11 Commerce pages: send them to Business Studies instead of "not found"
 - Official covers for Class 1–8 NCERT books
 - Pre-make didi-voice audio for all notes (after the notes check finishes, so audio is never made for notes that change)
