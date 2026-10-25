@@ -2,24 +2,36 @@
 
 export type Segment = { text: string; strong: boolean };
 
+// A highlight is **word**: the opening ** touches the next character and the closing ** touches
+// the previous one. A bare ** with spaces around it (Python's x ** 2), **= (x **= 3) or ** inside a
+// word (x**2) is code, not markup, and must survive untouched.
+const OPEN = String.raw`(?<![\p{L}\p{N}*])\*\*(?![\s*]|=(?:\s|$))`;
+const EMPHASIS = new RegExp(String.raw`${OPEN}(.+?)(?<=[^\s*])\*\*(?!\*)`, "gu");
+const DANGLING = new RegExp(OPEN, "gu");
+
 export function splitEmphasis(input: string): Segment[] {
   const out: Segment[] = [];
-  const re = /\*\*(.+?)\*\*/g;
   let last = 0;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(input))) {
-    if (m.index > last) out.push({ text: input.slice(last, m.index), strong: false });
+  for (const m of input.matchAll(EMPHASIS)) {
+    const at = m.index ?? 0;
+    if (at > last) out.push({ text: input.slice(last, at), strong: false });
     out.push({ text: m[1] ?? "", strong: true });
-    last = m.index + m[0].length;
+    last = at + m[0].length;
   }
   if (last < input.length) out.push({ text: input.slice(last), strong: false });
-  // Unclosed ** while streaming: drop stray markers.
-  return out.map((s) => ({ ...s, text: s.text.replace(/\*\*/g, "") }));
+  // An unclosed highlight while the notes are still streaming: drop the stray marker only.
+  return out.map((s) => (s.strong ? s : { ...s, text: s.text.replace(DANGLING, "") }));
+}
+
+/** Removes highlight marks but keeps code operators such as ** and **=. */
+export function stripEmphasis(input: string): string {
+  return splitEmphasis(input)
+    .map((s) => s.text)
+    .join("");
 }
 
 export function stripMarkup(input: string): string {
-  return input
-    .replace(/\*\*/g, "")
+  return stripEmphasis(input)
     .replace(/(^|\s)\*(\S)/g, "$1$2")
     .replace(/[_`#]/g, "")
     .replace(/\s+/g, " ")
