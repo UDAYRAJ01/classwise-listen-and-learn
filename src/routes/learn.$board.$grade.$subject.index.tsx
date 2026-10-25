@@ -33,13 +33,13 @@ import {
   type Lang,
 } from "@/lib/catalog";
 import { coverFor } from "@/lib/ncert-covers";
+import { chapterStatus, notebook, refKey, useNotebook } from "@/lib/notebook-store";
 import {
-  chapterStatus,
-  notebook,
-  refKey,
-  useNotebook,
-  type ChapterStatus,
-} from "@/lib/notebook-store";
+  isChapterFilter,
+  matchesFilter,
+  subjectProgress,
+  type ChapterFilter,
+} from "@/lib/progress";
 import { syllabusQuery } from "@/lib/queries";
 import { customTopicSlug, normalizeTopic, TOPIC_MAX, TOPIC_MIN } from "@/lib/slugs";
 import type { PartialSyllabus, SyllabusRecord } from "@/lib/types";
@@ -51,28 +51,11 @@ const SYLLABUS_STEPS = [
   "Har chapter ka gist likh rahe hain…",
 ];
 
-/** Which chapters the list shows. "left" = not read yet, "read" = read or memorised. */
-export type ChapterFilter = "all" | "left" | "read" | "done";
-const FILTERS: ChapterFilter[] = ["all", "left", "read", "done"];
-
-export function matchesFilter(status: ChapterStatus, filter: ChapterFilter): boolean {
-  switch (filter) {
-    case "all":
-      return true;
-    case "left":
-      return status === "new" || status === "started";
-    case "read":
-      return status === "read" || status === "done";
-    case "done":
-      return status === "done";
-  }
-}
+type ShownFilter = Exclude<ChapterFilter, "all">;
 
 export const Route = createFileRoute("/learn/$board/$grade/$subject/")({
-  validateSearch: (s: Record<string, unknown>): { show?: Exclude<ChapterFilter, "all"> } =>
-    FILTERS.includes(s["show"] as ChapterFilter) && s["show"] !== "all"
-      ? { show: s["show"] as Exclude<ChapterFilter, "all"> }
-      : {},
+  validateSearch: (s: Record<string, unknown>): { show?: ShownFilter } =>
+    isChapterFilter(s["show"]) && s["show"] !== "all" ? { show: s["show"] } : {},
   loader: async ({ params, context }) => {
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
