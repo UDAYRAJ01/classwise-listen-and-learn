@@ -36,6 +36,7 @@ const LIMIT = Number(args.get("limit") ?? Infinity);
 const WORKERS = Number(process.env["WORKERS"] ?? 6);
 const MAX_FIX_ROUNDS = 2;
 const ONLY_BOARD = args.get("board");
+const ONLY_SUBJECT = args.get("subject");
 const [G_FROM, G_TO] = (args.get("grades") ?? "1-12").split("-").map(Number);
 const LOG_DIR = "/tmp/verify";
 mkdirSync(LOG_DIR, { recursive: true });
@@ -53,8 +54,11 @@ interface Job {
   lang: Lang;
 }
 
-const inScope = (board: string, grade: number) =>
-  (!ONLY_BOARD || board === ONLY_BOARD) && grade >= (G_FROM ?? 1) && grade <= (G_TO ?? 12);
+const inScope = (board: string, grade: number, subject: string) =>
+  (!ONLY_BOARD || board === ONLY_BOARD) &&
+  (!ONLY_SUBJECT || subject === ONLY_SUBJECT) &&
+  grade >= (G_FROM ?? 1) &&
+  grade <= (G_TO ?? 12);
 
 async function buildJobs(): Promise<Job[]> {
   const jobs: Job[] = [];
@@ -76,7 +80,7 @@ async function buildJobs(): Promise<Job[]> {
     .limit(5000);
   if (sources.error) throw sources.error;
   for (const s of sources.data ?? []) {
-    if (!isBoard(s.board) || !inScope(s.board, s.grade)) continue;
+    if (!isBoard(s.board) || !inScope(s.board, s.grade, s.subject)) continue;
     add({
       board: s.board,
       grade: s.grade,
@@ -96,7 +100,7 @@ async function buildJobs(): Promise<Job[]> {
     .limit(5000);
   if (notes.error) throw notes.error;
   for (const n of notes.data ?? []) {
-    if (!isBoard(n.board) || !isLang(n.language) || !inScope(n.board, n.grade)) continue;
+    if (!isBoard(n.board) || !isLang(n.language) || !inScope(n.board, n.grade, n.subject)) continue;
     add({
       board: n.board,
       grade: n.grade,
