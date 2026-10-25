@@ -799,6 +799,7 @@ function ChapterView({
           narration={narration}
           total={tracks.length}
           ready={!!record}
+          download={record ? { noteId: record.id, tracks, title: meta.title } : null}
           follow={prefs.follow}
           onFollowChange={(follow) => notebook.setPrefs({ follow })}
         />
