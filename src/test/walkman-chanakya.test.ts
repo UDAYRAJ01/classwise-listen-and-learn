@@ -22,6 +22,7 @@ describe("Walkman-Chanakya to Unicode (NCERT Hindi PDFs)", () => {
     expect(chanakyaToUnicode("if=kdk")).toBe("पत्रिका");
     expect(chanakyaToUnicode("laLÑfr")).toBe("संस्कृति");
     expect(chanakyaToUnicode("'kq¼")).toBe("शुद्ध");
+    expect(chanakyaToUnicode("Lora=rk")).toBe("स्वतंत्रता");
   });
 
   it("keeps an exercise equals sign and drops English page footers", () => {

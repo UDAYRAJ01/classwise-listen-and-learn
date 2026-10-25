@@ -270,6 +270,8 @@ export function chanakyaToUnicode(input: string): string {
     .replace(/Reprint\s+\d{4}-\d{2}/g, " ")
     // "=" before a space is a real equals sign in exercises ("माता-पिता = ____"), not त्र्.
     .replace(/=(?=[\s-])/g, "¾")
+    // "=" followed by "k" is त्र्+stem = त्र; before any other letter it is already a full त्र.
+    .replace(/=(?=[A-Za-jl-z])/g, "Ë")
     // Greek mu shows up for the long dash, and is also used below as an internal marker.
     .replace(/[εμρΡη]/g, (m) => (m === "μ" ? "µ" : ""));
   let out = "";
