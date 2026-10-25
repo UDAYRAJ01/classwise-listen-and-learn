@@ -145,26 +145,8 @@ export const rebuildChapter = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const notes = await supabaseAdmin
-      .from("notes")
-      .select("id")
-      .eq("board", data.board)
-      .eq("grade", data.grade)
-      .eq("subject", data.subject)
-      .eq("chapter_slug", data.chapter);
-    const ids = (notes.data ?? []).map((n) => n.id);
-    if (ids.length > 0) {
-      const audio = await supabaseAdmin
-        .from("note_audio")
-        .select("storage_path")
-        .in("note_id", ids);
-      const paths = (audio.data ?? []).map((a) => a.storage_path);
-      for (let i = 0; i < paths.length; i += 100) {
-        await supabaseAdmin.storage.from("note-audio").remove(paths.slice(i, i + 100));
-      }
-      const del = await supabaseAdmin.from("notes").delete().in("id", ids);
-      if (del.error) throw new Error("Purane notes hata nahi paaye.");
-    }
+    const { purgeNotes } = await import("@/lib/server/note-pipeline.server");
+    const removed = await purgeNotes(supabaseAdmin, data);
     await supabaseAdmin
       .from("note_reports")
       .update({ applied_at: new Date().toISOString() })
@@ -173,5 +155,5 @@ export const rebuildChapter = createServerFn({ method: "POST" })
       .eq("subject", data.subject)
       .eq("chapter_slug", data.chapter)
       .eq("status", "resolved");
-    return { removed: ids.length };
+    return { removed };
   });
