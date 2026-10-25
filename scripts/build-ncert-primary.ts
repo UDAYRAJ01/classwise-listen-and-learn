@@ -169,12 +169,16 @@ function similar(a: string, b: string): number {
  * The contents page can list a lesson whose text is not extractable (a poem printed as a
  * picture). Keep every lesson the contents page names, in its order.
  */
-function withHintLessons(hint: string, lessons: Lesson[]): Lesson[] {
-  const parts = hint
-    .split("|")
-    .map((p) => clean(p.replace(/^unit\s+[\divx]+\s*:[^–-]*[–-]\s*/i, "")))
+function withHintLessons(hint: string, lessons: Lesson[], text: string): Lesson[] {
+  // "Unit 2: Wit and Humour – A | B | C" or "Unit 1: Wit and Wisdom: A; B; C" or "A | B".
+  const body = hint.replace(/^unit\s+[\divx]+\s*:\s*[^:–]+[:–]\s*/i, "");
+  const parts = body
+    .split(/\s*[|;]\s*/)
+    .map(clean)
     .filter(Boolean);
-  if (parts.length < 2 || parts.length <= lessons.length) return lessons;
+  // Only a contents entry that names several lessons is a full list; trust it over the AI.
+  if (parts.length < 2) return lessons;
+  const inText = letters(text);
   const out: Lesson[] = [];
   const used = new Set<Lesson>();
   for (const part of parts) {
@@ -183,12 +187,17 @@ function withHintLessons(hint: string, lessons: Lesson[]): Lesson[] {
       used.add(match);
       out.push(match);
     } else {
-      out.push({ title: part, gist: "", noText: true });
+      const key = letters(part).slice(0, 10);
+      out.push({ title: part, gist: "", noText: !key || !inText.includes(key) });
     }
   }
-  for (const l of lessons) if (!used.has(l)) out.push(l);
   return out;
 }
+
+/** PDFs whose first heading is not the chapter (e.g. a book introduction before chapter 1). */
+const OVERRIDES: Record<string, string[]> = {
+  fees101: ["Locating Places on the Earth"],
+};
 
 const clean = (s: string) => s.replace(/\s+/g, " ").trim();
 
@@ -254,7 +263,7 @@ async function lessonsOf(
       "",
       "Extracted text:",
       "<<<",
-      text.slice(0, multi ? 30000 : 5000),
+      text.slice(0, multi ? 120000 : 5000),
       ">>>",
     ].join("\n"),
     schema: LESSON_SCHEMA,
@@ -297,11 +306,15 @@ async function buildBook(plan: PlanSubject, book: PlanBook): Promise<BuiltChapte
     if (!existsSync(path)) throw new Error(`missing text ${pdfCode}`);
     const text = cleanSource(readFileSync(path, "utf8"));
     if (text.length < 200) throw new Error(`text too short ${pdfCode}`);
-    const lessons = await lessonsOf(plan, book, pdfCode, hint, text);
+    const found = OVERRIDES[pdfCode]
+      ? OVERRIDES[pdfCode]!.map((title) => ({ title, gist: "" }))
+      : await lessonsOf(plan, book, pdfCode, hint, text);
+    const lessons = withHintLessons(hint, found, text);
     const pdf = Number(pdfCode.slice(-2));
-    for (const l of withHintLessons(hint, lessons)) {
+    const appendix = /परिशिष्ट|अतिरिक्तम्/.test(hint);
+    for (const l of lessons) {
       chapters.push({
-        title: l.title,
+        title: appendix && !/परिशिष्ट/.test(l.title) ? `${l.title} (परिशिष्टम्)` : l.title,
         gist: l.gist,
         pdf,
         pdfCode,
