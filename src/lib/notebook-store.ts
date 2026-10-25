@@ -1,5 +1,5 @@
-// Per-device study memory: saved chapters, recently read, finished chapters
-// and listening preferences. Stored in the browser so no login is needed.
+// Per-device study memory: saved chapters, recently read, read / memorised
+// chapters and listening preferences. Stored in the browser so no login is needed.
 
 import { useSyncExternalStore } from "react";
 
@@ -38,6 +38,8 @@ export interface NotebookState {
 
 export type ChapterStatus = "done" | "read" | "started" | "new";
 
+type RefKeyParts = Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">;
+
 const KEY = "padhosuno:v1";
 const MAX_PROGRESS = 400;
 const DEFAULT_PREFS: Prefs = { lang: null, voice: "didi", rate: 1, follow: true };
@@ -60,16 +62,7 @@ function load() {
   loaded = true;
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<NotebookState>;
-      state = {
-        saved: Array.isArray(parsed.saved) ? parsed.saved : [],
-        recent: Array.isArray(parsed.recent) ? parsed.recent : [],
-        done: Array.isArray(parsed.done) ? parsed.done : [],
-        days: Array.isArray(parsed.days) ? parsed.days : [],
-        prefs: { ...DEFAULT_PREFS, ...(parsed.prefs ?? {}) },
-      };
-    }
+    state = raw ? sanitize(JSON.parse(raw) as Partial<NotebookState>) : EMPTY;
   } catch {
     state = EMPTY;
   }
@@ -101,12 +94,29 @@ export function replaceNotebook(next: Partial<NotebookState>) {
   writeLocal(sanitize(next));
 }
 
+const strings = (v: unknown): string[] =>
+  Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : [];
+
+function sanitizeProgress(v: unknown, read: string[]): Record<string, string[]> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return {};
+  const readSet = new Set(read);
+  const out: Record<string, string[]> = {};
+  for (const [k, parts] of Object.entries(v as Record<string, unknown>).slice(-MAX_PROGRESS)) {
+    const list = strings(parts);
+    if (!readSet.has(k) && list.length > 0) out[k] = [...new Set(list)];
+  }
+  return out;
+}
+
 export function sanitize(p: Partial<NotebookState> | null | undefined): NotebookState {
+  const read = strings(p?.read);
   return {
     saved: Array.isArray(p?.saved) ? p.saved : [],
     recent: Array.isArray(p?.recent) ? p.recent : [],
-    done: Array.isArray(p?.done) ? p.done : [],
-    days: Array.isArray(p?.days) ? p.days : [],
+    done: strings(p?.done),
+    read,
+    progress: sanitizeProgress(p?.progress, read),
+    days: strings(p?.days),
     prefs: { ...DEFAULT_PREFS, ...(p?.prefs ?? {}) },
   };
 }
@@ -122,13 +132,22 @@ export function mergeNotebooks(a: NotebookState, b: NotebookState): NotebookStat
     }
     return [...m.values()].sort((x, y) => y.at - x.at).slice(0, max);
   };
-  return {
+  const read = [...new Set([...a.read, ...b.read])];
+  const progress: Record<string, string[]> = {};
+  for (const src of [b.progress, a.progress]) {
+    for (const [k, parts] of Object.entries(src)) {
+      progress[k] = [...new Set([...(progress[k] ?? []), ...parts])];
+    }
+  }
+  return sanitize({
     saved: byKey([a.saved, b.saved], 200),
     recent: byKey([a.recent, b.recent], 12),
     done: [...new Set([...a.done, ...b.done])],
+    read,
+    progress,
     days: [...new Set([...a.days, ...b.days])].sort().slice(-120),
     prefs: { ...b.prefs, ...a.prefs },
-  };
+  });
 }
 
 function commit(next: NotebookState) {
@@ -165,8 +184,36 @@ export function streakFrom(days: string[], today = new Date()): number {
   return n;
 }
 
-export function refKey(r: Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">): string {
+export function refKey(r: RefKeyParts): string {
   return `${r.board}/${r.grade}/${r.subject}/${r.chapter}`;
+}
+
+/** Where a student stands with one chapter. Memorised beats read beats started. */
+export function chapterStatus(
+  s: Pick<NotebookState, "done" | "read" | "progress">,
+  key: string,
+): ChapterStatus {
+  if (s.done.includes(key)) return "done";
+  if (s.read.includes(key)) return "read";
+  if ((s.progress[key]?.length ?? 0) > 0) return "started";
+  return "new";
+}
+
+/** Share (0–1) of a chapter's parts already read. */
+export function readShare(
+  s: Pick<NotebookState, "done" | "read" | "progress">,
+  key: string,
+  totalParts: number,
+): number {
+  const st = chapterStatus(s, key);
+  if (st === "done" || st === "read") return 1;
+  if (totalParts <= 0) return 0;
+  return Math.min(1, (s.progress[key]?.length ?? 0) / totalParts);
+}
+
+/** True once every required part has been read. */
+export function allPartsRead(seen: readonly string[], required: readonly string[]): boolean {
+  return required.length > 0 && required.every((id) => seen.includes(id));
 }
 
 function subscribe(l: () => void) {
@@ -182,6 +229,13 @@ function snapshot() {
 
 export function useNotebook(): NotebookState {
   return useSyncExternalStore(subscribe, snapshot, () => EMPTY);
+}
+
+function withoutProgress(progress: Record<string, string[]>, key: string) {
+  if (!(key in progress)) return progress;
+  const next = { ...progress };
+  delete next[key];
+  return next;
 }
 
 export const notebook = {
@@ -203,16 +257,61 @@ export const notebook = {
     const today = localDay();
     commit({
       ...state,
-      recent: [{ ...ref, at: Date.now() }, ...state.recent.filter((s) => refKey(s) !== k)].slice(0, 12),
+      recent: [{ ...ref, at: Date.now() }, ...state.recent.filter((s) => refKey(s) !== k)].slice(
+        0,
+        12,
+      ),
       days: state.days.includes(today) ? state.days : [...state.days, today].slice(-120),
     });
   },
-  toggleDone(ref: Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">) {
+  /** Memorised implies read, so marking "yaad ho gaya" also marks the chapter read. */
+  toggleDone(ref: RefKeyParts) {
     load();
     const k = refKey(ref);
     const isDone = state.done.includes(k);
-    commit({ ...state, done: isDone ? state.done.filter((d) => d !== k) : [...state.done, k] });
+    commit({
+      ...state,
+      done: isDone ? state.done.filter((d) => d !== k) : [...state.done, k],
+      read: isDone || state.read.includes(k) ? state.read : [...state.read, k],
+      progress: isDone ? state.progress : withoutProgress(state.progress, k),
+    });
     return !isDone;
+  },
+  /** Mark a chapter read / not read by hand. */
+  setRead(ref: RefKeyParts, read: boolean) {
+    load();
+    const k = refKey(ref);
+    const has = state.read.includes(k);
+    if (read === has) return;
+    commit({
+      ...state,
+      read: read ? [...state.read, k] : state.read.filter((r) => r !== k),
+      done: read ? state.done : state.done.filter((d) => d !== k),
+      progress: withoutProgress(state.progress, k),
+    });
+  },
+  /**
+   * Record parts the student has read or heard. When every required part is
+   * covered the chapter becomes "read". Returns true only at that moment.
+   */
+  markParts(ref: RefKeyParts, parts: string[], required: string[]): boolean {
+    load();
+    const k = refKey(ref);
+    if (state.read.includes(k) || state.done.includes(k)) return false;
+    const prev = state.progress[k] ?? [];
+    const merged = [...new Set([...prev, ...parts])];
+    if (allPartsRead(merged, required)) {
+      commit({
+        ...state,
+        read: [...state.read, k],
+        progress: withoutProgress(state.progress, k),
+      });
+      return true;
+    }
+    if (merged.length === prev.length) return false;
+    const entries = Object.entries({ ...withoutProgress(state.progress, k), [k]: merged });
+    commit({ ...state, progress: Object.fromEntries(entries.slice(-MAX_PROGRESS)) });
+    return false;
   },
   removeRecent(ref: ChapterRef) {
     load();
