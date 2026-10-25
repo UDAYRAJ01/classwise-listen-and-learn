@@ -21,6 +21,7 @@ import { streamStructured } from "@/lib/server/ai.server";
 import { purgeNotes } from "@/lib/server/note-pipeline.server";
 import { chapterSlug } from "@/lib/slugs";
 import type { SyllabusBook } from "@/lib/types";
+import { chanakyaToUnicode, looksLikeChanakya } from "@/lib/walkman-chanakya";
 
 interface PlanBook {
   code: string;
@@ -155,7 +156,8 @@ function similar(a: string, b: string): number {
   if (x.includes(y) || y.includes(x)) return 1;
   const pairs = (s: string) => {
     const m = new Map<string, number>();
-    for (let i = 0; i < s.length - 1; i++) m.set(s.slice(i, i + 2), (m.get(s.slice(i, i + 2)) ?? 0) + 1);
+    for (let i = 0; i < s.length - 1; i++)
+      m.set(s.slice(i, i + 2), (m.get(s.slice(i, i + 2)) ?? 0) + 1);
     return m;
   };
   const px = pairs(x);
@@ -218,7 +220,9 @@ const OVERRIDES: Record<string, Lesson[]> = {
 const clean = (s: string) => s.replace(/\s+/g, " ").trim();
 
 /** Strip PDF layout noise but keep the reading order. */
-function cleanSource(text: string): string {
+function cleanSource(raw: string): string {
+  // Some NCERT Hindi/Sanskrit PDFs are typed in the legacy Walkman-Chanakya font.
+  const text = looksLikeChanakya(raw) ? chanakyaToUnicode(raw) : raw;
   return text
     .split("\n")
     .map((l) => l.replace(/\t+/g, " ").trimEnd())
@@ -323,7 +327,8 @@ async function buildBook(plan: PlanSubject, book: PlanBook): Promise<BuiltChapte
     const text = cleanSource(readFileSync(path, "utf8"));
     if (text.length < 200) throw new Error(`text too short ${pdfCode}`);
     const lessons =
-      OVERRIDES[pdfCode] ?? withHintLessons(hint, await lessonsOf(plan, book, pdfCode, hint, text), text);
+      OVERRIDES[pdfCode] ??
+      withHintLessons(hint, await lessonsOf(plan, book, pdfCode, hint, text), text);
     const pdf = Number(pdfCode.slice(-2));
     const appendix = /परिशिष्ट|अतिरिक्तम्/.test(hint);
     for (const l of lessons) {
@@ -348,9 +353,10 @@ async function writeGists(plan: PlanSubject, chapters: BuiltChapter[]) {
   const out = await streamStructured<{ lessons: Lesson[] }>({
     instructions:
       "You write one plain-English sentence (max 14 words) per NCERT chapter saying what it is about. Only say what the title clearly implies; no invented details.",
-    prompt: [`Class ${plan.grade}. Subject: ${subject.name}.`, ...missing.map((c) => `- ${c.title}`)].join(
-      "\n",
-    ),
+    prompt: [
+      `Class ${plan.grade}. Subject: ${subject.name}.`,
+      ...missing.map((c) => `- ${c.title}`),
+    ].join("\n"),
     schema: LESSON_SCHEMA,
     effort: "low",
   });
@@ -440,9 +446,7 @@ async function apply(plan: PlanSubject) {
     .eq("board", "cbse")
     .eq("grade", plan.grade)
     .eq("subject", plan.subject);
-  const orphan = (notes.data ?? [])
-    .filter((n) => !n.is_custom)
-    .map((n) => n.id);
+  const orphan = (notes.data ?? []).filter((n) => !n.is_custom).map((n) => n.id);
   if (orphan.length) {
     await purgeNotes(
       admin,
@@ -450,11 +454,15 @@ async function apply(plan: PlanSubject) {
       orphan,
     );
   }
-  console.log(`  saved: ${slugs.size} chapters, ${rows.length} textbook texts, ${orphan.length} old notes removed (were not from the book)`);
+  console.log(
+    `  saved: ${slugs.size} chapters, ${rows.length} textbook texts, ${orphan.length} old notes removed (were not from the book)`,
+  );
 }
 
 const todo = PLAN.filter(
-  (p) => (ONLY_GRADE === null || p.grade === ONLY_GRADE) && (!ONLY_SUBJECT || p.subject === ONLY_SUBJECT),
+  (p) =>
+    (ONLY_GRADE === null || p.grade === ONLY_GRADE) &&
+    (!ONLY_SUBJECT || p.subject === ONLY_SUBJECT),
 );
 const WORKERS = Number(process.env["WORKERS"] ?? 4);
 let next = 0;
