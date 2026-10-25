@@ -32,7 +32,7 @@ export function stripEmphasis(input: string): string {
 
 export function stripMarkup(input: string): string {
   return stripEmphasis(input)
-    .replace(/(^|\s)\*(\S)/g, "$1$2")
+    .replace(/(^|\s)\*(?=[^\s*])/g, "$1")
     .replace(/[_`#]/g, "")
     .replace(/\s+/g, " ")
     .trim();
