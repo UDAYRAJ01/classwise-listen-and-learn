@@ -25,6 +25,7 @@ import { NarrationBar } from "@/components/note/narration-bar";
 import { NoteView } from "@/components/note/note-view";
 import { Quiz } from "@/components/note/quiz";
 import { ReportDialog } from "@/components/note/report-dialog";
+import { ReadMeter } from "@/components/progress-bits";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
