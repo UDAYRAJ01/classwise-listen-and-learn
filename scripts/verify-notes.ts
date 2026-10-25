@@ -149,6 +149,8 @@ async function recordFixes(ctx: ChapterContext, lang: Lang, noteId: string, issu
     status: "resolved",
     correction: i.correct,
     resolved_at: now,
+    // The chapter is rewritten with this correction straight away.
+    applied_at: now,
   }));
   if (rows.length) {
     const r = await admin.from("note_reports").insert(rows);

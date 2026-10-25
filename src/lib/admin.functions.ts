@@ -189,10 +189,7 @@ export const checkSummary = createServerFn({ method: "GET" })
       supabaseAdmin.from("notes").select("id", head),
       supabaseAdmin.from("note_checks").select("note_id", head),
       supabaseAdmin.from("chapter_sources").select("chapter_slug", head),
-      supabaseAdmin
-        .from("note_reports")
-        .select("id", head)
-        .like("message", "[Textbook check%"),
+      supabaseAdmin.from("note_reports").select("id", head).like("message", "[Textbook check%"),
       supabaseAdmin
         .from("note_checks")
         .select(

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  BookCheck,
   Check,
   ExternalLink,
   Flag,
@@ -19,11 +20,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import {
   checkAdmin,
+  checkSummary,
   listReports,
   rebuildChapter,
   reportCounts,
   resolveReport,
   type AdminReport,
+  type CheckLeftover,
   type ReportStatus,
 } from "@/lib/admin.functions";
 import { BOARDS, getSubject, isBoard } from "@/lib/catalog";
@@ -104,7 +107,9 @@ function ReportsPage() {
           <Notice text="Ye account owner nahi hai. Owner wale account se sign in karo." />
         ) : (
           <>
-            <div className="sticker mt-8 inline-flex rounded-xl bg-card p-1">
+            <TextbookCheckPanel />
+            <h2 className="mt-12 text-2xl font-extrabold">Students ki reports</h2>
+            <div className="sticker mt-4 inline-flex rounded-xl bg-card p-1">
               {TABS.map((t) => (
                 <button
                   key={t.id}
@@ -293,6 +298,106 @@ function ReportCard({ report: r }: { report: AdminReport }) {
         </div>
       )}
     </article>
+  );
+}
+
+function TextbookCheckPanel() {
+  const summary = useServerFn(checkSummary);
+  const q = useQuery({
+    queryKey: ["admin", "checks"],
+    queryFn: () => summary(),
+    refetchInterval: 60_000,
+  });
+  if (q.isLoading) return <Loading />;
+  if (q.isError || !q.data) return <Notice text="Textbook check ki jaankari load nahi hui." />;
+  const s = q.data;
+  const pct = s.notes > 0 ? Math.round((s.checked / s.notes) * 100) : 0;
+  return (
+    <section
+      aria-label="Textbook check"
+      className="mt-8 rounded-2xl border border-border bg-card p-5"
+    >
+      <h2 className="flex items-center gap-2 text-2xl font-extrabold">
+        <BookCheck className="h-6 w-6 text-tone-leaf" /> Textbook se check
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Har chapter ke notes official textbook se milaye jaate hain. Galti mili to sahi jaankari ke
+        saath notes dobara likhe jaate hain.
+      </p>
+      <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[
+          { n: s.checked, l: "notes check ho gaye" },
+          { n: s.notes, l: "notes bane hue" },
+          { n: s.textbookFixes, l: "galtiyan theek ki" },
+          { n: s.leftovers.length, l: "abhi bhi doubt" },
+        ].map((x) => (
+          <div key={x.l} className="rounded-xl bg-muted/50 p-3">
+            <dt className="font-display text-2xl font-extrabold">{x.n}</dt>
+            <dd className="text-xs font-semibold text-muted-foreground">{x.l}</dd>
+          </div>
+        ))}
+      </dl>
+      <div
+        className="mt-4 h-2 overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label="Kitne notes check ho gaye"
+      >
+        <div className="h-full rounded-full bg-tone-leaf" style={{ width: `${pct}%` }} />
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {pct}% check · {s.withTextbook} chapters ki textbook text maujood hai
+      </p>
+      {s.leftovers.length > 0 && (
+        <div className="mt-5">
+          <h3 className="font-display text-lg font-bold">Do baar sudharne ke baad bhi doubt</h3>
+          <ul className="mt-2 space-y-3">
+            {s.leftovers.slice(0, 20).map((l) => (
+              <LeftoverItem key={l.noteId} l={l} />
+            ))}
+          </ul>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function LeftoverItem({ l }: { l: CheckLeftover }) {
+  const board = isBoard(l.board) ? l.board : null;
+  const subject = board ? getSubject(board, l.grade, l.subject) : null;
+  return (
+    <li className="rounded-xl border border-border p-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-bold">
+          {board ? BOARDS[board].short : l.board} · Class {l.grade} · {subject?.name ?? l.subject} ·{" "}
+          {l.chapterTitle} <span className="font-normal text-muted-foreground">({l.language})</span>
+        </p>
+        {board && subject && (
+          <Link
+            to="/learn/$board/$grade/$subject/$chapter"
+            params={{
+              board,
+              grade: String(l.grade),
+              subject: subject.slug,
+              chapter: l.chapterSlug,
+            }}
+            target="_blank"
+            className="inline-flex items-center gap-1 text-sm font-bold hover:underline"
+          >
+            Chapter <ExternalLink className="h-4 w-4" />
+          </Link>
+        )}
+      </div>
+      <ul className="mt-2 space-y-1 text-sm">
+        {l.issues.slice(0, 4).map((i, k) => (
+          <li key={k}>
+            <span className="font-semibold text-tone-leaf">Sahi:</span> {i.correct}
+          </li>
+        ))}
+      </ul>
+    </li>
   );
 }
 

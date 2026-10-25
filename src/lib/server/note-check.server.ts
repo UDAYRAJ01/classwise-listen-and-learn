@@ -138,6 +138,10 @@ export async function checkNote(opts: {
   });
   return (out.issues ?? [])
     .filter((i) => CHECK_SECTIONS.includes(i.section) && i.correct?.trim())
-    .map((i) => ({ ...i, wrong: i.wrong.trim().slice(0, 600), correct: i.correct.trim().slice(0, 600) }))
+    .map((i) => ({
+      ...i,
+      wrong: i.wrong.trim().slice(0, 600),
+      correct: i.correct.trim().slice(0, 600),
+    }))
     .slice(0, 25);
 }
