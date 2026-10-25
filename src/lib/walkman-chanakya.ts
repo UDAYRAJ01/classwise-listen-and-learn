@@ -1,0 +1,298 @@
+// Converts Hindi/Sanskrit text typed in the legacy Walkman-Chanakya font (used in NCERT's
+// Class 10–12 Hindi and Sanskrit PDFs) into Unicode Devanagari. Text pulled out of those PDFs
+// looks like "Hkkjr esa" instead of "भारत में"; nobody (and no AI) can read it until converted.
+//
+// Mapping and reordering rules follow the open-source Walkman-Chanakya table of IIT Delhi's
+// Assistech group (github.com/assistech-iitdelhi/InDesignFontConverters, GPL-3.0). The glyph
+// table is applied in one pass (so one rule's output is never re-mapped by a later rule),
+// then the pre-base "ि", reph "र्" and hook glyphs are put in Unicode order.
+
+// Markers used between the two steps.
+const PRE_I = "ε"; // ि written before its consonant
+const REPH = "ρ"; // र् written after its syllable
+const SUB_RA = "Ρ"; // ्र written under a consonant
+const HOOK = "η"; // hook that turns व→क, प→फ, उ→ऊ, र→रु
+const PRE_I_ANUSVARA = "μ"; // ं that travels with a pre-base ि
+
+const GLYPHS: Record<string, string> = {
+  "\u010d": "ध्",
+  "\u013d": "द्ध",
+  "\u0143": "कृ",
+  "\u0152": "॰",
+  "\u0158": "क्र",
+  "\u0160": "८",
+  "\u016e": "त्त्",
+  "\u0192": "१",
+  "\u2013": "दृ",
+  "\u2014": "कृ",
+  "\u2018": '"',
+  "\u201d": "ज़्",
+  "\u2019": '"',
+  "\u201a": "ॉ",
+  "\u201c": "'",
+  "\u201e": "२",
+  "\u2020": "४",
+  "\u2021": "५",
+  "\u2022": "ऽ",
+  "\u2026": "३",
+  "\u2030": "द्भ",
+  "\u2039": "९",
+  "\u2122": "न्न्",
+  "\u2219": "ऽ",
+  "\u02c6": "६",
+  "\u02c7": "ँ",
+  "\u02dd": "ऋ",
+  "!": "!",
+  '"': "ष्",
+  "#": "रु",
+  $: "+",
+  "%": "ः",
+  "-": ".",
+  "&": "-",
+  "'": "श्",
+  "(": "(",
+  ")": ")",
+  "*": "’",
+  "+": "़",
+  ",": "ए",
+  ".": "ण्",
+  "/": "ध",
+  "0": "0",
+  "1": "1",
+  "2": "2",
+  "3": "3",
+  "4": "4",
+  "5": "5",
+  "6": "6",
+  "7": "7",
+  "8": "8",
+  "9": "9",
+  ":": "रू",
+  ";": "य",
+  "<": "ढ",
+  "=": "त्र्",
+  ">": "झ",
+  "?": "घ्",
+  "@": "/",
+  A: "।",
+  B: "ठ",
+  C: "ब्",
+  D: "क्",
+  E: "म्",
+  F: "थ्",
+  G: "ळ",
+  H: "भ्",
+  I: "प्",
+  J: "श्र",
+  K: "ज्ञ",
+  L: "स्",
+  M: "ड",
+  N: "छ",
+  O: "व्",
+  P: "च्",
+  Q: HOOK,
+  R: "त्",
+  S: "ै",
+  T: "ज्",
+  U: "न्",
+  V: "ट",
+  W: "ॅ",
+  X: "ग्",
+  Y: "ल्",
+  Z: REPH,
+  "[": "ख्",
+  "\\": "?",
+  "]": ",",
+  "^": "‘",
+  _: ";",
+  "`": "ृ",
+  a: "ं",
+  b: "इ",
+  c: "ब",
+  d: "क",
+  e: "म",
+  f: PRE_I,
+  g: "ह",
+  h: "ी",
+  i: "प",
+  j: "र",
+  k: "ा",
+  l: "स",
+  m: "उ",
+  n: "द",
+  o: "व",
+  p: "च",
+  q: "ु",
+  r: "त",
+  s: "े",
+  t: "ज",
+  u: "न",
+  v: "अ",
+  w: "ू",
+  x: "ग",
+  y: "ल",
+  z: SUB_RA,
+  "{": "क्ष्",
+  "|": "द्य",
+  "}": "द्व",
+  "~": "्",
+  "\u00a1": "ँ",
+  "\u00a2": "ः",
+  "\u00a3": PRE_I + REPH,
+  "\u00aa": SUB_RA,
+  "\u00af": PRE_I + PRE_I_ANUSVARA,
+  "\u00b1": REPH + "ं",
+  "\u00b2": PRE_I + REPH + "ं",
+  "\u00b3": "'",
+  "\u00b4": "'",
+  "\u00b5": "–",
+  "\u00b6": '"',
+  "\u00b7": "*",
+  "\u00b8": '"',
+  "\u00b9": "[",
+  "\u00ba": "]",
+  "\u00bb": "%",
+  "\u00bc": "द्ध",
+  "\u00bd": "ऋ",
+  "\u00be": "=",
+  "\u00bf": "ऽ",
+  "\u00c0": "श्",
+  "\u00c1": "द्म",
+  "\u00c2": "न्न",
+  "\u00c4": "ङ",
+  "\u00c5": "ऊ",
+  "\u00c6": "लृ",
+  "\u00c7": "ल",
+  "\u00c8": "ह्ल",
+  "\u00c9": "ह्न",
+  "\u00ca": "ह्ण",
+  "\u00cb": "त्र",
+  "\u00cd": "ऋ",
+  "\u00cf": "स्र",
+  "\u00d0": "स्त्र",
+  "\u00d1": "कृ",
+  "\u00d2": "्व",
+  "\u00d3": "्च",
+  "\u00d4": "्य",
+  "\u00d5": "य्",
+  "\u00d6": "झ्",
+  "\u00d7": "ञ्",
+  "\u00d8": "क्र",
+  "\u00d9": "त्त्",
+  "\u00da": "फ्र",
+  "\u00db": "ञ्",
+  "\u00dc": "श्",
+  "\u00dd": "फ्",
+  "\u00de": "ह्",
+  "\u00df": "ह्र",
+  "\u00e0": "ह्व",
+  "\u00e1": "ह्य",
+  "\u00e2": "हृ",
+  "\u00e3": "ह्म",
+  "\u00e4": "द्न",
+  "\u00e5": "द्ग",
+  "\u00e6": "द्र",
+  "\u00e7": "प्र",
+  "\u00e8": "ध्",
+  "\u00e9": "क्",
+  "\u00ea": "ट",
+  "\u00eb": "ठ",
+  "\u00ec": "ढ",
+  "\u00ed": "द्द",
+  "\u00ee": "ड",
+  "\u00ef": "्क",
+  "\u00f0": "्ट",
+  "\u00f1": "॰",
+  "\u00f2": "्ठ",
+  "\u00f3": "्ड",
+  "\u00f4": "्ढ",
+  "\u00f5": "्ग",
+  "\u00f6": "६",
+  "\u00f7": "७",
+  "\u00f8": "८",
+  "\u00f9": "९",
+  "\u00fa": "०",
+  "\u00fb": "१",
+  "\u00fc": "२",
+  "\u00fd": "३",
+  "\u00fe": "४",
+  "\u00ff": "५",
+};
+
+const C = "[कखगघङचछजझञटठडढणतथदधनपफबभमयरलवशषसह]";
+const CLUSTER = `((?:${C}़?्)*${C}़?)`;
+const MATRA = "[ाुूेैोौॊॉीृ]";
+
+/** Unicode-order fixes, applied one after another (order matters). */
+const REORDER: [RegExp, string][] = [
+  [/्ा/g, ""],
+  [/्ρा/g, REPH],
+  [/़्ा/g, "़"],
+  [/़्ो/g, "़े"],
+  [/्ौ/g, "़ै"],
+  [/ाै/g, "ौ"],
+  [/ाे/g, "ो"],
+  [/ाॆ/g, "ॆ"],
+  [/ाॅ/g, "ॉ"],
+  [/अा/g, "आ"],
+  [/अौ/g, "औ"],
+  [/अो/g, "ओ"],
+  [/आॅ/g, "ऑ"],
+  [/आॆ/g, "ऒ"],
+  [/व([Ρρ़्ाुूेैोौॊॉीृंँ]*)η/g, "क$1"],
+  [/व़([Ρρ्ाुूेैोौॊॉीृंँ]*)η/g, "क़$1"],
+  [/प([Ρρ्ाुूेैोौॊॉींँ]*)η/g, "फ$1"],
+  [/प़([Ρρ्ाुूेैोौॊॉींँ]*)η/g, "फ़$1"],
+  [/उ([Ρρ़ाुूेैोौॊॉींँ]*)η/g, "ऊ$1"],
+  [/र([़ंँ]*)η/g, "रु$1"],
+  [new RegExp(`(${C}़?)(${MATRA.slice(0, -1)}ंँ]*)Ρ`, "g"), "$1्र$2"],
+  [/([ंँ])([्ाुूेैोौॊॉीृ]+)/g, "$2$1"],
+  [/([्ाुूेैोौॊॉीृ]+)़/g, "़$1"],
+  [/ंं*/g, "ं"],
+  [new RegExp(`ε${CLUSTER}ρμ`, "g"), "र्$1िं"],
+  [new RegExp(`ερμ${CLUSTER}`, "g"), "र्$1िं"],
+  [new RegExp(`ερ${CLUSTER}`, "g"), "र्$1ि"],
+  [new RegExp(`ε${CLUSTER}ρ`, "g"), "र्$1ि"],
+  [new RegExp(`εμ${CLUSTER}`, "g"), "$1िं"],
+  [new RegExp(`ε${CLUSTER}`, "g"), "$1ि"],
+  [new RegExp(`(${CLUSTER.slice(1, -1)}${MATRA}?)ρ[μं]`, "g"), "र्$1ं"],
+  [new RegExp(`(${CLUSTER.slice(1, -1)}${MATRA}?)[μं]ρ`, "g"), "र्$1ं"],
+  [new RegExp(`(${CLUSTER.slice(1, -1)}${MATRA}?)ρ`, "g"), "र्$1"],
+  [/इρ[μं]/g, "ईं"],
+  [/इρ/g, "ई"],
+  // Any marker still left could not be placed; drop it rather than show a stray symbol.
+  [/[εμρΡη]/g, ""],
+];
+
+export function chanakyaToUnicode(input: string): string {
+  const text = input
+    // Page footers are printed in an English font.
+    .replace(/Reprint\s+\d{4}-\d{2}/g, " ")
+    // "=" before a space is a real equals sign in exercises ("माता-पिता = ____"), not त्र्.
+    .replace(/=(?=[\s-])/g, "¾")
+    // "=" followed by "k" is त्र्+stem = त्र; before any other letter it is already a full त्र.
+    .replace(/=(?=[A-Za-jl-z])/g, "Ë")
+    // Greek mu shows up for the long dash, and is also used below as an internal marker.
+    .replace(/[εμρΡη]/g, (m) => (m === "μ" ? "µ" : ""));
+  let out = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    // A run of reph / sub-ra glyphs stands for a single mark.
+    if ((ch === "Z" || ch === "z") && text[i - 1] === ch) continue;
+    out += GLYPHS[ch] ?? ch;
+  }
+  for (const [re, to] of REORDER) out = out.replace(re, to);
+  return out;
+}
+
+/**
+ * True when text looks like Walkman-Chanakya rather than Unicode or English: the font's
+ * spellings of very common Hindi words ("के", "में", "है", "नहीं") outnumber real Devanagari.
+ */
+export function looksLikeChanakya(text: string): boolean {
+  // Whole words only: English text has "Mughal" (…ugha…) but never the word "ugha".
+  const hints = (text.match(/(?<=^|\s)(?:osQ|esa|gSA|ugha|fd|gqvk|dk|dh)(?=[\s,]|$)/g) ?? [])
+    .length;
+  const devanagari = (text.match(/[\u0900-\u097F]/g) ?? []).length;
+  return hints >= 10 && devanagari < hints * 5;
+}

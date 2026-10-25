@@ -1,14 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Flame, History } from "lucide-react";
 
+import { StatusBadge } from "@/components/progress-bits";
 import { SubjectIcon } from "@/components/subject-icon";
 import { BOARDS, SUBJECTS, TONE_CLASSES } from "@/lib/catalog";
-import { streakFrom, useNotebook, type ChapterRef } from "@/lib/notebook-store";
+import {
+  chapterStatus,
+  refKey,
+  streakFrom,
+  useNotebook,
+  type ChapterRef,
+} from "@/lib/notebook-store";
 import { cn } from "@/lib/utils";
 
-export function ChapterRefCard({ r, done }: { r: ChapterRef; done?: boolean }) {
+export function ChapterRefCard({ r }: { r: ChapterRef }) {
+  const nb = useNotebook();
   const subject = SUBJECTS[r.subject];
   const tone = TONE_CLASSES[subject?.tone ?? "ink"];
+  const status = chapterStatus(nb, refKey(r));
   return (
     <Link
       to="/learn/$board/$grade/$subject/$chapter"
@@ -26,18 +35,14 @@ export function ChapterRefCard({ r, done }: { r: ChapterRef; done?: boolean }) {
         <span className="mt-0.5 line-clamp-2 block font-display text-base font-bold leading-snug">
           {r.title}
         </span>
-        {done && (
-          <span className="mt-1 inline-block rounded-full bg-tone-leaf/15 px-2 py-0.5 text-xs font-bold text-tone-leaf">
-            ✓ Yaad ho gaya
-          </span>
-        )}
+        <StatusBadge status={status} className="mt-1.5" />
       </span>
     </Link>
   );
 }
 
 export function RecentStrip() {
-  const { recent, done, days } = useNotebook();
+  const { recent, days } = useNotebook();
   if (recent.length === 0) return null;
   const streak = streakFrom(days);
   return (
@@ -58,14 +63,8 @@ export function RecentStrip() {
       </div>
       <ul className="no-scrollbar -mx-4 mt-4 flex snap-x gap-4 overflow-x-auto px-4 pb-3">
         {recent.slice(0, 6).map((r) => (
-          <li
-            key={`${r.board}${r.grade}${r.subject}${r.chapter}`}
-            className="w-72 shrink-0 snap-start"
-          >
-            <ChapterRefCard
-              r={r}
-              done={done.includes(`${r.board}/${r.grade}/${r.subject}/${r.chapter}`)}
-            />
+          <li key={refKey(r)} className="w-72 shrink-0 snap-start">
+            <ChapterRefCard r={r} />
           </li>
         ))}
       </ul>

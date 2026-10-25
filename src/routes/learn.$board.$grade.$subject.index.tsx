@@ -1,29 +1,37 @@
-import { coverFor } from "@/lib/ncert-covers";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { BookmarkCheck, CheckCircle2, Search, Sparkles, WandSparkles } from "lucide-react";
+import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstack/react-router";
+import { ArrowRight, BookmarkCheck, Search, Sparkles, WandSparkles } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 
 import { Crumbs } from "@/components/crumbs";
 import { ExamMode } from "@/components/exam-mode";
+import { StatusBadge, SubjectProgressBar } from "@/components/progress-bits";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGeneration } from "@/hooks/use-generation";
 import {
+  type BoardId,
   BOARDS,
   DEFAULT_LANG,
   getSubject,
   gradeLabel,
   isBoard,
+  type Lang,
   LANGS,
   parseGrade,
+  renamedSubject,
   TONE_CLASSES,
-  type BoardId,
-  type Lang,
 } from "@/lib/catalog";
-import { notebook, refKey, useNotebook } from "@/lib/notebook-store";
+import { coverFor } from "@/lib/ncert-covers";
+import { chapterStatus, notebook, refKey, useNotebook } from "@/lib/notebook-store";
+import {
+  isChapterFilter,
+  matchesFilter,
+  subjectProgress,
+  type ChapterFilter,
+} from "@/lib/progress";
 import { syllabusQuery } from "@/lib/queries";
 import { customTopicSlug, normalizeTopic, TOPIC_MAX, TOPIC_MIN } from "@/lib/slugs";
 import type { PartialSyllabus, SyllabusRecord } from "@/lib/types";
@@ -35,12 +43,24 @@ const SYLLABUS_STEPS = [
   "Har chapter ka gist likh rahe hain…",
 ];
 
+type ShownFilter = Exclude<ChapterFilter, "all">;
+
 export const Route = createFileRoute("/learn/$board/$grade/$subject/")({
+  validateSearch: (s: Record<string, unknown>): { show?: ShownFilter } =>
+    isChapterFilter(s["show"]) && s["show"] !== "all" ? { show: s["show"] } : {},
   loader: async ({ params, context }) => {
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
     const subject = getSubject(params.board, grade, params.subject);
-    if (!subject) throw notFound();
+    if (!subject) {
+      const moved = renamedSubject(params.board, grade, params.subject);
+      if (moved)
+        throw redirect({
+          to: "/learn/$board/$grade/$subject",
+          params: { board: params.board, grade: String(grade), subject: moved },
+        });
+      throw notFound();
+    }
     await context.queryClient.ensureQueryData(syllabusQuery(params.board, grade, subject.slug));
     return { board: params.board as BoardId, grade, subjectSlug: subject.slug };
   },
@@ -81,8 +101,10 @@ function ChaptersPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: syllabus } = useSuspenseQuery(syllabusQuery(board, grade, subject.slug));
-  const { done, saved, prefs } = useNotebook();
+  const nb = useNotebook();
+  const { saved, prefs } = nb;
   const lang: Lang | undefined = prefs.lang ?? undefined;
+  const show: ChapterFilter = Route.useSearch().show ?? "all";
 
   const gen = useGeneration<PartialSyllabus, SyllabusRecord>({
     key: `syllabus:${board}:${grade}:${subject.slug}`,
@@ -98,28 +120,44 @@ function ChaptersPage() {
   const [topic, setTopic] = useState("");
   const [topicError, setTopicError] = useState<string | null>(null);
 
+  const where = { board, grade, subject: subject.slug };
+  const statusOf = (slug: string) => chapterStatus(nb, refKey({ ...where, chapter: slug }));
+
   const filtered = useMemo(() => {
     if (!books) return null;
     const q = filter.trim().toLowerCase();
-    if (!q) return books;
     return books
       .map((b) => ({
         ...b,
-        chapters: b.chapters.filter((c) => `${c.title} ${c.gist}`.toLowerCase().includes(q)),
+        chapters: b.chapters.filter(
+          (c) =>
+            matchesFilter(
+              chapterStatus(nb, refKey({ board, grade, subject: subject.slug, chapter: c.slug })),
+              show,
+            ) &&
+            (!q || `${c.title} ${c.gist}`.toLowerCase().includes(q)),
+        ),
       }))
       .filter((b) => b.chapters.length > 0);
-  }, [books, filter]);
+  }, [books, filter, show, nb, board, grade, subject.slug]);
 
-  const totalChapters = books?.reduce((n, b) => n + b.chapters.length, 0) ?? 0;
-  const doneCount =
-    books?.reduce(
-      (n, b) =>
-        n +
-        b.chapters.filter((c) =>
-          done.includes(refKey({ board, grade, subject: subject.slug, chapter: c.slug })),
-        ).length,
-      0,
-    ) ?? 0;
+  const allChapters = useMemo(() => books?.flatMap((b) => b.chapters) ?? [], [books]);
+  const prog = subjectProgress(
+    nb,
+    where,
+    allChapters.map((c) => c.slug),
+  );
+  const nextUp = prog.nextSlug ? allChapters.find((c) => c.slug === prog.nextSlug) : null;
+  const readTotal = prog.done + prog.read;
+
+  const setShow = (next: ChapterFilter) =>
+    navigate({
+      to: "/learn/$board/$grade/$subject",
+      params: { board, grade: String(grade), subject: subject.slug },
+      search: next === "all" ? {} : { show: next },
+      replace: true,
+      resetScroll: false,
+    });
 
   const savedKeys = new Set(saved.map(refKey));
 
@@ -169,16 +207,75 @@ function ChaptersPage() {
           <h1 className="text-4xl font-extrabold sm:text-5xl">{subject.name}</h1>
           <p className="text-lg text-muted-foreground">{subject.hi}</p>
         </div>
-        {books && totalChapters > 0 && (
-          <div className="sticker rounded-2xl bg-card px-5 py-3 text-center">
-            <p className="font-display text-3xl font-extrabold">
-              {doneCount}
-              <span className="text-lg text-muted-foreground">/{totalChapters}</span>
-            </p>
-            <p className="font-hand text-base text-muted-foreground">yaad ho gaye</p>
-          </div>
-        )}
       </header>
+
+      {books && prog.total > 0 && (
+        <section
+          aria-label="Aapki padhai"
+          className="mt-8 grid grid-cols-1 gap-5 rounded-2xl border border-border bg-card p-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center [&>*]:min-w-0"
+        >
+          <div>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <p className="font-display text-2xl font-extrabold">
+                {readTotal}
+                <span className="text-base text-muted-foreground">/{prog.total}</span>{" "}
+                <span className="text-lg">chapters padh liye</span>
+              </p>
+              <p className="text-sm font-bold text-muted-foreground">
+                {prog.left === 0 ? "Sab padh liye! 🎉" : `${prog.left} baaki`}
+              </p>
+            </div>
+            <SubjectProgressBar
+              className="mt-3"
+              total={prog.total}
+              done={prog.done}
+              read={prog.read}
+              started={prog.started}
+            />
+            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-muted-foreground">
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-tone-leaf" /> Yaad ho gaye {prog.done}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-tone-leaf/50" /> Padh liye {prog.read}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-tone-sun/60" /> Adhure {prog.started}
+              </li>
+              <li className="flex items-center gap-1.5">
+                <span className="h-2.5 w-2.5 rounded-full bg-muted ring-1 ring-border" /> Shuru nahi
+                kiye {prog.left - prog.started}
+              </li>
+            </ul>
+          </div>
+          {nextUp && (
+            <Button asChild variant="ink" size="lg" className="h-auto justify-between py-3">
+              <Link
+                to="/learn/$board/$grade/$subject/$chapter"
+                params={{
+                  board,
+                  grade: String(grade),
+                  subject: subject.slug,
+                  chapter: nextUp.slug,
+                }}
+                search={lang ? { lang } : {}}
+              >
+                <span className="min-w-0 flex-1 text-left">
+                  <span className="block text-xs font-semibold uppercase tracking-wider opacity-75">
+                    {statusOf(nextUp.slug) === "started"
+                      ? "Adhura chapter poora karo"
+                      : "Agla baaki chapter"}
+                  </span>
+                  <span className="block truncate font-display text-base sm:max-w-64">
+                    {nextUp.number}. {nextUp.title}
+                  </span>
+                </span>
+                <ArrowRight />
+              </Link>
+            </Button>
+          )}
+        </section>
+      )}
 
       {/* Language preference + custom topic */}
       <div className="mt-8 grid gap-4 md:grid-cols-[auto_1fr]">
@@ -258,6 +355,36 @@ function ChaptersPage() {
           )}
         </div>
 
+        {books && prog.total > 0 && (
+          <div
+            role="tablist"
+            aria-label="Kaun se chapters dikhayein"
+            className="no-scrollbar -mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1"
+          >
+            {(
+              [
+                ["all", "Sab", prog.total],
+                ["left", "Baaki", prog.left],
+                ["read", "Padh liye", readTotal],
+                ["done", "Yaad ho gaye", prog.done],
+              ] as const
+            ).map(([id, text, count]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={show === id}
+                data-active={show === id}
+                onClick={() => setShow(id)}
+                className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-bold hover:bg-muted data-[active=true]:border-ink data-[active=true]:bg-ink data-[active=true]:text-paper"
+              >
+                {text}
+                <span className="tabular-nums opacity-70">{count}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {!books && gen.status === "error" && gen.error && (
           <div className="mt-6">
             <ErrorCard message={gen.error.message} onRetry={gen.retry} />
@@ -276,10 +403,27 @@ function ChaptersPage() {
         )}
 
         {filtered && filtered.length === 0 && (
-          <p className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center text-muted-foreground">
-            “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana sakte
-            ho.
-          </p>
+          <div className="mt-6 rounded-2xl border border-dashed border-border p-6 text-center text-muted-foreground">
+            {filter.trim() ? (
+              <p>
+                “{filter}” se koi chapter nahi mila. Upar wale box mein topic likh kar notes bana
+                sakte ho.
+              </p>
+            ) : show === "left" ? (
+              <p className="font-semibold text-foreground">
+                Shabash! Is subject ke saare chapters padh liye. 🎉
+              </p>
+            ) : show === "done" ? (
+              <p>Abhi koi chapter “Yaad ho gaya” mark nahi hua. Quiz ke baad mark karna.</p>
+            ) : (
+              <p>Abhi koi chapter padha nahi. “Baaki” mein se pehla chapter kholo.</p>
+            )}
+            {show !== "all" && (
+              <Button variant="paper" className="mt-4" onClick={() => setShow("all")}>
+                Saare chapters dikhao
+              </Button>
+            )}
+          </div>
         )}
 
         {filtered?.map((book) => (
@@ -300,13 +444,17 @@ function ChaptersPage() {
                   {book.code ? "NCERT textbook" : "Book"}
                 </p>
                 <h3 className="font-display text-xl font-bold">{book.name}</h3>
-                <p className="text-sm text-muted-foreground">{book.chapters.length} chapters</p>
+                <p className="text-sm text-muted-foreground">
+                  {show === "all"
+                    ? `${book.chapters.length} chapters`
+                    : `${book.chapters.length} chapters dikh rahe hain`}
+                </p>
               </div>
             </div>
             <ol className="grid gap-3">
               {book.chapters.map((c) => {
                 const k = refKey({ board, grade, subject: subject.slug, chapter: c.slug });
-                const isDone = done.includes(k);
+                const st = statusOf(c.slug);
                 return (
                   <li key={c.slug}>
                     <Link
@@ -318,18 +466,29 @@ function ChaptersPage() {
                         chapter: c.slug,
                       }}
                       search={lang ? { lang } : {}}
-                      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker"
+                      className={cn(
+                        "group flex items-center gap-4 rounded-2xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-sticker",
+                        st === "new" || st === "started" ? "border-border" : "border-tone-leaf/40",
+                      )}
                     >
                       <span
                         className={cn(
                           "grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-border font-display text-lg font-extrabold",
-                          isDone ? "bg-tone-leaf text-paper" : tone.soft,
+                          st === "done"
+                            ? "bg-tone-leaf text-paper"
+                            : st === "read"
+                              ? "bg-tone-leaf/15 text-tone-leaf"
+                              : st === "started"
+                                ? "bg-tone-sun/20"
+                                : tone.soft,
                         )}
+                        aria-hidden
                       >
-                        {isDone ? <CheckCircle2 className="h-5 w-5" /> : c.number}
+                        {c.number}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block font-display text-lg font-bold leading-snug">
+                          <span className="sr-only">Chapter {c.number}: </span>
                           {c.title}
                         </span>
                         {c.gist && (
@@ -342,9 +501,7 @@ function ChaptersPage() {
                           aria-label="Saved"
                         />
                       )}
-                      <span className="hidden shrink-0 rounded-lg bg-secondary px-3 py-1.5 text-sm font-bold sm:inline-block">
-                        Notes + Audio
-                      </span>
+                      <StatusBadge status={st} />
                     </Link>
                   </li>
                 );

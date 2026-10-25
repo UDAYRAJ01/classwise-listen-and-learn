@@ -13,6 +13,8 @@ export interface SyllabusBook {
   name: string;
   /** NCERT book code; chapter n is the PDF {code}{nn}.pdf on ncert.nic.in. */
   code?: string;
+  /** false when NCERT's per-chapter PDF numbering is not confirmed: link the book page instead. */
+  chapterPdfs?: boolean;
   chapters: SyllabusChapter[];
 }
 
@@ -41,6 +43,8 @@ export interface NoteContent {
   funFact: string;
   /** Multiple-choice self test. Older notes may not have it. */
   mcqs?: { question: string; options: string[]; answer: number; explanation: string }[];
+  /** Common mistakes students make, with the correct version. Older notes may not have it. */
+  mistakes?: { mistake: string; correct: string }[];
 }
 
 export interface NoteRecord {
@@ -59,7 +63,7 @@ export interface NoteRecord {
 
 /** Deep-partial shape used while notes are still streaming in. */
 export type PartialNote = {
-  [K in keyof NoteContent]?: NoteContent[K] extends (infer U)[]
+  [K in keyof NoteContent]?: NonNullable<NoteContent[K]> extends (infer U)[]
     ? (U extends object ? Partial<U> : U)[]
     : NoteContent[K];
 };

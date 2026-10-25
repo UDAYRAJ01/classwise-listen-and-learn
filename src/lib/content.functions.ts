@@ -48,6 +48,32 @@ export const fetchSyllabus = createServerFn({ method: "GET" })
     return (row as SyllabusRecord | null) ?? null;
   });
 
+/** Chapter slugs (in book order) of every subject of a class that has a chapter list. */
+export const fetchClassChapters = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    const i = input as { board?: unknown; grade?: unknown };
+    const grade = parseGrade(i?.grade as number);
+    if (!isBoard(i?.board) || grade === null) throw new Error("Invalid input");
+    return { board: i.board, grade };
+  })
+  .handler(async ({ data }): Promise<Record<string, string[]>> => {
+    const sb = await publicClient();
+    const { data: rows, error } = await sb
+      .from("syllabi")
+      .select("subject, books")
+      .eq("board", data.board)
+      .eq("grade", data.grade);
+    if (error) throw new Error("Could not load chapters");
+    const out: Record<string, string[]> = {};
+    for (const r of rows ?? []) {
+      const books = (r.books ?? []) as unknown as { chapters?: { slug?: string }[] }[];
+      out[r.subject as string] = books.flatMap((b) =>
+        (b.chapters ?? []).map((c) => c.slug).filter((s): s is string => !!s),
+      );
+    }
+    return out;
+  });
+
 type NoteInput = SubjectInput & { chapter: string; lang: Lang };
 
 export const fetchNote = createServerFn({ method: "GET" })

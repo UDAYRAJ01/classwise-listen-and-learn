@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { BOARD_IDS, GRADES, getSubject, getSubjects, gradeLabel } from "@/lib/catalog";
 import { normalizeNote, normalizeSyllabus } from "@/lib/server/normalize.server";
 import { chapterSlug, customTopicSlug, isCustomSlug } from "@/lib/slugs";
-import { splitEmphasis, stripMarkup } from "@/lib/text";
+import { splitEmphasis, stripEmphasis, stripMarkup } from "@/lib/text";
 import { buildTracks, TERMS_PER_TRACK } from "@/lib/tracks";
 import type { NoteContent } from "@/lib/types";
 
@@ -25,6 +25,21 @@ describe("catalog", () => {
   it("labels ICSE senior classes as ISC", () => {
     expect(gradeLabel("icse", 11)).toBe("ISC Class 11");
     expect(gradeLabel("icse", 10)).toBe("Class 10");
+  });
+
+  it("follows the ISC Class 11 change: Commerce became Business Studies, plus Entrepreneurship", () => {
+    expect(getSubject("icse", 11, "commerce")).toBeNull();
+    expect(getSubject("icse", 11, "business-studies")).not.toBeNull();
+    expect(getSubject("icse", 11, "entrepreneurship")).not.toBeNull();
+    // Class 12 (exam 2027) still studies the old Commerce course.
+    expect(getSubject("icse", 12, "commerce")).not.toBeNull();
+    expect(getSubject("icse", 12, "entrepreneurship")).toBeNull();
+  });
+
+  it("offers ISC English Literature (Modern) in Class 11 and 12 only", () => {
+    expect(getSubject("icse", 11, "english-modern")).not.toBeNull();
+    expect(getSubject("icse", 12, "english-modern")).not.toBeNull();
+    expect(getSubject("icse", 10, "english-modern")).toBeNull();
   });
 });
 
@@ -52,6 +67,61 @@ describe("text markup", () => {
       { text: " here", strong: false },
     ]);
     expect(stripMarkup("**Ohm's law** V = IR")).toBe("Ohm's law V = IR");
+  });
+
+  it("keeps Python's power operator ** and **= in notes", () => {
+    expect(stripEmphasis("**Power** ke liye 3 ** 4 = 81 aur x **= 3")).toBe(
+      "Power ke liye 3 ** 4 = 81 aur x **= 3",
+    );
+    expect(stripEmphasis("Sahi term **1 / (i ** 3)** hai; y**2")).toBe(
+      "Sahi term 1 / (i ** 3) hai; y**2",
+    );
+    expect(stripEmphasis("star rows ***; **; *")).toBe("star rows ***; **; *");
+    expect(stripEmphasis("Operators: +=, //=, **=. **==** compares")).toBe(
+      "Operators: +=, //=, **=. == compares",
+    );
+  });
+
+  it("still highlights letters inside a word and drops an unfinished highlight", () => {
+    expect(stripEmphasis("stala**G**mite")).toBe("stalaGmite");
+    expect(splitEmphasis("**=** ke dono taraf")).toEqual([
+      { text: "=", strong: true },
+      { text: " ke dono taraf", strong: false },
+    ]);
+    expect(stripEmphasis("**= aur ==** mein farq; x **= 3 aur **Power**")).toBe(
+      "= aur == mein farq; x **= 3 aur Power",
+    );
+    expect(splitEmphasis("**p*** equilibrium price")[0]).toEqual({ text: "p*", strong: true });
+    expect(stripEmphasis("**;** punctuator hai; rows ***; **; *")).toBe(
+      "; punctuator hai; rows ***; **; *",
+    );
+    // An unclosed highlight must not swallow the next one.
+    expect(stripEmphasis("'**Haathi daali!' patte **khaati** hai")).toBe(
+      "'Haathi daali!' patte khaati hai",
+    );
+    expect(stripEmphasis("Photo **synth")).toBe("Photo synth");
+  });
+});
+
+describe("saved notes", () => {
+  it("keep code operators in formulas and quiz options", () => {
+    const n = normalizeNote(
+      {
+        formulas: [{ name: "**Cube**", formula: "cube = x ** 3", spoken: "", note: "" }],
+        mcqs: [
+          {
+            question: "q",
+            options: ["x ** 2", "x * 2", "x // 2", "x % 2"],
+            answer: 0,
+            explanation: "",
+          },
+        ],
+      } as never,
+      "Python",
+    );
+    expect(n.formulas[0]?.name).toBe("Cube");
+    expect(n.formulas[0]?.formula).toBe("cube = x ** 3");
+    expect(n.mcqs?.[0]?.options[0]).toBe("x ** 2");
   });
 });
 

@@ -145,26 +145,8 @@ export const rebuildChapter = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context as never);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const notes = await supabaseAdmin
-      .from("notes")
-      .select("id")
-      .eq("board", data.board)
-      .eq("grade", data.grade)
-      .eq("subject", data.subject)
-      .eq("chapter_slug", data.chapter);
-    const ids = (notes.data ?? []).map((n) => n.id);
-    if (ids.length > 0) {
-      const audio = await supabaseAdmin
-        .from("note_audio")
-        .select("storage_path")
-        .in("note_id", ids);
-      const paths = (audio.data ?? []).map((a) => a.storage_path);
-      for (let i = 0; i < paths.length; i += 100) {
-        await supabaseAdmin.storage.from("note-audio").remove(paths.slice(i, i + 100));
-      }
-      const del = await supabaseAdmin.from("notes").delete().in("id", ids);
-      if (del.error) throw new Error("Purane notes hata nahi paaye.");
-    }
+    const { purgeNotes } = await import("@/lib/server/note-pipeline.server");
+    const removed = await purgeNotes(supabaseAdmin, data);
     await supabaseAdmin
       .from("note_reports")
       .update({ applied_at: new Date().toISOString() })
@@ -173,5 +155,79 @@ export const rebuildChapter = createServerFn({ method: "POST" })
       .eq("subject", data.subject)
       .eq("chapter_slug", data.chapter)
       .eq("status", "resolved");
-    return { removed: ids.length };
+    return { removed };
+  });
+
+export interface CheckLeftover {
+  noteId: string;
+  board: string;
+  grade: number;
+  subject: string;
+  chapterSlug: string;
+  chapterTitle: string;
+  language: string;
+  checkedAt: string;
+  issues: { section: string; kind: string; wrong: string; correct: string }[];
+}
+
+export interface CheckSummary {
+  notes: number;
+  checked: number;
+  withTextbook: number;
+  textbookFixes: number;
+  leftovers: CheckLeftover[];
+}
+
+/** How far the chapter-by-chapter textbook check has got, and what it could not fix. */
+export const checkSummary = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<CheckSummary> => {
+    await assertAdmin(context as never);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const head = { count: "exact" as const, head: true };
+    const [notes, checked, sources, fixes, left] = await Promise.all([
+      supabaseAdmin.from("notes").select("id", head),
+      supabaseAdmin.from("note_checks").select("note_id", head),
+      supabaseAdmin.from("chapter_sources").select("chapter_slug", head),
+      supabaseAdmin.from("note_reports").select("id", head).like("message", "[Textbook check%"),
+      supabaseAdmin
+        .from("note_checks")
+        .select(
+          "note_id, checked_at, issues, notes(board, grade, subject, chapter_slug, chapter_title, language)",
+        )
+        .neq("issues", "[]")
+        .order("checked_at", { ascending: false })
+        .limit(100),
+    ]);
+    if (left.error) throw new Error("Check ki jaankari load nahi hui.");
+    return {
+      notes: notes.count ?? 0,
+      checked: checked.count ?? 0,
+      withTextbook: sources.count ?? 0,
+      textbookFixes: fixes.count ?? 0,
+      leftovers: (left.data ?? []).flatMap((r) => {
+        const n = r.notes as unknown as {
+          board: string;
+          grade: number;
+          subject: string;
+          chapter_slug: string;
+          chapter_title: string;
+          language: string;
+        } | null;
+        if (!n) return [];
+        return [
+          {
+            noteId: r.note_id,
+            board: n.board,
+            grade: n.grade,
+            subject: n.subject,
+            chapterSlug: n.chapter_slug,
+            chapterTitle: n.chapter_title,
+            language: n.language,
+            checkedAt: r.checked_at,
+            issues: (Array.isArray(r.issues) ? r.issues : []) as CheckLeftover["issues"],
+          },
+        ];
+      }),
+    };
   });

@@ -151,6 +151,20 @@ export const SUBJECTS: Record<string, SubjectMeta> = {
     icon: "BookOpenText",
     tone: "rose",
   },
+  "english-modern": {
+    slug: "english-modern",
+    name: "English Literature (Modern)",
+    hi: "अंग्रेज़ी साहित्य (मॉडर्न)",
+    icon: "BookOpenText",
+    tone: "teal",
+  },
+  entrepreneurship: {
+    slug: "entrepreneurship",
+    name: "Entrepreneurship",
+    hi: "उद्यमिता",
+    icon: "Lightbulb",
+    tone: "sun",
+  },
   "history-civics": {
     slug: "history-civics",
     name: "History & Civics",
@@ -262,7 +276,14 @@ function subjectsFor(board: BoardId, grade: number): string[] {
       "economics",
       "commercial-studies",
     ];
-  return ISC_SENIOR;
+  // ISC also offers English Literature (Modern English, 891) next to the traditional texts.
+  const isc = ISC_SENIOR.flatMap((s) => (s === "english" ? [s, "english-modern"] : [s]));
+  if (grade === 12) return isc;
+  // From the 2026-27 Class XI batch (exam 2028) CISCE renamed Commerce (857) to Business
+  // Studies and replaced the old Business Studies (859) with Entrepreneurship.
+  return isc.flatMap((s) =>
+    s === "commerce" ? [] : s === "business-studies" ? [s, "entrepreneurship"] : [s],
+  );
 }
 
 export function isBoard(value: unknown): value is BoardId {
@@ -284,6 +305,12 @@ export function getSubjects(board: BoardId, grade: number): SubjectMeta[] {
 
 export function getSubject(board: BoardId, grade: number, slug: string): SubjectMeta | null {
   return subjectsFor(board, grade).includes(slug) ? (SUBJECTS[slug] ?? null) : null;
+}
+
+/** Where an old subject link now lives, after the board renamed the subject. */
+export function renamedSubject(board: BoardId, grade: number, slug: string): string | null {
+  if (board === "icse" && grade === 11 && slug === "commerce") return "business-studies";
+  return null;
 }
 
 export function gradeLabel(board: BoardId, grade: number): string {

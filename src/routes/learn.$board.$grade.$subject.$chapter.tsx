@@ -1,9 +1,9 @@
-import { coverFor } from "@/lib/ncert-covers";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, redirect } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ArrowRight,
+  BookCheck,
   BookOpen,
   ExternalLink,
   Bookmark,
@@ -16,35 +16,40 @@ import {
   Share2,
   Target,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Crumbs } from "@/components/crumbs";
 import { Flashcards } from "@/components/note/flashcards";
 import { NarrationBar } from "@/components/note/narration-bar";
-import { NoteView, SECTIONS } from "@/components/note/note-view";
+import { NoteView } from "@/components/note/note-view";
 import { Quiz } from "@/components/note/quiz";
 import { ReportDialog } from "@/components/note/report-dialog";
+import { ReadMeter } from "@/components/progress-bits";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
 import { useGeneration } from "@/hooks/use-generation";
 import { useNarration } from "@/hooks/use-narration";
+import { useReadTracker } from "@/hooks/use-read-tracker";
 import {
+  type BoardId,
   BOARDS,
   DEFAULT_LANG,
   getSubject,
   gradeLabel,
   isBoard,
   isLang,
+  type Lang,
   LANGS,
   parseGrade,
-  TONE_CLASSES,
-  type BoardId,
-  type Lang,
+  renamedSubject,
   type SubjectMeta,
+  TONE_CLASSES,
 } from "@/lib/catalog";
-import { notebook, refKey, useNotebook } from "@/lib/notebook-store";
+import { coverFor } from "@/lib/ncert-covers";
+import { sectionForBlock, visibleSections } from "@/lib/note-sections";
+import { chapterStatus, notebook, refKey, useNotebook } from "@/lib/notebook-store";
 import { noteLanguagesQuery, noteQuery, syllabusQuery } from "@/lib/queries";
 import { customTopicSlug, isCustomSlug, normalizeTopic, TOPIC_MAX } from "@/lib/slugs";
 import { buildTracks } from "@/lib/tracks";
@@ -61,6 +66,8 @@ interface ChapterMeta {
   bookName: string | null;
   /** Official textbook chapter PDF (NCERT) when known. */
   textbookUrl: string | null;
+  /** The link opens the whole book (chapter files not confirmed). */
+  textbookIsBook?: boolean;
   cover?: string | undefined;
   number: number | null;
   custom: boolean;
@@ -77,10 +84,25 @@ function resolveMeta(
   if (isCustomSlug(chapter)) {
     const t = note?.chapter_title ?? (title && customTopicSlug(title) === chapter ? title : null);
     return t
-      ? { title: t, bookName: null, textbookUrl: null, number: null, custom: true, prev: null, next: null }
+      ? {
+          title: t,
+          bookName: null,
+          textbookUrl: null,
+          number: null,
+          custom: true,
+          prev: null,
+          next: null,
+        }
       : null;
   }
-  const all = (syllabus?.books ?? []).flatMap((b) => b.chapters.map((c) => ({ c, book: b.name, code: b.code })));
+  const all = (syllabus?.books ?? []).flatMap((b) =>
+    b.chapters.map((c) => ({
+      c,
+      book: b.name,
+      code: b.code,
+      bookPage: b.chapterPdfs === false ? b.chapters.length : 0,
+    })),
+  );
   const i = all.findIndex((x) => x.c.slug === chapter);
   if (i < 0) {
     return note
@@ -100,9 +122,12 @@ function resolveMeta(
     title: cur.c.title,
     bookName: cur.book,
     cover: coverFor(cur.code),
-    textbookUrl: cur.code
-      ? `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`
-      : null,
+    textbookUrl: !cur.code
+      ? null
+      : cur.bookPage
+        ? `https://ncert.nic.in/textbook.php?${cur.code}=0-${cur.bookPage}`
+        : `https://ncert.nic.in/textbook/pdf/${cur.code}${String(cur.c.pdf ?? cur.c.number).padStart(2, "0")}.pdf`,
+    textbookIsBook: !!cur.code && cur.bookPage > 0,
     number: cur.c.number,
     custom: false,
     prev: all[i - 1]?.c ?? null,
@@ -122,7 +147,15 @@ export const Route = createFileRoute("/learn/$board/$grade/$subject/$chapter")({
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
     const subject = getSubject(params.board, grade, params.subject);
-    if (!subject) throw notFound();
+    if (!subject) {
+      const moved = renamedSubject(params.board, grade, params.subject);
+      if (moved)
+        throw redirect({
+          to: "/learn/$board/$grade/$subject",
+          params: { board: params.board, grade: String(grade), subject: moved },
+        });
+      throw notFound();
+    }
     const [syllabus, note] = await Promise.all([
       context.queryClient.ensureQueryData(syllabusQuery(params.board, grade, subject.slug)),
       context.queryClient.ensureQueryData(
@@ -232,15 +265,21 @@ function ChapterView({
   searchTitle: string | undefined;
 }) {
   const queryClient = useQueryClient();
-  const { saved, done, prefs } = useNotebook();
+  const nb = useNotebook();
+  const { saved, done, prefs } = nb;
   const [cardsOpen, setCardsOpen] = useState(false);
   const [quizOpen, setQuizOpen] = useState(false);
   const label = gradeLabel(board, grade);
   const tone = TONE_CLASSES[subject.tone];
-  const ref = { board, grade, subject: subject.slug, chapter };
+  const ref = useMemo(
+    () => ({ board, grade, subject: subject.slug, chapter }),
+    [board, grade, subject.slug, chapter],
+  );
   const key = refKey(ref);
   const isSaved = saved.some((s) => refKey(s) === key);
   const isDone = done.includes(key);
+  const status = chapterStatus(nb, key);
+  const isRead = status === "read" || status === "done";
 
   const gen = useGeneration<PartialNote, NoteRecord>({
     key: `note:${board}:${grade}:${subject.slug}:${chapter}:${lang}`,
@@ -303,26 +342,61 @@ function ChapterView({
       ?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, [narration.activeBlockId, prefs.follow, narration.status]);
 
-  const sections = SECTIONS.filter((s) => {
-    switch (s.id) {
-      case "summary":
-        return true;
-      case "notes":
-        return (content.keyPoints?.length ?? 0) > 0;
-      case "terms":
-        return (content.keyTerms?.length ?? 0) > 0;
-      case "formulas":
-        return (content.formulas?.length ?? 0) > 0;
-      case "tricks":
-        return (content.tricks?.length ?? 0) > 0;
-      case "questions":
-        return (content.questions?.length ?? 0) > 0;
-      case "revision":
-        return (content.quickRevision?.length ?? 0) > 0;
-      case "tips":
-        return (content.examTips?.length ?? 0) > 0 || !!content.funFact;
-    }
+  const sections = visibleSections(content);
+
+  // ---- "Padh liya" tracking: parts read on screen or heard to the end ----
+  const requiredParts = useMemo(
+    () => (record ? visibleSections(record.content).map((s) => s.id as string) : []),
+    [record],
+  );
+  const seenParts = useMemo(
+    () => (isRead ? requiredParts : (nb.progress[key] ?? [])),
+    [isRead, requiredParts, nb.progress, key],
+  );
+  const seenSet = useMemo(() => new Set(seenParts), [seenParts]);
+
+  const markParts = useCallback(
+    (ids: string[]) => {
+      if (!notebook.markParts(ref, ids, requiredParts)) return;
+      toast.success("Chapter padh liya ✓", {
+        description: "Ab Quiz do ya Flashcards se dohrao — phir “Yaad ho gaya” mark karna.",
+        ...(mcqs.length > 0
+          ? { action: { label: "Quiz do", onClick: () => setQuizOpen(true) } }
+          : {}),
+      });
+    },
+    [ref, requiredParts, mcqs.length],
+  );
+
+  useReadTracker({
+    enabled: !!record && !isRead,
+    parts: requiredParts,
+    alreadyRead: seenParts,
+    onRead: markParts,
   });
+
+  // Audio counts too: a part is heard once every one of its tracks has played through.
+  const played = useRef(new Set<number>());
+  const prevNarration = useRef({ index: 0, playing: false });
+  useEffect(() => {
+    const prev = prevNarration.current;
+    const playing = narration.status === "playing" || narration.status === "loading";
+    if (prev.playing && narration.index === prev.index + 1) played.current.add(prev.index);
+    if (narration.status === "ended") played.current.add(narration.index);
+    prevNarration.current = { index: narration.index, playing };
+    if (isRead || tracks.length === 0 || played.current.size === 0) return;
+    const bySection = new Map<string, number[]>();
+    for (const t of tracks) {
+      const s = sectionForBlock(t.blockId);
+      if (s) bySection.set(s, [...(bySection.get(s) ?? []), t.index]);
+    }
+    const heard = [...bySection.entries()]
+      .filter(([s, idx]) => !seenSet.has(s) && idx.every((i) => played.current.has(i)))
+      .map(([s]) => s);
+    if (heard.length) markParts(heard);
+  }, [narration.index, narration.status, tracks, isRead, seenSet, markParts]);
+
+  const readCount = requiredParts.filter((p) => seenSet.has(p)).length;
 
   const toggleSave = () => {
     const now = notebook.toggleSaved({ ...ref, title: meta.title, custom: meta.custom });
@@ -331,6 +405,10 @@ function ChapterView({
   const toggleDone = () => {
     const now = notebook.toggleDone(ref);
     if (now) toast.success("Shabash! Chapter yaad ho gaya ✓");
+  };
+  const toggleRead = () => {
+    notebook.setRead(ref, !isRead);
+    if (!isRead) toast.success("Chapter “padh liya” mark ho gaya ✓");
   };
 
   const share = async () => {
@@ -423,7 +501,8 @@ function ChapterView({
                 rel="noopener noreferrer"
                 className="no-print inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
               >
-                <ExternalLink className="h-4 w-4" /> NCERT textbook (PDF)
+                <ExternalLink className="h-4 w-4" />{" "}
+                {meta.textbookIsBook ? "NCERT textbook" : "NCERT textbook (PDF)"}
               </a>
             ) : (
               board === "icse" &&
@@ -491,7 +570,22 @@ function ChapterView({
               {isSaved ? <BookmarkCheck className="text-accent" /> : <Bookmark />}
               {isSaved ? "Saved" : "Save"}
             </Button>
-            <Button variant={isDone ? "ink" : "paper"} onClick={toggleDone} aria-pressed={isDone}>
+            <Button
+              variant={isRead ? "ink" : "paper"}
+              onClick={toggleRead}
+              aria-pressed={isRead}
+              disabled={!record && !isRead}
+              title="Poora chapter padh ya sun liya? Ye apne aap bhi mark hota hai."
+            >
+              {isRead ? <BookCheck /> : <BookOpen />}
+              {isRead ? "Padh liya" : "Padh liya?"}
+            </Button>
+            <Button
+              variant={isDone ? "ink" : "paper"}
+              onClick={toggleDone}
+              aria-pressed={isDone}
+              title="Quiz ke baad, jab chapter achhe se yaad ho jaye"
+            >
               {isDone ? <CheckCircle2 /> : <Circle />}
               {isDone ? "Yaad ho gaya" : "Yaad ho gaya?"}
             </Button>
@@ -515,24 +609,54 @@ function ChapterView({
               <Printer /> <span className="hidden sm:inline">Print / PDF</span>
             </Button>
           </div>
+
+          {record && (
+            <ReadMeter
+              className="no-print mt-5 lg:hidden"
+              read={readCount}
+              total={requiredParts.length}
+              done={isRead}
+            />
+          )}
         </header>
       </div>
 
       <div className="mx-auto mt-10 grid max-w-6xl gap-10 px-4 lg:grid-cols-[200px_1fr]">
         <aside className="no-print hidden lg:block">
           <nav aria-label="Is chapter mein" className="sticky top-24 space-y-1">
+            {record && (
+              <ReadMeter
+                className="mb-4"
+                read={readCount}
+                total={requiredParts.length}
+                done={isRead}
+                compact
+              />
+            )}
             <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Is chapter mein
             </p>
-            {sections.map((s) => (
-              <a
-                key={s.id}
-                href={`#sec-${s.id}`}
-                className="block rounded-lg px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                {s.label}
-              </a>
-            ))}
+            {sections.map((s) => {
+              const seen = seenSet.has(s.id);
+              return (
+                <a
+                  key={s.id}
+                  href={`#sec-${s.id}`}
+                  className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  {record &&
+                    (seen ? (
+                      <CheckCircle2
+                        className="h-3.5 w-3.5 shrink-0 text-tone-leaf"
+                        aria-label="padh liya"
+                      />
+                    ) : (
+                      <Circle className="h-3.5 w-3.5 shrink-0 opacity-40" aria-hidden />
+                    ))}
+                  <span className={cn(seen && "text-foreground")}>{s.label}</span>
+                </a>
+              );
+            })}
             {record && (
               <button
                 type="button"
@@ -560,11 +684,51 @@ function ChapterView({
               streaming={streaming}
               activeBlockId={narration.activeBlockId}
               playable={!!record}
+              seen={record ? seenSet : undefined}
               onPlayBlock={(id) => {
                 const i = blockToTrack.get(id);
                 if (i !== undefined) narration.playAt(i);
               }}
             />
+          )}
+
+          {record && (
+            <div
+              className={cn(
+                "no-print flex flex-col items-start justify-between gap-4 rounded-3xl border border-border p-6 sm:flex-row sm:items-center sm:p-8",
+                isRead ? "bg-tone-leaf/10" : "bg-card",
+              )}
+            >
+              <div>
+                <p className="flex items-center gap-2 font-display text-2xl font-extrabold">
+                  {isRead ? (
+                    <>
+                      <BookCheck className="h-6 w-6 text-tone-leaf" /> Chapter padh liya!
+                    </>
+                  ) : (
+                    "Poora chapter padh liya?"
+                  )}
+                </p>
+                <p className="mt-1 text-muted-foreground">
+                  {isRead
+                    ? isDone
+                      ? "Ye chapter yaad bhi ho gaya hai. Agle chapter par chalo."
+                      : "Ab quiz do. Achhe number aayein to “Yaad ho gaya” mark karo."
+                    : `${readCount}/${requiredParts.length} hisse padhe. Har hissa padhne ya sunne par ye apne aap mark ho jayega.`}
+                </p>
+              </div>
+              {isRead ? (
+                !isDone && (
+                  <Button variant="ink" size="lg" onClick={toggleDone}>
+                    <CheckCircle2 /> Yaad ho gaya
+                  </Button>
+                )
+              ) : (
+                <Button variant="ink" size="lg" onClick={toggleRead}>
+                  <BookCheck /> Haan, padh liya
+                </Button>
+              )}
+            </div>
           )}
 
           {record && mcqs.length > 0 && (
@@ -644,6 +808,7 @@ function ChapterView({
           narration={narration}
           total={tracks.length}
           ready={!!record}
+          download={record ? { noteId: record.id, tracks, title: meta.title } : null}
           follow={prefs.follow}
           onFollowChange={(follow) => notebook.setPrefs({ follow })}
         />

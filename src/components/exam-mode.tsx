@@ -168,6 +168,11 @@ export function ExamMode({
             narration={narration}
             total={tracks.length}
             ready
+            download={{
+              noteId: `exam:${board}:${grade}:${subject}:${lang}`,
+              tracks,
+              title: `${subjectName} — Exam revision`,
+            }}
             follow={prefs.follow}
             onFollowChange={(follow) => notebook.setPrefs({ follow })}
           />

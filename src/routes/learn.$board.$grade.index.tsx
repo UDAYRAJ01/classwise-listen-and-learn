@@ -1,8 +1,10 @@
+import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowRight, CheckCircle2, Languages } from "lucide-react";
+import { ArrowRight, Languages } from "lucide-react";
 
 import { BoardSwitch } from "@/components/board-switch";
 import { Crumbs } from "@/components/crumbs";
+import { SubjectProgressBar } from "@/components/progress-bits";
 import { SubjectIcon } from "@/components/subject-icon";
 import {
   BOARDS,
@@ -15,6 +17,8 @@ import {
   type BoardId,
 } from "@/lib/catalog";
 import { useNotebook } from "@/lib/notebook-store";
+import { subjectProgress, touchedInSubject } from "@/lib/progress";
+import { classChaptersQuery } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/learn/$board/$grade/")({
@@ -47,9 +51,9 @@ function SubjectsPage() {
   const { board, grade } = Route.useLoaderData();
   const subjects = getSubjects(board, grade);
   const label = gradeLabel(board, grade);
-  const { done } = useNotebook();
-  const doneIn = (slug: string) =>
-    done.filter((k) => k.startsWith(`${board}/${grade}/${slug}/`)).length;
+  const nb = useNotebook();
+  // Totals are a bonus: the cards work without them (e.g. offline).
+  const { data: chapters } = useQuery(classChaptersQuery(board, grade));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -86,33 +90,65 @@ function SubjectsPage() {
       <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {subjects.map((s) => {
           const tone = TONE_CLASSES[s.tone];
+          const where = { board, grade, subject: s.slug };
+          const slugs = chapters?.[s.slug];
+          const prog = slugs ? subjectProgress(nb, where, slugs) : null;
+          const touched = touchedInSubject(nb, where);
+          const readN = prog ? prog.done + prog.read : touched.done + touched.read;
+          const anyActivity = readN > 0 || (prog ? prog.started : touched.started) > 0;
           return (
             <li key={s.slug}>
               <Link
                 to="/learn/$board/$grade/$subject"
                 params={{ board, grade: String(grade), subject: s.slug }}
-                className="sticker press group flex h-full items-center gap-4 rounded-2xl bg-card p-5"
+                className="sticker press group flex h-full flex-col gap-4 rounded-2xl bg-card p-5"
               >
-                <span
-                  className={cn(
-                    "grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-border",
-                    tone.solid,
-                  )}
-                >
-                  <SubjectIcon name={s.icon} className="h-7 w-7 text-paper" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block font-display text-xl font-bold leading-tight">
-                    {s.name}
+                <span className="flex items-center gap-4">
+                  <span
+                    className={cn(
+                      "grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-border",
+                      tone.solid,
+                    )}
+                  >
+                    <SubjectIcon name={s.icon} className="h-7 w-7 text-paper" />
                   </span>
-                  <span className="block text-muted-foreground">{s.hi}</span>
-                  {doneIn(s.slug) > 0 && (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-tone-leaf/15 px-2 py-0.5 text-xs font-bold text-tone-leaf">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> {doneIn(s.slug)} yaad ho gaye
+                  <span className="min-w-0 flex-1">
+                    <span className="block font-display text-xl font-bold leading-tight">
+                      {s.name}
                     </span>
-                  )}
+                    <span className="block text-muted-foreground">{s.hi}</span>
+                  </span>
+                  <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
                 </span>
-                <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                {prog && prog.total > 0 ? (
+                  <span className="block">
+                    <span className="flex items-baseline justify-between text-xs font-bold text-muted-foreground">
+                      <span>
+                        {anyActivity ? (
+                          <>
+                            <span className="text-foreground">{readN}</span>/{prog.total} padhe
+                          </>
+                        ) : (
+                          `${prog.total} chapters`
+                        )}
+                      </span>
+                      {anyActivity && (
+                        <span>{prog.left === 0 ? "Sab ho gaye ✓" : `${prog.left} baaki`}</span>
+                      )}
+                    </span>
+                    <SubjectProgressBar
+                      className="mt-1.5 h-2"
+                      total={prog.total}
+                      done={prog.done}
+                      read={prog.read}
+                      started={prog.started}
+                    />
+                  </span>
+                ) : (
+                  anyActivity && (
+                    <span className="text-xs font-bold text-tone-leaf">{readN} chapters padhe</span>
+                  )
+                )}
               </Link>
             </li>
           );

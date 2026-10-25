@@ -1,12 +1,25 @@
 import { queryOptions } from "@tanstack/react-query";
 
 import type { BoardId, Lang } from "./catalog";
-import { fetchNote, fetchNoteLanguages, fetchSyllabus } from "./content.functions";
+import {
+  fetchClassChapters,
+  fetchNote,
+  fetchNoteLanguages,
+  fetchSyllabus,
+} from "./content.functions";
 
 export const syllabusQuery = (board: BoardId, grade: number, subject: string) =>
   queryOptions({
     queryKey: ["syllabus", board, grade, subject],
     queryFn: () => fetchSyllabus({ data: { board, grade, subject } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
+/** subject → chapter slugs for one class (only subjects whose list exists). */
+export const classChaptersQuery = (board: BoardId, grade: number) =>
+  queryOptions({
+    queryKey: ["class-chapters", board, grade],
+    queryFn: () => fetchClassChapters({ data: { board, grade } }),
     staleTime: 1000 * 60 * 60,
   });
 
