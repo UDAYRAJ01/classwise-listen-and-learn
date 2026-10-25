@@ -18,14 +18,18 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Read tracking: chapter auto-marked "Padh liya" once every part is read or heard; manual mark; read / left counts + filters on subject, class, notebook pages; status on recent cards
 - [x] More tricks & tips: up to 14 tricks, 10 exam tips, new "Ye galti mat karna" (common mistakes) part in notes + audio
 - [x] Textbook checker (catches wrong facts, wrong quiz answers, wrong tricks, missing topics) + shared note pipeline
+- [x] CBSE Class 1–8 chapter lists rebuilt from the official NCERT chapter PDFs (36 subjects, every lesson incl. two-lesson PDFs and Poorvi units) + textbook text stored for notes, tutor and checking
+- [x] ICSE Class 9 English Literature: Julius Caesar limited to Acts I–II (2026-27 split)
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
+- [ ] Background run `scripts/verify-notes.ts` for CBSE Class 1–8 (496 chapters, started 25 Oct)
 - [ ] Background run `scripts/verify-notes.ts`: every CBSE 9–12 chapter (Hinglish) + every stored note rewritten in the new format, checked against the textbook and fixed (749 jobs; reruns skip finished chapters)
-- [ ] CBSE Class 1–8 chapter lists from the official NCERT books (+ textbook text for checking)
-- [ ] ICSE/ISC chapter lists cross-checked against the official CISCE syllabus
+- [ ] ICSE/ISC chapter lists cross-checked against the official CISCE syllabus (cisce.org blocks downloads from here; checked via school syllabus copies where possible)
+- [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 - [ ] Full app check: every page opens without errors on phone and laptop
 
 ## Ready next
+- Official covers for Class 1–8 NCERT books
 - Owner page: show textbook-check results per chapter (how many fixed, what is left)
 - Pre-make didi-voice audio for all notes (after the notes check finishes, so audio is never made for notes that change)
 - Download a chapter's audio for offline listening (needs a smaller audio format than today's files)
