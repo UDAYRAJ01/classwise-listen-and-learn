@@ -43,7 +43,7 @@ interface Props {
   playable: boolean;
   onPlayBlock: (blockId: string) => void;
   /** Parts the student has already read (shows a small tick next to the title). */
-  seen?: ReadonlySet<string>;
+  seen?: ReadonlySet<string> | undefined;
 }
 
 function Block({
@@ -106,7 +106,7 @@ function SectionTitle({
   id: string;
   icon: ReactNode;
   title: string;
-  sub?: string;
+  sub?: string | undefined;
   right?: ReactNode;
 }) {
   const seen = useContext(SeenContext).has(id);
