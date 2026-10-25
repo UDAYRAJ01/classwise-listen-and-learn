@@ -26,6 +26,16 @@ function wav(samples: number[]): ArrayBuffer {
   return buf;
 }
 
+/** jsdom's Blob has no arrayBuffer(); FileReader works everywhere. */
+function readBlob(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as ArrayBuffer);
+    r.onerror = () => reject(r.error);
+    r.readAsArrayBuffer(blob);
+  });
+}
+
 describe("offline audio download", () => {
   it("reads the spoken samples back out of a stored part", () => {
     expect(Array.from(pcmFromWav(wav([1, -2, 300, -32768])))).toEqual([1, -2, 300, -32768]);
@@ -35,7 +45,7 @@ describe("offline audio download", () => {
     const blob = joinToWav([new Int16Array([5, 6]), new Int16Array([7])]);
     const gap = Math.round(PCM_RATE * GAP_SECONDS);
     expect(GAP_SECONDS).toBe(0.5);
-    const samples = pcmFromWav(await blob.arrayBuffer());
+    const samples = pcmFromWav(await readBlob(blob));
     expect(samples.length).toBe(3 + gap);
     expect(Array.from(samples.slice(0, 2))).toEqual([5, 6]);
     expect(samples[2 + gap]).toBe(7);
