@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { BoardId } from "@/lib/catalog";
-import { notebook } from "@/lib/notebook-store";
+import { getNotebookState } from "@/lib/notebook-store";
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
@@ -61,7 +61,7 @@ function AskPage() {
       const s = localStorage.getItem(KEY);
       if (s) setMsgs(JSON.parse(s));
       const c = localStorage.getItem(CLASS_KEY);
-      const last = notebook.getState().recent[0];
+      const last = getNotebookState().recent[0];
       if (c) setCls(JSON.parse(c) as MyClass);
       else if (last) setCls({ board: last.board, grade: last.grade });
     } catch {
