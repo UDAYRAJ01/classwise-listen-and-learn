@@ -23,13 +23,16 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] ICSE Class 9 English Literature: Julius Caesar limited to Acts I–II (2026-27 split)
 - [x] ICSE Class 9–10 lists corrected against current textbook contents + 2026-27 school syllabi (Biology, Maths, History & Civics, Geography, Economics, Chemistry, Commercial Studies 10, Hindi 10 split)
 - [x] Offline audio: "Audio download karo" saves the whole chapter (or Exam Mode revision) as one file to play without internet
+- [x] ISC Class 11–12 lists corrected against 2026-27 school syllabi + current syllabus transcriptions: Class 11 Biology, Business Studies (857, Commerce renamed), new Entrepreneurship (859), Computer Science (Java + Python), Economics, History, Maths, Political Science, Sociology, English title, Hindi split + Sara Aakash; Class 12 Hindi titles; new English Literature (Modern, 891) for 11 and 12
+- [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [ ] Background run `scripts/verify-notes.ts` for CBSE Class 1–8 (496 chapters, started 25 Oct)
 - [ ] Background run `scripts/verify-notes.ts`: every CBSE 9–12 chapter (Hinglish) + every stored note rewritten in the new format, checked against the textbook and fixed (749 jobs; reruns skip finished chapters)
-- [ ] ICSE/ISC: still unverified — ICSE 9 Hindi split & drama/novel, ICSE 9 Commercial Studies full list, Computer Applications 9–10, all ISC 11–12 and ICSE 1–8 lists (cisce.org blocks downloads from here)
+- [ ] ICSE/ISC: still unverified — ICSE 9 Hindi split & drama/novel, ICSE 9 Commercial Studies full list, Computer Applications 9–10, ICSE 1–8 lists; ISC 11 Accounts, Chemistry, Geography, Physics, Psychology; ISC 12 Accounts, Business Studies, Commerce, Computer Science, Economics, History titles, Maths, Physics (exact publisher contents pages not reachable; cisce.org blocks downloads from here)
 - [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 
 ## Ready next
+- Old links to ISC Class 11 Commerce pages: send them to Business Studies instead of "not found"
 - Official covers for Class 1–8 NCERT books
 - Pre-make didi-voice audio for all notes (after the notes check finishes, so audio is never made for notes that change)
