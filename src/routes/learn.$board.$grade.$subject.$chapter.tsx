@@ -1,9 +1,9 @@
-import { coverFor } from "@/lib/ncert-covers";
 import { useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import {
   ArrowLeft,
   ArrowRight,
+  BookCheck,
   BookOpen,
   ExternalLink,
   Bookmark,
@@ -16,13 +16,13 @@ import {
   Share2,
   Target,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Crumbs } from "@/components/crumbs";
 import { Flashcards } from "@/components/note/flashcards";
 import { NarrationBar } from "@/components/note/narration-bar";
-import { NoteView, SECTIONS } from "@/components/note/note-view";
+import { NoteView } from "@/components/note/note-view";
 import { Quiz } from "@/components/note/quiz";
 import { ReportDialog } from "@/components/note/report-dialog";
 import { ErrorCard, GeneratingBanner } from "@/components/state-cards";
@@ -30,6 +30,7 @@ import { SubjectIcon } from "@/components/subject-icon";
 import { Button } from "@/components/ui/button";
 import { useGeneration } from "@/hooks/use-generation";
 import { useNarration } from "@/hooks/use-narration";
+import { useReadTracker } from "@/hooks/use-read-tracker";
 import {
   BOARDS,
   DEFAULT_LANG,
@@ -44,7 +45,9 @@ import {
   type Lang,
   type SubjectMeta,
 } from "@/lib/catalog";
-import { notebook, refKey, useNotebook } from "@/lib/notebook-store";
+import { coverFor } from "@/lib/ncert-covers";
+import { sectionForBlock, visibleSections } from "@/lib/note-sections";
+import { chapterStatus, notebook, refKey, useNotebook } from "@/lib/notebook-store";
 import { noteLanguagesQuery, noteQuery, syllabusQuery } from "@/lib/queries";
 import { customTopicSlug, isCustomSlug, normalizeTopic, TOPIC_MAX } from "@/lib/slugs";
 import { buildTracks } from "@/lib/tracks";
