@@ -26,6 +26,21 @@ describe("catalog", () => {
     expect(gradeLabel("icse", 11)).toBe("ISC Class 11");
     expect(gradeLabel("icse", 10)).toBe("Class 10");
   });
+
+  it("follows the ISC Class 11 change: Commerce became Business Studies, plus Entrepreneurship", () => {
+    expect(getSubject("icse", 11, "commerce")).toBeNull();
+    expect(getSubject("icse", 11, "business-studies")).not.toBeNull();
+    expect(getSubject("icse", 11, "entrepreneurship")).not.toBeNull();
+    // Class 12 (exam 2027) still studies the old Commerce course.
+    expect(getSubject("icse", 12, "commerce")).not.toBeNull();
+    expect(getSubject("icse", 12, "entrepreneurship")).toBeNull();
+  });
+
+  it("offers ISC English Literature (Modern) in Class 11 and 12 only", () => {
+    expect(getSubject("icse", 11, "english-modern")).not.toBeNull();
+    expect(getSubject("icse", 12, "english-modern")).not.toBeNull();
+    expect(getSubject("icse", 10, "english-modern")).toBeNull();
+  });
 });
 
 describe("slugs", () => {
