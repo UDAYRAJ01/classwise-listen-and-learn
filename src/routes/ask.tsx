@@ -5,6 +5,15 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { BoardId } from "@/lib/catalog";
+import { notebook } from "@/lib/notebook-store";
 
 export const Route = createFileRoute("/ask")({
   head: () => ({
@@ -29,6 +38,9 @@ export const Route = createFileRoute("/ask")({
 
 type Msg = { role: "user" | "assistant"; content: string };
 const KEY = "padhosuno:tutor-chat";
+const CLASS_KEY = "padhosuno:tutor-class";
+type MyClass = { board: BoardId; grade: number | null };
+const GRADES = Array.from({ length: 12 }, (_, i) => i + 1);
 const EXAMPLES = [
   "Photosynthesis kya hai? Ek trick se samjhao",
   "x² − 5x + 6 = 0 solve karo, 3 tarike se",
@@ -40,6 +52,7 @@ function AskPage() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [cls, setCls] = useState<MyClass>({ board: "cbse", grade: null });
   const abort = useRef<AbortController | null>(null);
   const end = useRef<HTMLDivElement>(null);
 
@@ -47,10 +60,23 @@ function AskPage() {
     try {
       const s = localStorage.getItem(KEY);
       if (s) setMsgs(JSON.parse(s));
+      const c = localStorage.getItem(CLASS_KEY);
+      const last = notebook.getState().recent[0];
+      if (c) setCls(JSON.parse(c) as MyClass);
+      else if (last) setCls({ board: last.board, grade: last.grade });
     } catch {
       /* ignore */
     }
   }, []);
+
+  const chooseClass = (next: MyClass) => {
+    setCls(next);
+    try {
+      localStorage.setItem(CLASS_KEY, JSON.stringify(next));
+    } catch {
+      /* ignore */
+    }
+  };
   useEffect(() => {
     if (!busy) localStorage.setItem(KEY, JSON.stringify(msgs.slice(-30)));
     end.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -71,7 +97,7 @@ function AskPage() {
       const r = await fetch("/api/tutor", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ messages: next }),
+        body: JSON.stringify({ messages: next, board: cls.board, grade: cls.grade }),
         signal: ctrl.signal,
       });
       if (!r.ok || !r.body) {
@@ -114,6 +140,43 @@ function AskPage() {
             Naya chat
           </Button>
         )}
+      </div>
+
+      <div className="mb-5 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-2 pl-3">
+        <span className="text-sm font-bold">Meri class:</span>
+        <div className="inline-flex gap-1 rounded-lg bg-muted p-0.5" role="group" aria-label="Board">
+          {(["cbse", "icse"] as const).map((b) => (
+            <button
+              key={b}
+              type="button"
+              aria-pressed={cls.board === b}
+              data-active={cls.board === b}
+              onClick={() => chooseClass({ ...cls, board: b })}
+              className="rounded-md px-3 py-1 text-xs font-bold text-muted-foreground data-[active=true]:bg-card data-[active=true]:text-foreground data-[active=true]:shadow-sm"
+            >
+              {b === "cbse" ? "CBSE / NCERT" : "ICSE / ISC"}
+            </button>
+          ))}
+        </div>
+        <Select
+          value={cls.grade ? String(cls.grade) : "all"}
+          onValueChange={(v) => chooseClass({ ...cls, grade: v === "all" ? null : Number(v) })}
+        >
+          <SelectTrigger className="h-8 w-36" aria-label="Class">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Koi bhi class</SelectItem>
+            {GRADES.map((g) => (
+              <SelectItem key={g} value={String(g)}>
+                Class {g}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="text-xs text-muted-foreground">
+          Guru pehle isi class ki books mein dhoondhte hain.
+        </span>
       </div>
 
       {msgs.length === 0 && (
