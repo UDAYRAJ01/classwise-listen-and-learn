@@ -92,6 +92,9 @@ describe("text markup", () => {
       "= aur == mein farq; x **= 3 aur Power",
     );
     expect(splitEmphasis("**p*** equilibrium price")[0]).toEqual({ text: "p*", strong: true });
+    expect(stripEmphasis("**;** punctuator hai; rows ***; **; *")).toBe(
+      "; punctuator hai; rows ***; **; *",
+    );
     // An unclosed highlight must not swallow the next one.
     expect(stripEmphasis("'**Haathi daali!' patte **khaati** hai")).toBe(
       "'Haathi daali!' patte khaati hai",

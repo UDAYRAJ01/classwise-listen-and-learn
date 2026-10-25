@@ -16,8 +16,8 @@ const EMPHASIS = new RegExp(
     String.raw`${OPEN}(${BODY}{1,160}?)(?<=\S)\*\*(?!\*)`,
     // "** * **" highlights a lone operator.
     String.raw`\*\* ([^\s\p{L}\p{N}]{1,3}) \*\*`,
-    // "**=**" or "**= aur ==**" highlights the = sign; a bare "x **= 3" stays code.
-    String.raw`\*\*(=(?:[^*]{0,40}?[^\s*])?)\*\*(?!\*)`,
+    // "**=**", "**= aur ==**" or "**;**" highlight a sign; a bare "x **= 3" stays code.
+    String.raw`\*\*([=;](?:[^*]{0,40}?[^\s*])?)\*\*(?!\*)`,
   ].join("|"),
   "gu",
 );
