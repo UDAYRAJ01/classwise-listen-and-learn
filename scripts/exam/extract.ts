@@ -292,9 +292,10 @@ async function extractPaper(spec: PaperSpec) {
   const seq: Q[] = outs.flatMap((o, i) =>
     o!.questions.filter((q) => q.body.trim()).map((q) => ({ ...q, page: i + 1 })),
   );
-  // JEE Advanced (2018 on) restarts numbering in every subject; other papers number straight through.
+  // JEE Advanced (2018 on) and per-subject PDFs restart numbering in every subject; other
+  // papers number straight through. The numbers themselves tell which one this is.
   const maxNo = Math.max(0, ...seq.map((q) => q.printedNumber));
-  const restarts = spec.exam === "jee-advanced" && maxNo < 0.6 * new Set(seq.map((q) => `${q.subject}:${q.printedNumber}`)).size;
+  const restarts = maxNo < 0.6 * new Set(seq.map((q) => `${q.subject}:${q.printedNumber}`)).size;
   // Reading order: page order for restarting papers, printed number otherwise.
   if (!restarts) seq.sort((a, b) => a.printedNumber - b.printedNumber || a.page - b.page);
   // Subjects are printed in blocks; the block decides a question's subject, not its wording.
