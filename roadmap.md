@@ -36,10 +36,10 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] NCERT location index: sections, examples, exercises, figures, tables of Class 11–12 PCMB with printed page (5,893 places)
 - [x] Pages: /exam → /exam/jee|neet (chapters by weightage, due revisions) → chapter index (concepts, asked questions, one-screen revision, NCERT links, real paper image); "Revise kiya" spaced revision synced in the notebook; menu + home + chapter-page links
 - [x] On-demand solution + trick + "is sawal mein kya tha" + trap, checked against the key (or solved twice when no key)
-- [ ] Re-read all papers with the new subject-block rule + read the 4 new papers (NEET 2024, JEE Main Jan 2023, Jan + Apr 2026) — running: `bun scripts/exam/extract.ts --redo --workers=6`
-- [ ] Second re-read from cache: exact per-subject counts (JEE a third each, NEET 1/4–1/4–1/2), missing shared paragraphs / List-I–II tables added, chapter mapping kept for unchanged questions
-- [ ] Map every question to its NCERT chapter: `bun scripts/exam/analyze.ts --stage=classify`
-- [ ] Concepts per chapter + NCERT example/exercise claims checked against the book text: `--stage=concepts`
+- [x] Re-read all papers with the new subject-block rule + read the 4 new papers (NEET 2024, JEE Main Jan 2023, Jan + Apr 2026): 50 papers, 4,642 questions
+- [x] Second re-read from cache: exact per-subject counts (JEE a third each, NEET 1/4–1/4–1/2), missing shared paragraphs / List-I–II tables added, keys printed as option values ("(12)") read, chapter mapping kept for unchanged questions
+- [x] Map every question to its NCERT chapter (3,912 in current NCERT; 730 on removed topics, 378 of them placed in their unit's chapter under "Purane syllabus ke sawal" and left out of weightage)
+- [ ] Concepts per chapter + NCERT example/exercise claims checked against the book text — running: `bun scripts/exam/analyze.ts --stage=concepts --workers=5`
 - [ ] Written index per chapter + expert review against the NCERT chapter: `--stage=index`
 - [ ] Browser check of the full flow with real data (chapter page, solution button, paper image, revision)
 
@@ -54,6 +54,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 
 ## Ready next
 - JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2)
+- Units dropped from NCERT but still in JEE/NEET syllabus (p-block, s-block, solid state, etc.; ~350 asked questions with no current chapter): own pages with the asked questions
+- JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
 - Official covers for Class 1–8 NCERT books
