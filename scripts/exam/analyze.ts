@@ -14,6 +14,7 @@ import type { Json } from "@/integrations/supabase/types";
 import type { SyllabusBook } from "@/lib/types";
 
 import { args, askJson, pool } from "./lib";
+import { ncertSnippet } from "./ncert-snippet";
 
 const STAGE = args.get("stage") ?? "classify";
 const ONLY = args.get("only")?.split(",");
@@ -217,6 +218,33 @@ const CONCEPT_INSTRUCTIONS = `You analyse all past JEE / NEET questions of ONE N
    - source "beyond-ncert" when it needs ideas beyond the NCERT text — ref = the closest section.
    Only use refs that appear in the NCERT list. Be strict: do not claim an example/exercise match unless it is really similar.`;
 
+async function chapterText(grade: number, subject: string, slug: string): Promise<string> {
+  const r = await admin
+    .from("chapter_sources")
+    .select("body")
+    .eq("board", "cbse")
+    .eq("grade", grade)
+    .eq("subject", subject)
+    .eq("chapter_slug", slug)
+    .maybeSingle();
+  if (r.error) throw r.error;
+  return r.data?.body ?? "";
+}
+
+const CONCEPT_INSTRUCTIONS = `You analyse all past JEE / NEET questions of ONE NCERT chapter and build its exam concept map.
+1. "concepts": 4–14 exam concepts that together cover every question (merge near-duplicates; a concept is what a student must know to solve, e.g. "Range & max height of projectile", "Relative velocity – river crossing"). id = short kebab-case English, name = short English (≤ 6 words). For each concept give "ncert": the 1–3 location refs from the NCERT list where it is taught (format "section 3.6", "example 3.4", "exercise 3.12").
+2. "questions": for EVERY question number: its concept id, "source" and "ref":
+   - source "ncert-example" / "ncert-exercise" when the question is clearly modelled on that NCERT worked example / exercise question (same situation or same calculation with changed numbers) — ref = that row, e.g. "example 3.4";
+   - source "ncert-text" when it tests a fact, formula or statement written in the chapter text — ref = the section where it is written, e.g. "section 3.6";
+   - source "beyond-ncert" when it needs ideas beyond the NCERT text — ref = the closest section.
+   Only use refs that appear in the NCERT list. Be strict: do not claim an example/exercise match unless it is really similar.`;
+
+const ASSIGN_INSTRUCTIONS = `Assign each past exam question to exactly one of the given concepts of this NCERT chapter (the one a student must know to solve it), and give the NCERT section where that idea is written (a ref from the list, e.g. "section 3.6").`;
+
+const MATCH_INSTRUCTIONS = `For each pair, decide whether the past exam question is really modelled on the NCERT worked example / exercise question shown: the same situation or the same calculation (numbers may change). Merely using the same topic or formula is NOT enough. Answer same = true only when a teacher would say "yeh NCERT ke us example / exercise jaisa hi hai".`;
+
+type Assignment = { q: QRow; concept: string; source: string; kind: string | null; ref: string | null };
+
 async function concepts() {
   for (const subject of SUBJECTS) {
     if (ONLY && !ONLY.includes(subject)) continue;
@@ -230,7 +258,10 @@ async function concepts() {
       .filter((w) => w.qs.length > 0 && (REDO || w.qs.some((q) => !q.concept_id)));
     console.log(`${subject}: ${work.length} chapters need a concept map`);
     await pool(work, WORKERS, async ({ ch, qs }) => {
-      const sections = await sectionsFor(ch.grade, subject, ch.slug);
+      const [sections, body] = await Promise.all([
+        sectionsFor(ch.grade, subject, ch.slug),
+        chapterText(ch.grade, subject, ch.slug),
+      ]);
       const refList = sections.map((s) => `${s.kind} ${s.ref}`);
       const ncert = sections
         .map((s) => `${s.kind} ${s.ref} — ${clip(s.heading, 80)} (page ${s.printed_page ?? `pdf ${s.page}`})`)
@@ -280,67 +311,151 @@ async function concepts() {
         effort: "medium",
       });
       // Refs are checked against the index here (a schema enum would be too large for big chapters).
-      const known = new Set(refList);
       const norm = (r: string) => r.trim().replace(/\s+/g, " ").toLowerCase();
       const byNorm = new Map(refList.map((r) => [norm(r), r]));
       const fixRef = (r: string) => byNorm.get(norm(r)) ?? null;
-      for (const c of out.concepts) c.ncert = c.ncert.map(fixRef).filter((r): r is string => Boolean(r));
-      const ids = new Set(out.concepts.map((c) => c.id));
-      let mapped = 0;
-      for (const a of out.questions) {
+      const concepts = out.concepts
+        .filter((c, i, arr) => c.id && arr.findIndex((x) => x.id === c.id) === i)
+        .map((c) => ({ ...c, ncert: c.ncert.map(fixRef).filter((r): r is string => Boolean(r)) }));
+      const ids = new Set(concepts.map((c) => c.id));
+      const sectionOf = (id: string) => {
+        const c = concepts.find((x) => x.id === id);
+        return c?.ncert.find((r) => r.startsWith("section ")) ?? c?.ncert[0] ?? null;
+      };
+
+      const assigned = new Map<string, Assignment>();
+      out.questions.forEach((a) => {
         const q = qs[a.n - 1];
-        if (!q || !ids.has(a.concept)) continue;
-        const concept = out.concepts.find((c) => c.id === a.concept)!;
-        const ref = fixRef(a.ref) ?? concept.ncert[0] ?? null;
-        const [kind, ...rest] = ref ? ref.split(" ") : [null];
-        let source = a.source;
-        if (!ref || !known.has(ref)) source = source === "beyond-ncert" ? source : "ncert-text";
-        // The source label must agree with the kind of location it points at.
-        if (source === "ncert-example" && kind !== "example") source = "ncert-text";
-        if (source === "ncert-exercise" && kind !== "exercise") source = "ncert-text";
+        if (!q || !ids.has(a.concept) || assigned.has(q.id)) return;
+        const ref = fixRef(a.ref) ?? sectionOf(a.concept);
+        assigned.set(q.id, { q, concept: a.concept, source: a.source, kind: null, ref });
+      });
+
+      // Questions the model skipped: a short second pass with the concept list fixed.
+      const missed = qs.filter((q) => !assigned.has(q.id));
+      if (missed.length && concepts.length) {
+        const extra = await askJson<{ items: { n: number; concept: string; ref: string }[] }>({
+          instructions: ASSIGN_INSTRUCTIONS,
+          text: `Chapter: Class ${ch.grade} ${subject} — ${ch.title}\n\nConcepts:\n${concepts
+            .map((c) => `${c.id} — ${c.name}`)
+            .join("\n")}\n\nNCERT sections:\n${refList.filter((r) => r.startsWith("section ")).join(", ")}\n\nQuestions:\n${missed
+            .map((q, i) => `#${i + 1}\n${questionText(q, 450)}`)
+            .join("\n\n")}`,
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            required: ["items"],
+            properties: {
+              items: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["n", "concept", "ref"],
+                  properties: {
+                    n: { type: "integer" },
+                    concept: { type: "string", enum: [...ids] },
+                    ref: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          effort: "low",
+        });
+        for (const a of extra.items) {
+          const q = missed[a.n - 1];
+          if (!q || !ids.has(a.concept) || assigned.has(q.id)) continue;
+          assigned.set(q.id, { q, concept: a.concept, source: "ncert-text", kind: null, ref: fixRef(a.ref) ?? sectionOf(a.concept) });
+        }
+      }
+
+      // The source label must agree with the kind of place it points at.
+      for (const a of assigned.values()) {
+        a.kind = a.ref ? a.ref.split(" ")[0]! : null;
+        if (!a.ref) a.source = a.source === "beyond-ncert" ? a.source : "ncert-text";
+        if (a.source === "ncert-example" && a.kind !== "example") a.source = "ncert-text";
+        if (a.source === "ncert-exercise" && a.kind !== "exercise") a.source = "ncert-text";
+      }
+
+      // Every "modelled on NCERT Example / Exercise" claim is checked against the printed book text.
+      const claims = [...assigned.values()].filter((a) => a.source === "ncert-example" || a.source === "ncert-exercise");
+      const withText = claims.map((a) => ({ a, text: ncertSnippet(body, a.kind!, a.ref!.split(" ").slice(1).join(" ")) }));
+      const demote = (a: Assignment) => {
+        a.source = "ncert-text";
+        a.ref = sectionOf(a.concept);
+        a.kind = a.ref ? a.ref.split(" ")[0]! : null;
+      };
+      for (const c of withText) if (!c.text) demote(c.a);
+      const checkable = withText.filter((c) => c.text);
+      for (let i = 0; i < checkable.length; i += 10) {
+        const batch = checkable.slice(i, i + 10);
+        const verdict = await askJson<{ items: { n: number; same: boolean }[] }>({
+          instructions: MATCH_INSTRUCTIONS,
+          text: batch
+            .map(
+              (c, k) =>
+                `#${k + 1}\nPAST QUESTION:\n${questionText(c.a.q, 700)}\n\nNCERT ${c.a.ref}:\n${c.text}`,
+            )
+            .join("\n\n-----\n\n"),
+          schema: {
+            type: "object",
+            additionalProperties: false,
+            required: ["items"],
+            properties: {
+              items: {
+                type: "array",
+                items: {
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["n", "same"],
+                  properties: { n: { type: "integer" }, same: { type: "boolean" } },
+                },
+              },
+            },
+          },
+          effort: "medium",
+        });
+        batch.forEach((c, k) => {
+          if (!verdict.items.find((v) => v.n === k + 1)?.same) demote(c.a);
+        });
+      }
+      const kept = [...assigned.values()].filter((a) => a.source === "ncert-example" || a.source === "ncert-exercise").length;
+
+      for (const a of assigned.values()) {
+        const concept = concepts.find((c) => c.id === a.concept)!;
         const up = await admin
           .from("exam_questions")
           .update({
             concept_id: a.concept,
             concept: concept.name,
-            ncert_kind: ref ? kind : null,
-            ncert_ref: ref ? rest.join(" ") : null,
-            source_type: source as "ncert-example" | "ncert-exercise" | "ncert-text" | "beyond-ncert",
+            ncert_kind: a.kind,
+            ncert_ref: a.ref ? a.ref.split(" ").slice(1).join(" ") : null,
+            source_type: a.source as "ncert-example" | "ncert-exercise" | "ncert-text" | "beyond-ncert",
           })
-          .eq("id", q.id);
+          .eq("id", a.q.id);
         if (up.error) throw up.error;
-        mapped++;
       }
-      // Store the concept list for both exam groups that use this subject.
+      // One concept list per chapter, shared by both exam groups that use this subject. A new
+      // map drops the old written index, whose concept ids no longer match.
       for (const group of ["jee", "neet"] as const) {
         if (!GROUP_SUBJECTS[group].includes(subject)) continue;
-        const prev = await admin
-          .from("exam_chapters")
-          .select("content")
-          .eq("exam_group", group)
-          .eq("grade", ch.grade)
-          .eq("subject", subject)
-          .eq("chapter_slug", ch.slug)
-          .maybeSingle();
-        const content = {
-          ...((prev.data?.content as Record<string, unknown> | null) ?? {}),
-          conceptMap: out.concepts,
-          mappedAt: new Date().toISOString(),
-        };
         const up = await admin.from("exam_chapters").upsert(
           {
             exam_group: group,
             grade: ch.grade,
             subject,
             chapter_slug: ch.slug,
-            content: content as unknown as Json,
+            content: { conceptMap: concepts, mappedAt: new Date().toISOString() } as unknown as Json,
             question_count: qs.filter((q) => groupOf(q.exam_papers.exam) === group).length,
           },
           { onConflict: "exam_group,grade,subject,chapter_slug" },
         );
         if (up.error) throw up.error;
       }
-      console.log(`${subject} ${ch.key}: ${out.concepts.length} concepts, ${mapped}/${qs.length} questions mapped`);
+      console.log(
+        `${subject} ${ch.key}: ${concepts.length} concepts, ${assigned.size}/${qs.length} questions mapped, ${kept}/${claims.length} NCERT example/exercise matches confirmed`,
+      );
     });
   }
 }
@@ -360,6 +475,45 @@ Also:
 - "revision": 6–12 one-line points (formulas / facts / rules) that revise the whole chapter for {EXAM} in one screen, most important first.
 - "plan": one line on how to revise this chapter (what to do first, which concept to practise most), based on the counts.
 Base everything on the concept names, the sample past questions and NCERT. Do not invent statistics.`;
+
+const REVIEW_INSTRUCTIONS = `You are a strict subject expert checking a student revision index for {EXAM} before it is published. The NCERT chapter text is the reference.
+Check EVERY line: formulas (signs, factors, units, conditions), facts, definitions, examples, mnemonics (each letter must map to the right item, in the right order), shortcuts (must always give the right answer in the stated case), and the "next" question ideas (must be solvable and within the syllabus).
+Fix every error, ambiguity or unsupported claim in place, keeping the same short Hinglish style and the same ids. Remove anything that cannot be made correct. Keep correct lines unchanged.
+Return the full corrected index plus "fixes": one short English line per change (empty if nothing was wrong).`;
+
+const indexSchema = (ids: string[], withFixes: boolean) => ({
+  type: "object",
+  additionalProperties: false,
+  required: ["concepts", "revision", "plan", ...(withFixes ? ["fixes"] : [])],
+  properties: {
+    concepts: {
+      type: "array",
+      items: {
+        type: "object",
+        additionalProperties: false,
+        required: ["id", "explain", "key", "hook", "why", "next", "trap"],
+        properties: {
+          id: { type: "string", enum: ids },
+          explain: { type: "string" },
+          key: { type: ["string", "null"] },
+          hook: { type: "string" },
+          why: { type: "string" },
+          next: { type: "string" },
+          trap: { type: "string" },
+        },
+      },
+    },
+    revision: { type: "array", items: { type: "string" } },
+    plan: { type: "string" },
+    ...(withFixes ? { fixes: { type: "array", items: { type: "string" } } } : {}),
+  },
+});
+
+type Written = {
+  concepts: { id: string; explain: string; key: string | null; hook: string; why: string; next: string; trap: string }[];
+  revision: string[];
+  plan: string;
+};
 
 async function index() {
   for (const group of ["jee", "neet"] as const) {
@@ -381,60 +535,53 @@ async function index() {
       console.log(`${group}/${subject}: ${work.length} chapter indexes to write`);
       await pool(work, WORKERS, async (row) => {
         const ch = chapters.find((c) => c.grade === row.grade && c.slug === row.chapter_slug)!;
-        const content = row.content as { conceptMap: { id: string; name: string; ncert: string[] }[] };
+        const content = row.content as { conceptMap: { id: string; name: string; ncert: string[] }[]; mappedAt?: string };
         const qs = all.filter((q) => q.grade === row.grade && q.chapter_slug === row.chapter_slug);
         const exam = group === "jee" ? "JEE Main and JEE Advanced" : "NEET UG";
-        const conceptText = content.conceptMap
+        // Concepts this exam never asked are left out of its index.
+        const used = content.conceptMap.filter((c) => qs.some((q) => q.concept_id === c.id));
+        if (!used.length) return;
+        const ids = used.map((c) => c.id);
+        const conceptText = used
           .map((c) => {
             const cq = qs.filter((q) => q.concept_id === c.id);
             const years = [...new Set(cq.map((q) => q.exam_papers.year))].sort();
             const samples = cq.slice(0, 4).map((q) => `  - (${q.exam_papers.label}) ${clip(q.body.replace(/\s+/g, " "), 260)}`);
-            return `[${c.id}] ${c.name} — asked ${cq.length} times (${years.join(", ") || "not yet in " + group.toUpperCase()}); NCERT: ${c.ncert.join(", ")}\n${samples.join("\n")}`;
+            return `[${c.id}] ${c.name} — asked ${cq.length} times (${years.join(", ")}); NCERT: ${c.ncert.join(", ")}\n${samples.join("\n")}`;
           })
           .join("\n\n");
-        const out = await askJson<{
-          concepts: { id: string; explain: string; key: string | null; hook: string; why: string; next: string; trap: string }[];
-          revision: string[];
-          plan: string;
-        }>({
+        const draft = await askJson<Written>({
           instructions: INDEX_INSTRUCTIONS.replaceAll("{EXAM}", exam),
           text: `Chapter: Class ${ch.grade} ${subject} — ${ch.title}\nPast ${exam} questions in this chapter: ${qs.length}\n\nConcepts:\n${conceptText}`,
-          schema: {
-            type: "object",
-            additionalProperties: false,
-            required: ["concepts", "revision", "plan"],
-            properties: {
-              concepts: {
-                type: "array",
-                items: {
-                  type: "object",
-                  additionalProperties: false,
-                  required: ["id", "explain", "key", "hook", "why", "next", "trap"],
-                  properties: {
-                    id: { type: "string", enum: content.conceptMap.map((c) => c.id) },
-                    explain: { type: "string" },
-                    key: { type: ["string", "null"] },
-                    hook: { type: "string" },
-                    why: { type: "string" },
-                    next: { type: "string" },
-                    trap: { type: "string" },
-                  },
-                },
-              },
-              revision: { type: "array", items: { type: "string" } },
-              plan: { type: "string" },
-            },
-          },
+          schema: indexSchema(ids, false),
           effort: "medium",
         });
-        const concepts = content.conceptMap.map((c) => ({
+        // Second pass: an expert check against the NCERT chapter before anything is shown.
+        const book = await chapterText(ch.grade, subject, ch.slug);
+        const reviewed = await askJson<Written & { fixes: string[] }>({
+          instructions: REVIEW_INSTRUCTIONS.replaceAll("{EXAM}", exam),
+          text: `Chapter: Class ${ch.grade} ${subject} — ${ch.title}\n\nConcepts:\n${used
+            .map((c) => `[${c.id}] ${c.name}`)
+            .join("\n")}\n\nINDEX TO CHECK (JSON):\n${JSON.stringify(draft)}\n\nNCERT CHAPTER TEXT:\n${clip(book, 60000) || "(not stored — check from subject knowledge)"}`,
+          schema: indexSchema(ids, true),
+          effort: "high",
+        });
+        const concepts = used.map((c) => ({
           ...c,
-          ...(out.concepts.find((x) => x.id === c.id) ?? {}),
+          ...(draft.concepts.find((x) => x.id === c.id) ?? {}),
+          ...(reviewed.concepts.find((x) => x.id === c.id) ?? {}),
         }));
         const up = await admin
           .from("exam_chapters")
           .update({
-            content: { ...content, concepts, revision: out.revision.slice(0, 12), plan: out.plan, writtenAt: new Date().toISOString() } as unknown as Json,
+            content: {
+              ...content,
+              concepts,
+              revision: reviewed.revision.slice(0, 12),
+              plan: reviewed.plan,
+              reviewFixes: reviewed.fixes,
+              writtenAt: new Date().toISOString(),
+            } as unknown as Json,
             question_count: qs.length,
           })
           .eq("exam_group", group)
@@ -442,7 +589,7 @@ async function index() {
           .eq("subject", subject)
           .eq("chapter_slug", row.chapter_slug);
         if (up.error) throw up.error;
-        console.log(`${group}/${subject} ${ch.key}: index written (${concepts.length} concepts)`);
+        console.log(`${group}/${subject} ${ch.key}: index written (${concepts.length} concepts, ${reviewed.fixes.length} fixes in review)`);
       });
     }
   }
