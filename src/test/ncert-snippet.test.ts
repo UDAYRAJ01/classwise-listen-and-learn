@@ -33,6 +33,22 @@ describe("finding NCERT examples and exercises in the book text", () => {
     expect(ncertSnippet(maths, "exercise", "Misc 2")).toMatch(/^2\. 6 ≤/);
   });
 
+  it("reads chemistry books: worked examples are called Problem, exercises follow an Exercises heading", () => {
+    const chemistry = [
+      "5.1 Thermodynamic terms the system from the surroundings is called",
+      "Intext Questions",
+      "5.1 Write the general outer electronic configuration.",
+      "Problem 5.1",
+      "Express the change in internal energy of a system when no heat is absorbed.",
+      " Exercises",
+      "",
+      " 5.1 Choose the correct answer. A thermodynamic state function is a quantity",
+      " 5.2 For the process to occur under adiabatic conditions, the correct condition is:",
+    ].join("\n");
+    expect(ncertSnippet(chemistry, "example", "5.1")).toMatch(/^Problem 5\.1\nExpress/);
+    expect(ncertSnippet(chemistry, "exercise", "5.1")).toMatch(/^5\.1 Choose the correct answer/);
+  });
+
   it("gives nothing when the place is not in the text", () => {
     expect(ncertSnippet(maths, "exercise", "5.2 Q1")).toBeNull();
     expect(ncertSnippet(physics, "section", "3.9")).toBeNull();

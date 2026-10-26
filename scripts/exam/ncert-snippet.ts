@@ -14,7 +14,10 @@ export function ncertSnippet(body: string, kind: string, ref: string): string | 
   // Chemistry books call their worked examples "Problem 5.1".
   if (kind === "example") return from(body, new RegExp(`(?:Example|Problem)\\s*${esc(ref)}(?![\\d.])`, "i"), 1500);
   if (kind !== "exercise") return null;
-  const exStart = body.indexOf("EXERCISES") >= 0 ? body.indexOf("EXERCISES") : body.indexOf("EXERCISE");
+  // The chapter-end "EXERCISES" / "Exercises" heading on its own line (the last one, so a
+  // mention in the text or an intext-questions block before it is skipped).
+  const headings = [...body.matchAll(/(^|\n)[ \t]*EXERCISES?[ \t]*(?=\n|$)/gi)];
+  const exStart = headings.length ? headings.at(-1)!.index! : body.indexOf("EXERCISE");
   let m: RegExpExecArray | null;
   if ((m = /^Misc\s*(\d+)$/i.exec(ref))) {
     const i = body.search(/Miscellaneous\s+Exercises?/i);
