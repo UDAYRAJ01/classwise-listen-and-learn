@@ -40,6 +40,15 @@ export function SiteHeader() {
             Classes
           </Link>
           <Link
+            to="/exam"
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+            activeProps={{ className: "bg-muted" }}
+            aria-label="JEE / NEET"
+          >
+            <Target className="h-4 w-4" />
+            <span className="hidden md:inline">JEE / NEET</span>
+          </Link>
+          <Link
             to="/ask"
             className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
             activeProps={{ className: "bg-muted" }}
