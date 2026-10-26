@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { AccountLink } from "@/components/app/account-link";
+import { ScreenHeader } from "@/components/app/screen-header";
 import { SubjectProgressBar } from "@/components/progress-bits";
 import { ChapterRefCard } from "@/components/recent-strip";
 import { SubjectIcon } from "@/components/subject-icon";
@@ -98,41 +100,40 @@ function NotebookPage() {
   const list: ChapterRef[] = tab === "saved" ? saved : recent;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <div className="flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <p className="font-hand text-xl text-accent">Sirf aapke liye</p>
-          <h1 className="flex items-center gap-3 text-5xl font-extrabold">
-            <NotebookPen className="h-10 w-10" /> Meri Notebook
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            Isi device par save rehta hai. Login karoge to har device par milega.
-          </p>
-        </div>
-        <dl className="grid grid-cols-2 gap-3 sm:flex sm:gap-4">
-          {[
-            { n: readCount, l: "padh liye", icon: BookCheck },
-            { n: done.length, l: "yaad ho gaye", icon: CheckCircle2 },
-            { n: saved.length, l: "saved", icon: BookmarkCheck },
-            { n: streak, l: "din ki streak", icon: Flame },
-          ].map((s) => (
-            <div key={s.l} className="sticker rounded-2xl bg-card px-5 py-3 text-center">
-              <dt className="flex items-center justify-center gap-1.5 font-display text-3xl font-extrabold">
-                <s.icon className="h-5 w-5 text-accent" /> {s.n}
-              </dt>
-              <dd className="font-hand text-base text-muted-foreground">{s.l}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
+    <>
+    <ScreenHeader
+      title="Notebook"
+      subtitle="Padhe, baaki aur saved chapters"
+      actions={
+        <span className="md:hidden">
+          <AccountLink />
+        </span>
+      }
+    />
+    <div className="mx-auto max-w-5xl px-4 pb-10 pt-4 md:pt-6">
+      <dl className="grid grid-cols-4 gap-2 sm:max-w-xl">
+        {[
+          { n: readCount, l: "padhe", icon: BookCheck },
+          { n: done.length, l: "yaad", icon: CheckCircle2 },
+          { n: saved.length, l: "saved", icon: BookmarkCheck },
+          { n: streak, l: "din streak", icon: Flame },
+        ].map((s) => (
+          <div key={s.l} className="rounded-2xl border border-border bg-card px-1 py-2.5 text-center">
+            <dt className="flex items-center justify-center gap-1 font-display text-xl font-extrabold">
+              <s.icon className="h-4 w-4 text-accent" /> {s.n}
+            </dt>
+            <dd className="text-[0.7rem] font-semibold text-muted-foreground">{s.l}</dd>
+          </div>
+        ))}
+      </dl>
 
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-4">
-        <div role="tablist" className="sticker inline-flex flex-wrap gap-1 rounded-xl bg-card p-1">
+      <div className="mt-5 flex items-center justify-between gap-3">
+        <div role="tablist" className="grid flex-1 grid-cols-3 gap-0.5 rounded-xl bg-muted p-0.5 sm:max-w-md sm:flex-none">
           {(
             [
               ["progress", "Padhe / Baaki", ListTodo, null],
               ["saved", "Saved", BookmarkCheck, saved.length],
-              ["recent", "Haal hi mein padhe", History, recent.length],
+              ["recent", "History", History, recent.length],
             ] as const
           ).map(([id, label, Icon, count]) => (
             <button
@@ -142,16 +143,16 @@ function NotebookPage() {
               aria-selected={tab === id}
               data-active={tab === id}
               onClick={() => setTab(id)}
-              className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper"
+              className="inline-flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-bold text-muted-foreground transition-colors data-[active=true]:bg-card data-[active=true]:text-foreground data-[active=true]:shadow-sm sm:text-sm"
             >
-              <Icon className="h-4 w-4" /> {label}
-              {count !== null && <span className="opacity-60">{count}</span>}
+              <Icon className="hidden h-4 w-4 sm:block" /> {label}
+              {count !== null && count > 0 && <span className="opacity-60">{count}</span>}
             </button>
           ))}
         </div>
         {tab === "recent" && recent.length > 0 && (
-          <Button variant="ghost" onClick={() => notebook.clearRecent()}>
-            <Trash2 /> History saaf karo
+          <Button variant="ghost" size="icon" onClick={() => notebook.clearRecent()} aria-label="History saaf karo" title="History saaf karo">
+            <Trash2 />
           </Button>
         )}
       </div>
@@ -172,7 +173,7 @@ function NotebookPage() {
           }
         />
       ) : (
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+        <ul className="mt-5 grid gap-3 sm:grid-cols-2">
           {list.map((r) => (
             <li key={refKey(r)} className="relative">
               <ChapterRefCard r={r} />
@@ -191,18 +192,18 @@ function NotebookPage() {
         </ul>
       )}
     </div>
+    </>
   );
 }
 
 function EmptyCard({ title, body }: { title: string; body: string }) {
   return (
-    <div className="paper-ruled sticker mt-8 rounded-3xl p-10 pl-16 text-center">
-      <p className="font-hand text-3xl leading-[1.9rem]">{title}</p>
-      <p className="mt-2 leading-[1.9rem] text-muted-foreground">{body}</p>
-      <Button asChild variant="ink" size="lg" className="mt-6">
-        <Link to="/" hash="classes">
-          Class chuno
-        </Link>
+    <div className="mt-6 rounded-3xl border border-dashed border-border px-6 py-10 text-center">
+      <NotebookPen className="mx-auto h-8 w-8 text-muted-foreground" />
+      <p className="mt-3 font-display text-lg font-extrabold">{title}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+      <Button asChild variant="ink" className="mt-5 h-10 rounded-full px-5">
+        <Link to="/">Books kholo</Link>
       </Button>
     </div>
   );
@@ -234,11 +235,11 @@ function ProgressTab() {
   }
 
   return (
-    <div className="mt-8 space-y-10">
+    <div className="mt-6 space-y-8">
       {unfinished.length > 0 && (
         <section>
-          <h2 className="text-xl font-extrabold">Adhure chapters — inhe poora karo</h2>
-          <ul className="mt-4 grid gap-4 sm:grid-cols-2">
+          <h2 className="font-display text-base font-extrabold">Adhure chapters</h2>
+          <ul className="mt-3 grid gap-3 sm:grid-cols-2">
             {unfinished.slice(0, 6).map((r) => (
               <li key={refKey(r)}>
                 <ChapterRefCard r={r} />
@@ -249,8 +250,8 @@ function ProgressTab() {
       )}
 
       <section>
-        <h2 className="text-xl font-extrabold">Subject-wise: kitne padhe, kitne baaki</h2>
-        <ul className="mt-4 grid gap-4 md:grid-cols-2">
+        <h2 className="font-display text-base font-extrabold">Subject-wise</h2>
+        <ul className="mt-3 grid gap-3 md:grid-cols-2">
           {groups.map((g) => {
             const subject = getSubject(g.board, g.grade, g.subject)!;
             const tone = TONE_CLASSES[subject.tone];
@@ -263,7 +264,7 @@ function ProgressTab() {
             return (
               <li
                 key={`${g.board}/${g.grade}/${g.subject}`}
-                className="rounded-2xl border border-border bg-card p-5"
+                className="rounded-2xl border border-border bg-card p-4"
               >
                 <div className="flex items-center gap-3">
                   <span
