@@ -23,6 +23,7 @@ export function ExamMode({
   subjectName,
   lang,
   books,
+  className,
 }: {
   board: BoardId;
   grade: number;
@@ -30,6 +31,7 @@ export function ExamMode({
   subjectName: string;
   lang: Lang;
   books: SyllabusBook[];
+  className?: string;
 }) {
   const { prefs } = useNotebook();
   const [open, setOpen] = useState(false);
@@ -77,37 +79,36 @@ export function ExamMode({
   const minutes = Math.max(1, Math.round(items.length * 1.2));
 
   return (
-    <section className={cn("mt-8", open && "pb-28")}>
+    <section className={cn(open && "pb-28", className)}>
       {!open ? (
-        <div className="sticker-lg flex flex-col items-start justify-between gap-4 rounded-3xl bg-ink p-6 text-paper sm:flex-row sm:items-center">
-          <div className="flex items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-secondary text-ink">
-              <Timer className="h-6 w-6" />
-            </span>
-            <div>
-              <p className="font-display text-2xl font-extrabold">Exam Mode</p>
-              <p className="text-paper/80">
-                {items.length} chapters ka 1-minute revision ek saath suno · lagbhag {minutes} min
-              </p>
-            </div>
+        <div className="flex items-center gap-3 rounded-2xl border border-border bg-card p-3">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+            <Timer className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-sm font-extrabold">Exam Mode</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {items.length} chapters · {minutes} min revision
+            </p>
           </div>
           <Button
-            variant="sun"
-            size="lg"
+            variant="ink"
+            size="sm"
+            className="h-9 rounded-full px-3.5"
             onClick={() => {
               setOpen(true);
               narration.playAt(0);
             }}
           >
-            <Headphones /> Revision suno
+            <Headphones /> Suno
           </Button>
         </div>
       ) : (
-        <div className="sticker-lg rounded-3xl bg-card p-5 sm:p-7">
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="font-hand text-lg text-accent">Exam Mode</p>
-              <h2 className="text-2xl font-extrabold">Poore subject ka 1-minute revision</h2>
+              <p className="text-xs font-bold uppercase tracking-wider text-accent">Exam Mode</p>
+              <h2 className="font-display text-lg font-extrabold">1-minute revision</h2>
             </div>
             <Button
               variant="ghost"
