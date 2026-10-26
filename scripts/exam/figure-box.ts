@@ -6,9 +6,9 @@
  */
 import { execFileSync } from "node:child_process";
 
-import type { Box, TextLine } from "../../src/lib/exam-figure";
+import type { Box, TextLine } from "@/lib/exam-figure";
 
-export { trimAnswerFromBox } from "../../src/lib/exam-figure";
+export { trimAnswerFromBox } from "@/lib/exam-figure";
 
 /** Text lines of one PDF page, on the 0–1000 page scale used by figure boxes. */
 export function pageLines(pdf: string, page: number): TextLine[] {
