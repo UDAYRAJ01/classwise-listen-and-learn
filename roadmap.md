@@ -31,7 +31,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 - [x] Chapter names stored in ALL CAPS / lower case tidied to Title Case (157 names; links unchanged)
 
-## In progress (request of 26 Oct: JEE / NEET section for Class 11–12)
+## Done (request of 26 Oct: JEE / NEET section for Class 11–12)
 - [x] Real past papers 2017–2026: JEE Advanced both papers every year (official); NEET every year (one code); JEE Main 2 shifts per year (2017–2026); answers labelled official / coaching / none
 - [x] Paper reader: every question with text, options, answer, page and figure position; subject fixed from the paper's subject blocks; answer forms like "AC", "A or B", ranges
 - [x] NCERT location index: sections, examples, exercises, figures, tables of Class 11–12 PCMB with printed page (5,893 places)
