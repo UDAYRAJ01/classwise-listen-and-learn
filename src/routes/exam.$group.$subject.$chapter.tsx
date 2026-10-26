@@ -253,7 +253,7 @@ function NcertChip({ place }: { place: NcertPlace }) {
       target="_blank"
       rel="noreferrer"
       className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold hover:bg-muted"
-      title={place.heading}
+      title={tidyHeading(place.heading)}
     >
       <BookOpen className="h-3.5 w-3.5 text-primary" />
       {placeLabel(place)}
