@@ -11,7 +11,8 @@ export function ncertSnippet(body: string, kind: string, ref: string): string | 
     const m = re.exec(text);
     return m ? text.slice(m.index, m.index + n).trim() : null;
   };
-  if (kind === "example") return from(body, new RegExp(`Example\\s*${esc(ref)}(?![\\d.])`, "i"), 1500);
+  // Chemistry books call their worked examples "Problem 5.1".
+  if (kind === "example") return from(body, new RegExp(`(?:Example|Problem)\\s*${esc(ref)}(?![\\d.])`, "i"), 1500);
   if (kind !== "exercise") return null;
   const exStart = body.indexOf("EXERCISES") >= 0 ? body.indexOf("EXERCISES") : body.indexOf("EXERCISE");
   let m: RegExpExecArray | null;
