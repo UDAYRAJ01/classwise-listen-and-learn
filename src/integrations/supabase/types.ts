@@ -528,6 +528,18 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_concept_stats: {
+        Row: {
+          chapter_slug: string | null
+          concept: string | null
+          concept_id: string | null
+          exam_group: string | null
+          grade: number | null
+          questions: number | null
+          subject: string | null
+        }
+        Relationships: []
+      }
       exam_coverage: {
         Row: {
           answer_source: string | null
@@ -561,6 +573,16 @@ export type Database = {
           slug?: string | null
           source_url?: string | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      exam_subject_stats: {
+        Row: {
+          exam_group: string | null
+          out_of_syllabus: number | null
+          questions: number | null
+          subject: string | null
+          unmapped: number | null
         }
         Relationships: []
       }
