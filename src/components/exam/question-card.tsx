@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useGeneration } from "@/hooks/use-generation";
 import {
   EXAM_NAMES,
+  optionLabel,
   pdfAtPage,
   placeLabel,
   SOURCE_LABELS,
