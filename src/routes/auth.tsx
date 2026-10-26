@@ -1,7 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LoaderCircle, LogIn, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { ScreenHeader } from "@/components/app/screen-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { lovable } from "@/integrations/lovable";
@@ -92,19 +93,20 @@ function AuthPage() {
 
   return (
     <div>
-      <main className="mx-auto max-w-md px-4 py-14">
-        <div className="sticker-lg rounded-3xl bg-card p-7">
-          <span className="sticker grid h-12 w-12 place-items-center rounded-2xl bg-secondary">
+      <ScreenHeader back={<Link to="/me" />} title={mode === "in" ? "Sign in" : "Account banao"} className="md:hidden" />
+      <div className="mx-auto max-w-md px-4 py-6 md:py-14">
+        <div className="rounded-3xl border border-border bg-card p-5 shadow-sticker sm:p-7">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-secondary text-primary">
             <ShieldCheck className="h-6 w-6" />
           </span>
-          <h1 className="mt-4 text-3xl font-extrabold">
+          <p className="mt-4 hidden font-display text-3xl font-extrabold md:block">
             {mode === "in" ? "Sign in karo" : "Account banao"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Sign in karte hi tumhari notebook, done chapters aur streak har phone/laptop par saath chalenge. Bina login bhi padh sakte ho.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground md:mt-1">
+            Notebook, progress aur streak har phone/laptop par saath. Bina login bhi padh sakte ho.
           </p>
 
-          <Button variant="paper" className="mt-6 w-full" onClick={google}>
+          <Button variant="paper" className="mt-6 h-11 w-full" onClick={google}>
             Continue with Google
           </Button>
           <div className="my-5 flex items-center gap-3 text-xs font-bold uppercase text-muted-foreground">
@@ -135,7 +137,7 @@ function AuthPage() {
             />
             {error && <p className="text-sm font-semibold text-destructive">{error}</p>}
             {info && <p className="text-sm font-semibold text-tone-leaf">{info}</p>}
-            <Button variant="ink" type="submit" disabled={busy} className="w-full">
+            <Button variant="ink" type="submit" disabled={busy} className="h-11 w-full">
               {busy ? <LoaderCircle className="animate-spin" /> : <LogIn />}
               {mode === "in" ? "Sign in" : "Account banao"}
             </Button>
@@ -148,7 +150,7 @@ function AuthPage() {
             {mode === "in" ? "Naya account banana hai?" : "Pehle se account hai? Sign in"}
           </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
