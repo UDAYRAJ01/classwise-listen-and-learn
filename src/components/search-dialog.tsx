@@ -125,10 +125,12 @@ function useDebounced<T>(value: T, ms: number) {
   return v;
 }
 
-export function SearchButton() {
+/** `compact`: round icon for phone title bars (no "/" shortcut, the laptop header owns it). */
+export function SearchButton({ compact = false }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    if (compact) return undefined;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
       const typing =
@@ -141,20 +143,31 @@ export function SearchButton() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [compact]);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-label="Chapter ya subject dhundho"
-        className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
-      >
-        <Search className="h-4 w-4" />
-        <span className="hidden md:inline">Dhundho…</span>
-        <kbd className="hidden rounded bg-muted px-1.5 text-[11px] font-bold md:inline">/</kbd>
-      </button>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Chapter ya subject dhundho"
+          className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-foreground transition-colors hover:bg-muted active:bg-muted"
+        >
+          <Search className="h-5 w-5" />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Chapter ya subject dhundho"
+          className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <Search className="h-4 w-4" />
+          <span className="hidden md:inline">Dhundho…</span>
+          <kbd className="hidden rounded bg-muted px-1.5 text-[11px] font-bold md:inline">/</kbd>
+        </button>
+      )}
       <SearchDialog open={open} onOpenChange={setOpen} />
     </>
   );
