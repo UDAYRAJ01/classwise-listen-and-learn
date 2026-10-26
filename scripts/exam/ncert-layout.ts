@@ -72,7 +72,7 @@ export function linesFromBbox(html: string): Line[] {
       for (const w of row) {
         const prev = seg[seg.length - 1];
         // A wide gap means a new column (margin notes, two-column pages, tab stops after numbers are small).
-        if (prev && w.x0 - prev.x1 > 24) flush();
+        if (prev && w.x0 - prev.x1 > 14) flush();
         seg.push(w);
       }
       flush();
@@ -122,6 +122,7 @@ const tidy = (s: string) =>
     .slice(0, 140);
 
 const isTitle = (s: string) =>
+  !/^E?XAMPLE\b/i.test(s) &&
   /^[A-Z(“"‘']/.test(s) && s.length >= 3 && s.length <= 100 && !/[=×÷]/.test(s) && !/\.\s*$/.test(s.replace(/\?$/, ""));
 
 /**
