@@ -19,6 +19,7 @@ import { Route as ApiExamSolutionRouteImport } from './routes/api/exam-solution'
 import { Route as ApiNotesRouteImport } from './routes/api/notes'
 import { Route as ApiSyllabusRouteImport } from './routes/api/syllabus'
 import { Route as ApiTutorRouteImport } from './routes/api/tutor'
+import { Route as ExamIndexRouteImport } from './routes/exam.index'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as LearnBoardGradeIndexRouteImport } from './routes/learn.$board.$grade.index'
 import { Route as LearnBoardGradeSubjectIndexRouteImport } from './routes/learn.$board.$grade.$subject.index'
@@ -73,6 +74,11 @@ const ApiTutorRoute = ApiTutorRouteImport.update({
   path: '/api/tutor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamIndexRoute = ExamIndexRouteImport.update({
+  id: '/exam/',
+  path: '/exam/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminReportsRoute =
   AuthenticatedAdminReportsRouteImport.update({
     id: '/admin/reports',
@@ -107,6 +113,7 @@ export interface FileRoutesByFullPath {
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/exam/': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
@@ -122,6 +129,7 @@ export interface FileRoutesByTo {
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/exam': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/learn/$board/$grade': typeof LearnBoardGradeIndexRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
@@ -139,6 +147,7 @@ export interface FileRoutesById {
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/exam/': typeof ExamIndexRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
@@ -156,6 +165,7 @@ export interface FileRouteTypes {
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/exam/'
     | '/admin/reports'
     | '/learn/$board/$grade/'
     | '/learn/$board/$grade/$subject/$chapter'
@@ -171,6 +181,7 @@ export interface FileRouteTypes {
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/exam'
     | '/admin/reports'
     | '/learn/$board/$grade'
     | '/learn/$board/$grade/$subject/$chapter'
@@ -187,6 +198,7 @@ export interface FileRouteTypes {
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/exam/'
     | '/_authenticated/admin/reports'
     | '/learn/$board/$grade/'
     | '/learn/$board/$grade/$subject/$chapter'
@@ -204,6 +216,7 @@ export interface RootRouteChildren {
   ApiNotesRoute: typeof ApiNotesRoute
   ApiSyllabusRoute: typeof ApiSyllabusRoute
   ApiTutorRoute: typeof ApiTutorRoute
+  ExamIndexRoute: typeof ExamIndexRoute
   LearnBoardGradeIndexRoute: typeof LearnBoardGradeIndexRoute
   LearnBoardGradeSubjectChapterRoute: typeof LearnBoardGradeSubjectChapterRoute
   LearnBoardGradeSubjectIndexRoute: typeof LearnBoardGradeSubjectIndexRoute
@@ -281,6 +294,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTutorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exam/': {
+      id: '/exam/'
+      path: '/exam'
+      fullPath: '/exam/'
+      preLoaderRoute: typeof ExamIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/reports': {
       id: '/_authenticated/admin/reports'
       path: '/admin/reports'
@@ -334,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNotesRoute: ApiNotesRoute,
   ApiSyllabusRoute: ApiSyllabusRoute,
   ApiTutorRoute: ApiTutorRoute,
+  ExamIndexRoute: ExamIndexRoute,
   LearnBoardGradeIndexRoute: LearnBoardGradeIndexRoute,
   LearnBoardGradeSubjectChapterRoute: LearnBoardGradeSubjectChapterRoute,
   LearnBoardGradeSubjectIndexRoute: LearnBoardGradeSubjectIndexRoute,
