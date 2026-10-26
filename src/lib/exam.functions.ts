@@ -4,12 +4,15 @@ import {
   EXAM_GROUPS,
   isExamGroup,
   isExamSubject,
+  isOldUnit,
+  OLD_UNITS,
   parseChapterParam,
   placeKey,
   type ExamChapterView,
   type ExamConcept,
   type ExamGroup,
   type ExamName,
+  type ExamOldUnitView,
   type ExamOverview,
   type ExamQuestionView,
   type ExamSolution,
@@ -39,6 +42,65 @@ async function publicClient() {
 
 type Sb = Awaited<ReturnType<typeof publicClient>>;
 
+const QUESTION_COLUMNS =
+  "id, qno, kind, passage, body, options, answer, page, has_figure, figure, concept_id, source_type, ncert_kind, ncert_ref, solution, solution_ok, in_syllabus, topic, exam_papers!inner(exam, year, label, slug, answer_source)";
+
+interface QuestionRow {
+  id: string;
+  qno: string | null;
+  kind: string;
+  passage: string | null;
+  body: string;
+  options: unknown;
+  answer: string | null;
+  page: number | null;
+  has_figure: boolean;
+  figure: unknown;
+  concept_id: string | null;
+  source_type: string | null;
+  ncert_kind: string | null;
+  ncert_ref: string | null;
+  solution: unknown;
+  solution_ok: boolean;
+  in_syllabus: boolean;
+  topic: string | null;
+  exam_papers: unknown;
+}
+
+/** A stored question as students see it (a solution that failed its check is never sent). */
+function questionView(q: QuestionRow, places: Map<string, NcertPlace>): ExamQuestionView & { inSyllabus: boolean; topic: string } {
+  const paper = q.exam_papers as { exam: string; year: number; label: string; slug: string; answer_source: string };
+  const fig = q.figure as { box?: number[] } | null;
+  const sol = q.solution as Omit<ExamSolution, "ok"> | null;
+  return {
+    id: q.id,
+    exam: paper.exam as ExamName,
+    year: paper.year,
+    paper: paper.label,
+    paperSlug: paper.slug,
+    answerSource: paper.answer_source as ExamQuestionView["answerSource"],
+    qno: q.qno,
+    kind: q.kind,
+    passage: q.passage,
+    body: q.body,
+    options: Array.isArray(q.options) ? (q.options as string[]) : [],
+    answer: q.answer,
+    page: q.page,
+    hasFigure: q.has_figure,
+    figureBox: fig?.box?.length === 4 ? (fig.box as [number, number, number, number]) : null,
+    conceptId: q.concept_id,
+    source: q.source_type as ExamQuestionView["source"],
+    ncert: q.ncert_kind && q.ncert_ref ? (places.get(placeKey(q.ncert_kind, q.ncert_ref)) ?? null) : null,
+    solution: sol && q.solution_ok ? { ...sol, ok: true } : null,
+    inSyllabus: q.in_syllabus,
+    topic: (q.topic ?? "").replace(/\s*\(removed\)\s*$/i, ""),
+  };
+}
+
+/** Newest first: the latest pattern matters most. */
+const newestFirst = (a: ExamQuestionView, b: ExamQuestionView) =>
+  b.year - a.year || a.paper.localeCompare(b.paper) || Number(a.qno) - Number(b.qno);
+
 /** Chapter titles of the CBSE (NCERT) Class 11 and 12 books of one subject. */
 async function chapterTitles(sb: Sb, subject: ExamSubject) {
   const { data, error } = await sb
@@ -67,14 +129,15 @@ export const fetchExamOverview = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ExamOverview> => {
     const sb = await publicClient();
     const meta = EXAM_GROUPS[data.group];
-    const [stats, concepts, subjects, papers, indexes] = await Promise.all([
+    const [stats, concepts, subjects, papers, indexes, oldUnits] = await Promise.all([
       sb.from("exam_chapter_stats").select("*").eq("exam_group", data.group),
       sb.from("exam_concept_stats").select("*").eq("exam_group", data.group),
       sb.from("exam_subject_stats").select("*").eq("exam_group", data.group),
       sb.from("exam_coverage").select("*").eq("exam_group", data.group).order("year", { ascending: false }),
       sb.from("exam_chapters").select("grade, subject, chapter_slug, content").eq("exam_group", data.group),
+      sb.from("exam_old_unit_stats").select("*").eq("exam_group", data.group),
     ]);
-    for (const r of [stats, concepts, subjects, papers, indexes]) {
+    for (const r of [stats, concepts, subjects, papers, indexes, oldUnits]) {
       if (r.error) throw new Error("Could not load the exam index");
     }
     const written = new Set(
@@ -116,6 +179,16 @@ export const fetchExamOverview = createServerFn({ method: "GET" })
           total: chapters.reduce((n, c) => n + c.questions, 0),
           chapters,
           outOfSyllabus: s?.out_of_syllabus ?? 0,
+          oldUnits: (oldUnits.data ?? [])
+            .filter((u) => u.subject === subject && isOldUnit(subject, u.old_unit))
+            .map((u) => ({
+              unit: u.old_unit!,
+              name: OLD_UNITS[subject][u.old_unit!]!,
+              questions: u.questions ?? 0,
+              years: (u.years ?? []) as number[],
+            }))
+            // "Baaki" (stray topics) last, the rest by how often they were asked.
+            .sort((a, b) => Number(a.unit === "other") - Number(b.unit === "other") || b.questions - a.questions),
         };
       }),
       papers: (papers.data ?? []).map((p) => ({
@@ -163,9 +236,7 @@ export const fetchExamChapter = createServerFn({ method: "GET" })
         .maybeSingle(),
       sb
         .from("exam_questions")
-        .select(
-          "id, qno, kind, passage, body, options, answer, page, has_figure, figure, concept_id, source_type, ncert_kind, ncert_ref, solution, solution_ok, in_syllabus, topic, exam_papers!inner(exam, year, label, slug, answer_source)",
-        )
+        .select(QUESTION_COLUMNS)
         .eq("subject", data.subject)
         .eq("grade", grade)
         .eq("chapter_slug", slug)
@@ -192,38 +263,8 @@ export const fetchExamChapter = createServerFn({ method: "GET" })
       });
     }
 
-    type Paper = { exam: string; year: number; label: string; slug: string; answer_source: string };
-    const all = (qs.data ?? []).map((q) => {
-      const paper = q.exam_papers as unknown as Paper;
-      const fig = q.figure as { box?: number[] } | null;
-      const sol = q.solution as Omit<ExamSolution, "ok"> | null;
-      return {
-        id: q.id,
-        exam: paper.exam as ExamName,
-        year: paper.year,
-        paper: paper.label,
-        paperSlug: paper.slug,
-        answerSource: paper.answer_source as ExamQuestionView["answerSource"],
-        qno: q.qno,
-        kind: q.kind,
-        passage: q.passage,
-        body: q.body,
-        options: Array.isArray(q.options) ? (q.options as string[]) : [],
-        answer: q.answer,
-        page: q.page,
-        hasFigure: q.has_figure,
-        figureBox: fig?.box?.length === 4 ? (fig.box as [number, number, number, number]) : null,
-        conceptId: q.concept_id,
-        source: q.source_type as ExamQuestionView["source"],
-        ncert: q.ncert_kind && q.ncert_ref ? (allPlaces.get(placeKey(q.ncert_kind, q.ncert_ref)) ?? null) : null,
-        // A worked answer that disagreed with the key is never shown.
-        solution: sol && q.solution_ok ? { ...sol, ok: true } : null,
-        inSyllabus: q.in_syllabus,
-        topic: (q.topic ?? "").replace(/\s*\(removed\)\s*$/i, ""),
-      };
-    });
-    // Newest first: the latest pattern matters most.
-    all.sort((a, b) => b.year - a.year || a.paper.localeCompare(b.paper) || Number(a.qno) - Number(b.qno));
+    const all = ((qs.data ?? []) as unknown as QuestionRow[]).map((q) => questionView(q, allPlaces));
+    all.sort(newestFirst);
     const questions: ExamQuestionView[] = all.filter((q) => q.inSyllabus).map(({ inSyllabus: _i, topic: _t, ...q }) => q);
     const oldSyllabus = all.filter((q) => !q.inSyllabus).map(({ inSyllabus: _i, ...q }) => q);
 
@@ -297,4 +338,40 @@ export const fetchPaperPage = createServerFn({ method: "GET" })
       .createSignedUrl(`${data.paper}/${data.page}.webp`, 60 * 60);
     if (error || !signed) return null;
     return { url: signed.signedUrl };
+  });
+
+type OldUnitInput = { group: ExamGroup; subject: ExamSubject; unit: string };
+
+/** Past questions of one unit that the current NCERT books dropped. */
+export const fetchExamOldUnit = createServerFn({ method: "GET" })
+  .validator((input: unknown): OldUnitInput => {
+    const i = input as Partial<OldUnitInput>;
+    if (!isExamGroup(i?.group) || !isExamSubject(i?.subject)) throw new Error("Invalid input");
+    if (!EXAM_GROUPS[i.group].subjects.includes(i.subject) || !isOldUnit(i.subject, i.unit))
+      throw new Error("Invalid input");
+    return { group: i.group, subject: i.subject, unit: i.unit };
+  })
+  .handler(async ({ data }): Promise<ExamOldUnitView> => {
+    const sb = await publicClient();
+    const { data: rows, error } = await sb
+      .from("exam_questions")
+      .select(QUESTION_COLUMNS)
+      .eq("subject", data.subject)
+      .eq("old_unit", data.unit)
+      .eq("in_syllabus", false)
+      .is("chapter_slug", null)
+      .in("exam_papers.exam", EXAM_GROUPS[data.group].exams)
+      .limit(500);
+    if (error) throw new Error("Could not load the questions");
+    const questions = ((rows ?? []) as unknown as QuestionRow[])
+      .map((q) => questionView(q, new Map()))
+      .sort(newestFirst)
+      .map(({ inSyllabus: _i, topic: _t, ...q }) => q);
+    return {
+      group: data.group,
+      subject: data.subject,
+      unit: data.unit,
+      name: OLD_UNITS[data.subject][data.unit]!,
+      questions,
+    };
   });
