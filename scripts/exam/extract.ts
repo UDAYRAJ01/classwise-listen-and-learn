@@ -346,7 +346,7 @@ async function extractPaper(spec: PaperSpec) {
       const images = [page > 1 ? readFileSync(pages[page - 2]!) : null, readFileSync(pages[page - 1]!)].filter(
         (x): x is Buffer => x !== null,
       );
-      out = await askJson({
+      out = await askJson<typeof out>({
         instructions: `You complete transcriptions of an Indian entrance-exam paper. Some questions depend on text printed BEFORE them: a "Question Stem" / paragraph shared by several questions, a matching table with columns / List-I and List-II, or a reaction scheme defining X, Y, Z. ${page > 1 ? "IMAGE 1 is the previous page and IMAGE 2 the page with the questions." : "The image is the page with the questions."}
 For each listed question, transcribe exactly the shared text it needs (Markdown + LaTeX in $...$, chemistry in \\ce{...}, tables as Markdown tables) as "stem". Do not copy the question itself, its options or any solution. If the question is complete without any earlier text, stem = null.`,
         text: `Paper: ${spec.label}.\n\n${qs
