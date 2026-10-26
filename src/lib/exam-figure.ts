@@ -23,6 +23,11 @@ export function trimAnswerFromBox(box: Box, lines: TextLine[]): Box {
     .filter((ln) => ln.box[1] > t + height * 0.2 && ln.box[1] < b) // starts in the lower part
     .sort((a, c) => a.box[1] - c.box[1])[0];
   if (!hit) return box;
-  const cut = Math.max(t, hit.box[1] - 4);
-  return cut - t < height * 0.2 ? box : [l, t, r, Math.round(cut)];
+  // Just above the answer line, but never through the text line printed right before it
+  // (often the last options row, sitting only a hair above).
+  const above = lines
+    .filter((ln) => ln !== hit && ln.box[2] > l && ln.box[0] < r && ln.box[1] >= t && ln.box[3] <= hit.box[1] + 1)
+    .reduce((m, ln) => Math.max(m, ln.box[3]), t);
+  const cut = Math.min(hit.box[1], Math.max(hit.box[1] - 4, above + 1));
+  return cut - t < height * 0.2 ? box : [l, t, r, Math.ceil(cut)];
 }

@@ -20,6 +20,12 @@ describe("trimAnswerFromBox", () => {
     expect(trimAnswerFromBox(box, lines)[3]).toBe(476);
   });
 
+  it("never slices through an options row printed right above the answer", () => {
+    const lines = [line("(3) 6 V (4) 8 V", 547), line("Answer (4)", 560)];
+    // options row ends at 559, so the cut sits under it rather than at 556
+    expect(trimAnswerFromBox(box, lines)[3]).toBe(560);
+  });
+
   it("keeps the crop when the word is part of the question", () => {
     const lines = [line("Correct statement(s) about X is(are)", 450), line("Answer the following", 480)];
     expect(trimAnswerFromBox(box, lines)).toEqual(box);
