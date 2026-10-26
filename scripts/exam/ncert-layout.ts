@@ -154,6 +154,15 @@ export function locate(lines: Line[]): Located[] {
   };
 
   const sec = new RegExp(`^(${chapterNo}\\.\\d{1,2}(?:\\.\\d{1,2})?)\\.?(?:\\s+(.*))?$`);
+
+  // Pages with a contents box: many top-level section numbers listed together. Their
+  // "Summary / Exercises" entries are not the real exercise headings.
+  const topRefs = new Map<number, Set<string>>();
+  for (const l of lines) {
+    const m = new RegExp(`^(${chapterNo}\\.\\d{1,2})\\.?(?:\\s|$)`).exec(l.text);
+    if (m) topRefs.set(l.page, (topRefs.get(l.page) ?? new Set()).add(m[1]!));
+  }
+  const contentsPage = (p: number) => (topRefs.get(p)?.size ?? 0) >= 4 && p <= 2;
   let exerciseSet: string | null = null; // "7.1" for Maths EXERCISE 7.1, "misc", or "" for Physics/Chemistry style
   let lastExercisePage = 0;
 
@@ -162,7 +171,7 @@ export function locate(lines: Line[]): Located[] {
     const t = l.text.replace(/^[u•▪■]\s+/, "");
     let m: RegExpExecArray | null;
 
-    if ((m = /^EXERCISES?(?:\s+(\d{1,2}\.\d{1,2}))?\s*$/i.exec(t))) {
+    if ((m = /^EXERCISES?(?:\s+(\d{1,2}\.\d{1,2}))?\s*$/i.exec(t)) && !contentsPage(l.page)) {
       exerciseSet = m[1] ?? "";
       lastExercisePage = l.page;
       continue;
@@ -228,14 +237,7 @@ export function locate(lines: Line[]): Located[] {
     }
   }
 
-  // A chapter-opening contents box lists many section numbers on one page; the real heading
-  // is the occurrence elsewhere (usually set in capitals), so contents pages lose ties.
-  const refsPerPage = new Map<number, Set<string>>();
-  for (const [ref, cands] of sections) {
-    if (ref.split(".").length !== 2) continue;
-    for (const c of cands) refsPerPage.set(c.page, (refsPerPage.get(c.page) ?? new Set()).add(ref));
-  }
-  const contentsPage = (p: number) => (refsPerPage.get(p)?.size ?? 0) >= 4;
+  // The real heading is the occurrence outside the contents box (usually set in capitals).
   const upper = (s: string) => s === s.toUpperCase() && /[A-Z]/.test(s);
   const score = (c: { title: string; page: number; size: number }) =>
     (contentsPage(c.page) ? 0 : 100) + (upper(c.title) ? 10 : 0) + c.size / 100;
