@@ -19,7 +19,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { Crumbs } from "@/components/crumbs";
+import { barIconClass, ScreenHeader } from "@/components/app/screen-header";
 import { Flashcards } from "@/components/note/flashcards";
 import { NarrationBar } from "@/components/note/narration-bar";
 import { NoteView } from "@/components/note/note-view";
@@ -57,6 +57,9 @@ import { buildTracks } from "@/lib/tracks";
 import type { NoteRecord, PartialNote, SyllabusChapter, SyllabusRecord } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+const actionChip =
+  "inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border bg-card px-3.5 text-sm font-bold transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-50 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 data-[on=true]:border-tone-leaf/50 data-[on=true]:bg-tone-leaf/12 data-[on=true]:text-tone-leaf";
+
 interface ChapterSearch {
   lang?: Lang;
   title?: string;
@@ -70,6 +73,8 @@ interface ChapterMeta {
   /** The link opens the whole book (chapter files not confirmed). */
   textbookIsBook?: boolean;
   cover?: string | undefined;
+  /** Which of the subject's books holds the chapter (for "back" to that book). */
+  bookIndex?: number;
   number: number | null;
   custom: boolean;
   prev: SyllabusChapter | null;
@@ -96,9 +101,10 @@ function resolveMeta(
         }
       : null;
   }
-  const all = (syllabus?.books ?? []).flatMap((b) =>
+  const all = (syllabus?.books ?? []).flatMap((b, bookIndex) =>
     b.chapters.map((c) => ({
       c,
+      bookIndex,
       book: b.name,
       code: b.code,
       bookPage: b.chapterPdfs === false ? b.chapters.length : 0,
@@ -122,6 +128,7 @@ function resolveMeta(
   return {
     title: cur.c.title,
     bookName: cur.book,
+    bookIndex: cur.bookIndex,
     cover: coverFor(cur.code),
     textbookUrl: !cur.code
       ? null
@@ -436,6 +443,7 @@ function ChapterView({
   };
 
   const hasError = !record && gen.status === "error" && gen.error;
+  const bookIndex = meta.bookIndex ?? 0;
 
   return (
     <div className="pb-40">
@@ -811,9 +819,9 @@ function ExamLinks({ grade, subject, chapter }: { grade: number; subject: string
         key={g}
         to="/exam/$group/$subject/$chapter"
         params={{ group: g, subject, chapter: param }}
-        className="no-print inline-flex items-center gap-1.5 rounded-full border border-ink bg-ink px-3 py-1 text-sm font-bold text-paper hover:opacity-90"
+        className={cn(actionChip, "border-ink bg-ink text-paper hover:bg-ink/90")}
       >
-        <Target className="h-4 w-4" /> {EXAM_GROUPS[g].short} mein kya aata hai
+        <Target /> {EXAM_GROUPS[g].short} PYQ
       </Link>
     ));
 }
