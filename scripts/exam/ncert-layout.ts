@@ -101,8 +101,8 @@ export function printedOffset(lines: Line[]): number | null {
       // "127", or a running head such as "BINOMIAL THEOREM 127" / "128 MATHEMATICS".
       const m =
         /^(\d{1,3})$/.exec(l.text) ??
-        /^[A-Z][A-Z ,&\-–:]+\s(\d{1,3})$/.exec(l.text) ??
-        /^(\d{1,3})\s[A-Z][A-Z ,&\-–:]+$/.exec(l.text);
+        /^[A-Z][A-Za-z ,&\-–:]+\s(\d{1,3})$/.exec(l.text) ??
+        /^(\d{1,3})\s[A-Z][A-Za-z ,&\-–:]+$/.exec(l.text);
       if (!m) continue;
       const off = Number(m[1]) - page;
       votes.set(off, (votes.get(off) ?? 0) + 1);
