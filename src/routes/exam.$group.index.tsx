@@ -7,7 +7,7 @@ import { ChipRow, chipClass, ScreenHeader } from "@/components/app/screen-header
 import { revisionLine } from "@/components/exam/revision-button";
 import { ErrorCard } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
-import { getSubject, TONE_CLASSES } from "@/lib/catalog";
+import { getSubject } from "@/lib/catalog";
 import {
   chapterParam,
   EXAM_GROUPS,
@@ -22,7 +22,6 @@ import {
 } from "@/lib/exam";
 import { examOverviewQuery } from "@/lib/exam-queries";
 import { localDay, useNotebook } from "@/lib/notebook-store";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/exam/$group/")({
   validateSearch: (s: Record<string, unknown>): { subject?: ExamSubject } =>
