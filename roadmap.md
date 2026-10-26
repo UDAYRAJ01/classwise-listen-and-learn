@@ -28,6 +28,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] CBSE Class 1–8 (496) and Class 9–12 (613 of 614) chapter notes written and checked against the textbook
 - [x] Fixed: Python power sign ** was disappearing from notes, quiz options and the checker (affected programming chapters re-checked)
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
+- [x] Chapter names stored in ALL CAPS / lower case tidied to Title Case (157 names; links unchanged)
 
 ## In progress (request of 26 Oct: JEE / NEET section for Class 11–12)
 - [x] Real past papers 2017–2026: JEE Advanced both papers every year (official); NEET every year (one code); JEE Main 2 shifts per year (2017–2026); answers labelled official / coaching / none
@@ -36,6 +37,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Pages: /exam → /exam/jee|neet (chapters by weightage, due revisions) → chapter index (concepts, asked questions, one-screen revision, NCERT links, real paper image); "Revise kiya" spaced revision synced in the notebook; menu + home + chapter-page links
 - [x] On-demand solution + trick + "is sawal mein kya tha" + trap, checked against the key (or solved twice when no key)
 - [ ] Re-read all papers with the new subject-block rule + read the 4 new papers (NEET 2024, JEE Main Jan 2023, Jan + Apr 2026) — running: `bun scripts/exam/extract.ts --redo --workers=6`
+- [ ] Second re-read from cache: exact per-subject counts (JEE a third each, NEET 1/4–1/4–1/2), missing shared paragraphs / List-I–II tables added, chapter mapping kept for unchanged questions
 - [ ] Map every question to its NCERT chapter: `bun scripts/exam/analyze.ts --stage=classify`
 - [ ] Concepts per chapter + NCERT example/exercise claims checked against the book text: `--stage=concepts`
 - [ ] Written index per chapter + expert review against the NCERT chapter: `--stage=index`
