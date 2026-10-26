@@ -29,9 +29,18 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Fixed: Python power sign ** was disappearing from notes, quiz options and the checker (affected programming chapters re-checked)
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 
+## In progress (request of 26 Oct: JEE / NEET section for Class 11–12)
+- [ ] Collect real past papers 2016–2025 (JEE Main, JEE Advanced, NEET) + official answer keys
+- [ ] Turn every paper into questions (text + options + official answer), map each to its NCERT Class 11/12 chapter + concept; mark questions from topics no longer in the syllabus
+- [ ] NCERT location index: every section / example / exercise of Class 11–12 Physics, Chemistry, Maths, Biology with its PDF page
+- [ ] Per chapter exam index (JEE, NEET): concepts ranked by how often they came, easy explanation, memory system, NCERT location, why it repeats, how it can come next
+- [ ] Per question: solution, easy trick, "is sawal mein kya tha" analysis, where in NCERT it was made from; solution must match the official answer
+- [ ] Pages: JEE / NEET home → subject (chapters by weightage) → chapter index (concepts + asked questions + one-screen revision sheet); spaced revision ("Revise kiya" → next date) in the notebook
+- [ ] Link from Class 11/12 chapter pages to the JEE/NEET index; menu link
+
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
-- [ ] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text — PAUSED by the user on 25 Oct 14:06 UTC. Done: Hindi 36/70, Sanskrit 9/10. Left: 26 Hindi chapters still on old notes, 8 Hindi chapters with no notes (written on first visit), 1 Sanskrit chapter unchecked. Resume: `bun run scripts/verify-notes.ts --board=cbse --grades=10-12 --subject=hindi --rewrite-before=2026-10-25T13:55:32Z` (and `--grades=10-10 --subject=sanskrit`)
-- [ ] Second pass for 24 Class 11–12 Hindi chapters converted late (list in /tmp/verify/second-pass.txt): `--only=<list> --rewrite-before=2026-10-25T14:12:00Z` once the current Hindi runs finish
+- [ ] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text — resumed 26 Oct; Sanskrit finished. Hindi running: `bun scripts/verify-notes.ts --board=cbse --grades=10-12 --subject=hindi --rewrite-before=2026-10-25T14:00:00Z`
+- [ ] Second pass for Class 11–12 Hindi chapters converted late: after the Hindi run, `--grades=11-12 --subject=hindi --rewrite-before=2026-10-25T14:12:00Z`
 - [x] Class 11 History "Nomadic Empires": text split out of the Chapter 2 PDF, textbook link fixed, notes written + checked
 - [x] Class 11 Hindi Vitan: dropped "लेखकों के बारे में" (an appendix, not a chapter)
 - [x] Bold-word parser: "**=**", "**;**", unclosed highlights and p*** handled; Python/Java stars kept
