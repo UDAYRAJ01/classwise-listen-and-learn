@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ScreenHeader } from "@/components/app/screen-header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
