@@ -15,11 +15,16 @@ import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as ApiAudioRouteImport } from './routes/api/audio'
+import { Route as ApiExamSolutionRouteImport } from './routes/api/exam-solution'
 import { Route as ApiNotesRouteImport } from './routes/api/notes'
 import { Route as ApiSyllabusRouteImport } from './routes/api/syllabus'
 import { Route as ApiTutorRouteImport } from './routes/api/tutor'
+import { Route as ExamIndexRouteImport } from './routes/exam.index'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as ExamGroupIndexRouteImport } from './routes/exam.$group.index'
+import { Route as ExamGroupSubjectChapterRouteImport } from './routes/exam.$group.$subject.$chapter'
 import { Route as LearnBoardGradeIndexRouteImport } from './routes/learn.$board.$grade.index'
+import { Route as ExamGroupSubjectOldUnitRouteImport } from './routes/exam.$group.$subject.old.$unit'
 import { Route as LearnBoardGradeSubjectIndexRouteImport } from './routes/learn.$board.$grade.$subject.index'
 import { Route as LearnBoardGradeSubjectChapterRouteImport } from './routes/learn.$board.$grade.$subject.$chapter'
 
@@ -52,6 +57,11 @@ const ApiAudioRoute = ApiAudioRouteImport.update({
   path: '/api/audio',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiExamSolutionRoute = ApiExamSolutionRouteImport.update({
+  id: '/api/exam-solution',
+  path: '/api/exam-solution',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiNotesRoute = ApiNotesRouteImport.update({
   id: '/api/notes',
   path: '/api/notes',
@@ -67,15 +77,35 @@ const ApiTutorRoute = ApiTutorRouteImport.update({
   path: '/api/tutor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamIndexRoute = ExamIndexRouteImport.update({
+  id: '/exam/',
+  path: '/exam/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminReportsRoute =
   AuthenticatedAdminReportsRouteImport.update({
     id: '/admin/reports',
     path: '/admin/reports',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ExamGroupIndexRoute = ExamGroupIndexRouteImport.update({
+  id: '/exam/$group/',
+  path: '/exam/$group/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamGroupSubjectChapterRoute = ExamGroupSubjectChapterRouteImport.update({
+  id: '/exam/$group/$subject/$chapter',
+  path: '/exam/$group/$subject/$chapter',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LearnBoardGradeIndexRoute = LearnBoardGradeIndexRouteImport.update({
   id: '/learn/$board/$grade/',
   path: '/learn/$board/$grade/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExamGroupSubjectOldUnitRoute = ExamGroupSubjectOldUnitRouteImport.update({
+  id: '/exam/$group/$subject/old/$unit',
+  path: '/exam/$group/$subject/old/$unit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LearnBoardGradeSubjectIndexRoute =
@@ -97,11 +127,16 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
+  '/api/exam-solution': typeof ApiExamSolutionRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/exam/': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/exam/$group/': typeof ExamGroupIndexRoute
+  '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
+  '/exam/$group/$subject/old/$unit': typeof ExamGroupSubjectOldUnitRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -111,11 +146,16 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
+  '/api/exam-solution': typeof ApiExamSolutionRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/exam': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/exam/$group': typeof ExamGroupIndexRoute
+  '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade': typeof LearnBoardGradeIndexRoute
+  '/exam/$group/$subject/old/$unit': typeof ExamGroupSubjectOldUnitRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject': typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -127,11 +167,16 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
+  '/api/exam-solution': typeof ApiExamSolutionRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/exam/': typeof ExamIndexRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/exam/$group/': typeof ExamGroupIndexRoute
+  '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
+  '/exam/$group/$subject/old/$unit': typeof ExamGroupSubjectOldUnitRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -143,11 +188,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/notebook'
     | '/api/audio'
+    | '/api/exam-solution'
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/exam/'
     | '/admin/reports'
+    | '/exam/$group/'
+    | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade/'
+    | '/exam/$group/$subject/old/$unit'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject/'
   fileRoutesByTo: FileRoutesByTo
@@ -157,11 +207,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/notebook'
     | '/api/audio'
+    | '/api/exam-solution'
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/exam'
     | '/admin/reports'
+    | '/exam/$group'
+    | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade'
+    | '/exam/$group/$subject/old/$unit'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject'
   id:
@@ -172,11 +227,16 @@ export interface FileRouteTypes {
     | '/auth'
     | '/notebook'
     | '/api/audio'
+    | '/api/exam-solution'
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/exam/'
     | '/_authenticated/admin/reports'
+    | '/exam/$group/'
+    | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade/'
+    | '/exam/$group/$subject/old/$unit'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject/'
   fileRoutesById: FileRoutesById
@@ -188,10 +248,15 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   NotebookRoute: typeof NotebookRoute
   ApiAudioRoute: typeof ApiAudioRoute
+  ApiExamSolutionRoute: typeof ApiExamSolutionRoute
   ApiNotesRoute: typeof ApiNotesRoute
   ApiSyllabusRoute: typeof ApiSyllabusRoute
   ApiTutorRoute: typeof ApiTutorRoute
+  ExamIndexRoute: typeof ExamIndexRoute
+  ExamGroupIndexRoute: typeof ExamGroupIndexRoute
+  ExamGroupSubjectChapterRoute: typeof ExamGroupSubjectChapterRoute
   LearnBoardGradeIndexRoute: typeof LearnBoardGradeIndexRoute
+  ExamGroupSubjectOldUnitRoute: typeof ExamGroupSubjectOldUnitRoute
   LearnBoardGradeSubjectChapterRoute: typeof LearnBoardGradeSubjectChapterRoute
   LearnBoardGradeSubjectIndexRoute: typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -240,6 +305,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAudioRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/exam-solution': {
+      id: '/api/exam-solution'
+      path: '/api/exam-solution'
+      fullPath: '/api/exam-solution'
+      preLoaderRoute: typeof ApiExamSolutionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/notes': {
       id: '/api/notes'
       path: '/api/notes'
@@ -261,6 +333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTutorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exam/': {
+      id: '/exam/'
+      path: '/exam'
+      fullPath: '/exam/'
+      preLoaderRoute: typeof ExamIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/reports': {
       id: '/_authenticated/admin/reports'
       path: '/admin/reports'
@@ -268,11 +347,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/exam/$group/': {
+      id: '/exam/$group/'
+      path: '/exam/$group'
+      fullPath: '/exam/$group/'
+      preLoaderRoute: typeof ExamGroupIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam/$group/$subject/$chapter': {
+      id: '/exam/$group/$subject/$chapter'
+      path: '/exam/$group/$subject/$chapter'
+      fullPath: '/exam/$group/$subject/$chapter'
+      preLoaderRoute: typeof ExamGroupSubjectChapterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/learn/$board/$grade/': {
       id: '/learn/$board/$grade/'
       path: '/learn/$board/$grade'
       fullPath: '/learn/$board/$grade/'
       preLoaderRoute: typeof LearnBoardGradeIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/exam/$group/$subject/old/$unit': {
+      id: '/exam/$group/$subject/old/$unit'
+      path: '/exam/$group/$subject/old/$unit'
+      fullPath: '/exam/$group/$subject/old/$unit'
+      preLoaderRoute: typeof ExamGroupSubjectOldUnitRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/learn/$board/$grade/$subject/': {
@@ -310,10 +410,15 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   NotebookRoute: NotebookRoute,
   ApiAudioRoute: ApiAudioRoute,
+  ApiExamSolutionRoute: ApiExamSolutionRoute,
   ApiNotesRoute: ApiNotesRoute,
   ApiSyllabusRoute: ApiSyllabusRoute,
   ApiTutorRoute: ApiTutorRoute,
+  ExamIndexRoute: ExamIndexRoute,
+  ExamGroupIndexRoute: ExamGroupIndexRoute,
+  ExamGroupSubjectChapterRoute: ExamGroupSubjectChapterRoute,
   LearnBoardGradeIndexRoute: LearnBoardGradeIndexRoute,
+  ExamGroupSubjectOldUnitRoute: ExamGroupSubjectOldUnitRoute,
   LearnBoardGradeSubjectChapterRoute: LearnBoardGradeSubjectChapterRoute,
   LearnBoardGradeSubjectIndexRoute: LearnBoardGradeSubjectIndexRoute,
 }

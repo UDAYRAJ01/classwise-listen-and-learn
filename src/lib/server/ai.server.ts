@@ -88,7 +88,9 @@ export async function streamStructured<T>(opts: {
   instructions: string;
   prompt: string;
   schema: object;
-  effort: "low" | "medium";
+  effort: "low" | "medium" | "high";
+  /** Optional pictures sent before the prompt text (e.g. a scanned question page). */
+  images?: { data: Uint8Array; mediaType: string }[];
   onPartial?: (partial: unknown) => void;
 }): Promise<T> {
   const apiKey = getApiKey();
@@ -104,7 +106,23 @@ export async function streamStructured<T>(opts: {
   const result = streamText({
     model: provider.responses(TEXT_MODEL),
     instructions: opts.instructions,
-    prompt: opts.prompt,
+    ...(opts.images?.length
+      ? {
+          messages: [
+            {
+              role: "user" as const,
+              content: [
+                ...opts.images.map((img) => ({
+                  type: "file" as const,
+                  data: img.data,
+                  mediaType: img.mediaType,
+                })),
+                { type: "text" as const, text: opts.prompt },
+              ],
+            },
+          ],
+        }
+      : { prompt: opts.prompt }),
     maxRetries: 1,
     output: Output.object({
       schema: jsonSchema<T>(opts.schema as Parameters<typeof jsonSchema>[0]),

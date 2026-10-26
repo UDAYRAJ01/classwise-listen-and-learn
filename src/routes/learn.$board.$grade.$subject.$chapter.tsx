@@ -48,6 +48,7 @@ import {
   TONE_CLASSES,
 } from "@/lib/catalog";
 import { coverFor } from "@/lib/ncert-covers";
+import { chapterParam, EXAM_GROUPS, isExamSubject, parseChapterParam } from "@/lib/exam";
 import { sectionForBlock, visibleSections } from "@/lib/note-sections";
 import { chapterStatus, notebook, refKey, useNotebook } from "@/lib/notebook-store";
 import { noteLanguagesQuery, noteQuery, syllabusQuery } from "@/lib/queries";
@@ -523,6 +524,9 @@ function ChapterView({
                 Aapka topic
               </span>
             )}
+            {board === "cbse" && !meta.custom && (
+              <ExamLinks grade={grade} subject={subject.slug} chapter={chapter} />
+            )}
           </div>
           <h1 className="mt-4 max-w-4xl text-4xl font-extrabold sm:text-5xl">
             {meta.number && (
@@ -818,4 +822,22 @@ function ChapterView({
       {record && mcqs.length > 0 && <Quiz mcqs={mcqs} open={quizOpen} onOpenChange={setQuizOpen} />}
     </div>
   );
+}
+
+/** "JEE / NEET mein kya aata hai" for CBSE Class 11–12 Physics, Chemistry, Maths and Biology chapters. */
+function ExamLinks({ grade, subject, chapter }: { grade: number; subject: string; chapter: string }) {
+  const param = chapterParam(grade, chapter);
+  if (!isExamSubject(subject) || !parseChapterParam(param)) return null;
+  return (["jee", "neet"] as const)
+    .filter((g) => EXAM_GROUPS[g].subjects.includes(subject))
+    .map((g) => (
+      <Link
+        key={g}
+        to="/exam/$group/$subject/$chapter"
+        params={{ group: g, subject, chapter: param }}
+        className="no-print inline-flex items-center gap-1.5 rounded-full border border-ink bg-ink px-3 py-1 text-sm font-bold text-paper hover:opacity-90"
+      >
+        <Target className="h-4 w-4" /> {EXAM_GROUPS[g].short} mein kya aata hai
+      </Link>
+    ));
 }

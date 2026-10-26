@@ -47,6 +47,182 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_chapters: {
+        Row: {
+          chapter_slug: string
+          content: Json
+          created_at: string
+          exam_group: string
+          grade: number
+          id: string
+          question_count: number
+          subject: string
+        }
+        Insert: {
+          chapter_slug: string
+          content: Json
+          created_at?: string
+          exam_group: string
+          grade: number
+          id?: string
+          question_count?: number
+          subject: string
+        }
+        Update: {
+          chapter_slug?: string
+          content?: Json
+          created_at?: string
+          exam_group?: string
+          grade?: number
+          id?: string
+          question_count?: number
+          subject?: string
+        }
+        Relationships: []
+      }
+      exam_papers: {
+        Row: {
+          answer_source: string
+          created_at: string
+          exam: string
+          held_on: string | null
+          id: string
+          key_url: string | null
+          label: string
+          pages: number | null
+          question_count: number
+          slug: string
+          source_url: string
+          status: string
+          year: number
+        }
+        Insert: {
+          answer_source?: string
+          created_at?: string
+          exam: string
+          held_on?: string | null
+          id?: string
+          key_url?: string | null
+          label: string
+          pages?: number | null
+          question_count?: number
+          slug: string
+          source_url: string
+          status?: string
+          year: number
+        }
+        Update: {
+          answer_source?: string
+          created_at?: string
+          exam?: string
+          held_on?: string | null
+          id?: string
+          key_url?: string | null
+          label?: string
+          pages?: number | null
+          question_count?: number
+          slug?: string
+          source_url?: string
+          status?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      exam_questions: {
+        Row: {
+          answer: string | null
+          body: string
+          chapter_slug: string | null
+          concept: string | null
+          concept_id: string | null
+          created_at: string
+          figure: Json | null
+          grade: number | null
+          has_figure: boolean
+          id: string
+          in_syllabus: boolean
+          kind: string
+          ncert_kind: string | null
+          ncert_ref: string | null
+          number: number
+          old_unit: string | null
+          options: Json
+          page: number | null
+          paper_id: string
+          passage: string | null
+          qno: string | null
+          solution: Json | null
+          solution_ok: boolean
+          source_type: string | null
+          subject: string
+          topic: string | null
+        }
+        Insert: {
+          answer?: string | null
+          body: string
+          chapter_slug?: string | null
+          concept?: string | null
+          concept_id?: string | null
+          created_at?: string
+          figure?: Json | null
+          grade?: number | null
+          has_figure?: boolean
+          id?: string
+          in_syllabus?: boolean
+          kind?: string
+          ncert_kind?: string | null
+          ncert_ref?: string | null
+          number: number
+          old_unit?: string | null
+          options?: Json
+          page?: number | null
+          paper_id: string
+          passage?: string | null
+          qno?: string | null
+          solution?: Json | null
+          solution_ok?: boolean
+          source_type?: string | null
+          subject: string
+          topic?: string | null
+        }
+        Update: {
+          answer?: string | null
+          body?: string
+          chapter_slug?: string | null
+          concept?: string | null
+          concept_id?: string | null
+          created_at?: string
+          figure?: Json | null
+          grade?: number | null
+          has_figure?: boolean
+          id?: string
+          in_syllabus?: boolean
+          kind?: string
+          ncert_kind?: string | null
+          ncert_ref?: string | null
+          number?: number
+          old_unit?: string | null
+          options?: Json
+          page?: number | null
+          paper_id?: string
+          passage?: string | null
+          qno?: string | null
+          solution?: Json | null
+          solution_ok?: boolean
+          source_type?: string | null
+          subject?: string
+          topic?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_questions_paper_id_fkey"
+            columns: ["paper_id"]
+            isOneToOne: false
+            referencedRelation: "exam_papers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generation_events: {
         Row: {
           created_at: string
@@ -65,6 +241,45 @@ export type Database = {
           id?: never
           ip_hash?: string
           kind?: string
+        }
+        Relationships: []
+      }
+      ncert_sections: {
+        Row: {
+          chapter_slug: string
+          grade: number
+          heading: string
+          id: string
+          kind: string
+          page: number
+          pdf_url: string
+          printed_page: number | null
+          ref: string
+          subject: string
+        }
+        Insert: {
+          chapter_slug: string
+          grade: number
+          heading?: string
+          id?: string
+          kind: string
+          page: number
+          pdf_url: string
+          printed_page?: number | null
+          ref: string
+          subject: string
+        }
+        Update: {
+          chapter_slug?: string
+          grade?: number
+          heading?: string
+          id?: string
+          kind?: string
+          page?: number
+          pdf_url?: string
+          printed_page?: number | null
+          ref?: string
+          subject?: string
         }
         Relationships: []
       }
@@ -301,7 +516,92 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      exam_chapter_stats: {
+        Row: {
+          advanced_count: number | null
+          chapter_slug: string | null
+          exam_group: string | null
+          grade: number | null
+          main_count: number | null
+          neet_count: number | null
+          papers: number | null
+          questions: number | null
+          subject: string | null
+          years: number[] | null
+        }
+        Relationships: []
+      }
+      exam_concept_stats: {
+        Row: {
+          chapter_slug: string | null
+          concept: string | null
+          concept_id: string | null
+          exam_group: string | null
+          grade: number | null
+          questions: number | null
+          subject: string | null
+        }
+        Relationships: []
+      }
+      exam_coverage: {
+        Row: {
+          answer_source: string | null
+          exam: string | null
+          exam_group: string | null
+          held_on: string | null
+          label: string | null
+          question_count: number | null
+          slug: string | null
+          source_url: string | null
+          year: number | null
+        }
+        Insert: {
+          answer_source?: string | null
+          exam?: string | null
+          exam_group?: never
+          held_on?: string | null
+          label?: string | null
+          question_count?: number | null
+          slug?: string | null
+          source_url?: string | null
+          year?: number | null
+        }
+        Update: {
+          answer_source?: string | null
+          exam?: string | null
+          exam_group?: never
+          held_on?: string | null
+          label?: string | null
+          question_count?: number | null
+          slug?: string | null
+          source_url?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
+      exam_old_unit_stats: {
+        Row: {
+          advanced_count: number | null
+          exam_group: string | null
+          main_count: number | null
+          neet_count: number | null
+          old_unit: string | null
+          questions: number | null
+          subject: string | null
+          years: number[] | null
+        }
+        Relationships: []
+      }
+      exam_subject_stats: {
+        Row: {
+          exam_group: string | null
+          out_of_syllabus: number | null
+          questions: number | null
+          subject: string | null
+          unmapped: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {

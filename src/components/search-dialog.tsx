@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { BookOpen, GraduationCap, LoaderCircle, Search } from "lucide-react";
+import { BookOpen, GraduationCap, LoaderCircle, Search, Target } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { SubjectIcon } from "@/components/subject-icon";
@@ -22,6 +22,7 @@ import {
   type BoardId,
 } from "@/lib/catalog";
 import { searchChapters } from "@/lib/content.functions";
+import { EXAM_GROUPS, SUBJECT_NAMES, type ExamGroup, type ExamSubject } from "@/lib/exam";
 import { useNotebook } from "@/lib/notebook-store";
 
 interface CatalogHit {
@@ -57,6 +58,49 @@ const CATALOG: CatalogHit[] = BOARD_IDS.flatMap((board) =>
     })),
   ]),
 );
+
+interface ExamHit {
+  key: string;
+  group: ExamGroup;
+  subject?: ExamSubject;
+  label: string;
+  sub: string;
+  hay: string;
+}
+
+const EXAM_WORDS: Record<ExamGroup, string> = {
+  jee: "jee iit iit-jee main mains advanced engineering pyq entrance competitive",
+  neet: "neet medical aiims pyq entrance competitive",
+};
+
+const EXAM_HITS: ExamHit[] = (Object.keys(EXAM_GROUPS) as ExamGroup[]).flatMap((group) => {
+  const g = EXAM_GROUPS[group];
+  return [
+    {
+      key: `exam-${group}`,
+      group,
+      label: `${g.short} — chapter-wise PYQ index`,
+      sub: g.name,
+      hay: `${EXAM_WORDS[group]} ${g.name}`.toLowerCase(),
+    },
+    ...g.subjects.map((subject) => ({
+      key: `exam-${group}-${subject}`,
+      group,
+      subject,
+      label: `${SUBJECT_NAMES[subject]} · ${g.short}`,
+      sub: "Pichhle 10 saal ke asli sawal, chapter-wise",
+      hay: `${EXAM_WORDS[group]} ${subject} ${SUBJECT_NAMES[subject]}`.toLowerCase(),
+    })),
+  ];
+});
+
+/** JEE / NEET pages show up only when the search names an exam ("jee physics", "neet pyq"). */
+function matchExam(q: string): ExamHit[] {
+  const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const examWord = (t: string) => Object.values(EXAM_WORDS).some((w) => w.split(" ").includes(t));
+  if (!tokens.some(examWord)) return [];
+  return EXAM_HITS.filter((h) => tokens.every((t) => h.hay.includes(t))).slice(0, 6);
+}
 
 function matchCatalog(q: string): CatalogHit[] {
   const tokens = q
@@ -128,6 +172,7 @@ function SearchDialog({
   const [q, setQ] = useState("");
   const dq = useDebounced(q.trim(), 250);
   const catalogHits = useMemo(() => matchCatalog(q), [q]);
+  const examHits = useMemo(() => matchExam(q), [q]);
   const { data: chapterHits, isFetching } = useQuery({
     queryKey: ["search", dq],
     queryFn: () => searchChapters({ data: { q: dq } }),
@@ -165,6 +210,7 @@ function SearchDialog({
         )}
         {q.trim().length > 0 &&
           catalogHits.length === 0 &&
+          examHits.length === 0 &&
           chapters.length === 0 &&
           !isFetching && (
             <CommandEmpty>
@@ -203,6 +249,32 @@ function SearchDialog({
                 <span className="min-w-0">
                   <span className="block font-semibold">{c.label}</span>
                   <span className="block text-xs text-muted-foreground">{c.sub}</span>
+                </span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        )}
+        {examHits.length > 0 && (
+          <CommandGroup heading="JEE / NEET">
+            {examHits.map((h) => (
+              <CommandItem
+                key={h.key}
+                value={h.key}
+                onSelect={() =>
+                  go(() =>
+                    navigate({
+                      to: "/exam/$group",
+                      params: { group: h.group },
+                      search: h.subject ? { subject: h.subject } : {},
+                    }),
+                  )
+                }
+                className="gap-3"
+              >
+                <Target className="text-muted-foreground" />
+                <span className="min-w-0">
+                  <span className="block font-semibold">{h.label}</span>
+                  <span className="block text-xs text-muted-foreground">{h.sub}</span>
                 </span>
               </CommandItem>
             ))}

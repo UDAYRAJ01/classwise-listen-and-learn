@@ -58,3 +58,48 @@ export function sentence(input: string): string {
   if (!t) return "";
   return /[.!?।:;]$/.test(t) ? t : `${t}.`;
 }
+
+const SMALL_WORDS = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "into", "of", "on", "or", "the", "to", "with"]);
+
+/**
+ * Chapter titles copied from book PDFs are sometimes ALL CAPS or all lower case. Those become
+ * Title Case ("LAWS OF MOTION" → "Laws of Motion"); titles with mixed case, roman numerals
+ * and non-Latin scripts are left as they are.
+ */
+export function tidyTitle(input: string): string {
+  // "Biotechnology : Principles" (a PDF gap) → "Biotechnology: Principles"; Hindi "कबीर : साखी" keeps its style.
+  const title = input.replace(/\s+/g, " ").replace(/([A-Za-z)])\s+([:;,])/g, "$1$2").trim();
+  if (!/[A-Za-z]/.test(title)) return title;
+  if (title !== title.toUpperCase() && title !== title.toLowerCase()) return title;
+  let first = true;
+  return title
+    .split(" ")
+    .map((word) => {
+      const lower = word.toLowerCase();
+      const out =
+        /^[IVX]+[.:,]?$/.test(word) || /\d/.test(word) || !/[A-Za-z]/.test(word)
+          ? word
+          : !first && SMALL_WORDS.has(lower)
+            ? lower
+            : lower.replace(/(^|[-‘'“(])([a-z])/g, (_, p: string, c: string) => p + c.toUpperCase());
+      // The word after a colon or dash starts a new phrase.
+      first = /[:–—]$/.test(word) || word === "–" || word === ":";
+      return out;
+    })
+    .join(" ");
+}
+
+/**
+ * NCERT section headings read from the book PDFs: ALL CAPS becomes Title Case and a capital
+ * split off its word by the PDF ("PHYSICAL Q UANTITIES") is joined back.
+ */
+export function tidyHeading(input: string): string {
+  const joined = input
+    // "POISSON ’ S" → "POISSON’S"; the PDF font also drops the Q of "EQUATIONS".
+    .replace(/\s*’\s*S\b/g, "’S")
+    .replace(/\bE U ATION/g, "EQUATION")
+    // English has no one-letter capital words except "A" and "I", so any other one standing
+    // alone before a word is a split ("Q UANTITIES"); a possessive S is not.
+    .replace(/(?<![’'\w])([B-HJ-Z]) (?=[A-Z]{3,}\b)/g, "$1");
+  return tidyTitle(joined);
+}

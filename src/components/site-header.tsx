@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { GraduationCap, Headphones, LogIn, LogOut, NotebookPen } from "lucide-react";
+import { GraduationCap, Headphones, LogIn, LogOut, NotebookPen, Target } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -28,20 +28,29 @@ export function SiteHeader() {
   const { saved } = useNotebook();
   return (
     <header className="no-print sticky top-0 z-40 border-b-2 border-border bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:gap-4">
         <Logo />
-        <nav className="flex items-center gap-1 text-sm font-semibold sm:gap-2">
+        <nav className="flex items-center gap-0.5 text-sm font-semibold sm:gap-2">
           <SearchButton />
           <Link
             to="/"
             hash="classes"
-            className="hidden rounded-lg px-3 py-2 hover:bg-muted sm:inline-flex"
+            className="hidden rounded-lg px-2.5 py-2 hover:bg-muted sm:px-3 sm:inline-flex"
           >
             Classes
           </Link>
           <Link
+            to="/exam"
+            className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 hover:bg-muted sm:px-3"
+            activeProps={{ className: "bg-muted" }}
+            aria-label="JEE / NEET"
+          >
+            <Target className="h-4 w-4" />
+            <span className="hidden md:inline">JEE / NEET</span>
+          </Link>
+          <Link
             to="/ask"
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+            className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 hover:bg-muted sm:px-3"
             activeProps={{ className: "bg-muted" }}
           >
             <GraduationCap className="h-4 w-4" />
@@ -49,7 +58,7 @@ export function SiteHeader() {
           </Link>
           <Link
             to="/notebook"
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+            className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 hover:bg-muted sm:px-3"
             activeProps={{ className: "bg-muted" }}
           >
             <NotebookPen className="h-4 w-4" />
@@ -80,7 +89,7 @@ function AccountButton() {
       <Link
         to="/auth"
         search={{ next: "/notebook" }}
-        className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+        className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 hover:bg-muted sm:px-3"
       >
         <LogIn className="h-4 w-4" />
         <span className="hidden sm:inline">Sign in</span>
@@ -91,7 +100,7 @@ function AccountButton() {
       type="button"
       title={`${email} — sign out`}
       onClick={() => void supabase.auth.signOut()}
-      className="inline-flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-muted"
+      className="inline-flex items-center gap-2 rounded-lg px-2.5 py-2 hover:bg-muted sm:px-3"
     >
       <span className="grid h-7 w-7 place-items-center rounded-full bg-accent text-xs font-bold uppercase text-accent-foreground">
         {email[0]}

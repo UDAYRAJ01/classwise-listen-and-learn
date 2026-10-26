@@ -4,6 +4,7 @@
 import { useSyncExternalStore } from "react";
 
 import type { BoardId, Lang } from "./catalog";
+import { nextRevision, type Revision } from "./exam";
 
 export interface ChapterRef {
   board: BoardId;
@@ -33,6 +34,8 @@ export interface NotebookState {
   progress: Record<string, string[]>;
   /** Local dates (YYYY-MM-DD) on which a chapter was opened. */
   days: string[];
+  /** JEE / NEET chapter revisions (spaced repetition), keyed by revisionKey(). */
+  revisions: Record<string, Revision>;
   prefs: Prefs;
 }
 
@@ -50,6 +53,7 @@ const EMPTY: NotebookState = {
   read: [],
   progress: {},
   days: [],
+  revisions: {},
   prefs: DEFAULT_PREFS,
 };
 
@@ -108,6 +112,18 @@ function sanitizeProgress(v: unknown, read: string[]): Record<string, string[]> 
   return out;
 }
 
+const DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+function sanitizeRevisions(v: unknown): Record<string, Revision> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return {};
+  const out: Record<string, Revision> = {};
+  for (const [k, r] of Object.entries(v as Record<string, Partial<Revision>>).slice(-MAX_PROGRESS)) {
+    if (r && typeof r.n === "number" && r.n > 0 && DAY.test(String(r.last)) && DAY.test(String(r.next)))
+      out[k] = { n: Math.floor(r.n), last: String(r.last), next: String(r.next) };
+  }
+  return out;
+}
+
 export function sanitize(p: Partial<NotebookState> | null | undefined): NotebookState {
   const read = strings(p?.read);
   return {
@@ -117,6 +133,7 @@ export function sanitize(p: Partial<NotebookState> | null | undefined): Notebook
     read,
     progress: sanitizeProgress(p?.progress, read),
     days: strings(p?.days),
+    revisions: sanitizeRevisions(p?.revisions),
     prefs: { ...DEFAULT_PREFS, ...(p?.prefs ?? {}) },
   };
 }
@@ -146,6 +163,15 @@ export function mergeNotebooks(a: NotebookState, b: NotebookState): NotebookStat
     read,
     progress,
     days: [...new Set([...a.days, ...b.days])].sort().slice(-120),
+    // Per chapter, the side that has revised more (then the more recent) wins.
+    revisions: Object.fromEntries(
+      [...new Set([...Object.keys(a.revisions), ...Object.keys(b.revisions)])].map((k) => {
+        const x = a.revisions[k];
+        const y = b.revisions[k];
+        const win = !x ? y! : !y ? x : y.n > x.n || (y.n === x.n && y.last > x.last) ? y : x;
+        return [k, win];
+      }),
+    ),
     prefs: { ...b.prefs, ...a.prefs },
   });
 }
@@ -321,6 +347,22 @@ export const notebook = {
   clearRecent() {
     load();
     commit({ ...state, recent: [] });
+  },
+  /** "Revise kiya": schedules the next revision of a JEE / NEET chapter (1, 3, 7, 15, 30, 60 days). */
+  revise(key: string) {
+    load();
+    const today = localDay();
+    commit({ ...state, revisions: { ...state.revisions, [key]: nextRevision(state.revisions[key], today) } });
+    // Revising counts as a study day for the streak.
+    if (!state.days.includes(today)) commit({ ...state, days: [...state.days, today].slice(-120) });
+  },
+  /** Undo the revision schedule of a chapter. */
+  resetRevision(key: string) {
+    load();
+    if (!(key in state.revisions)) return;
+    const next = { ...state.revisions };
+    delete next[key];
+    commit({ ...state, revisions: next });
   },
   setPrefs(patch: Partial<Prefs>) {
     load();
