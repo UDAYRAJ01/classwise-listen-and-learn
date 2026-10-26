@@ -593,6 +593,18 @@ async function index() {
       console.log(`${group}/${subject}: ${work.length} chapter indexes to write`);
       await pool(work, WORKERS, async (row) => {
         const ch = chapters.find((c) => c.grade === row.grade && c.slug === row.chapter_slug)!;
+        // Another run may have written it since this list was loaded.
+        if (!REDO) {
+          const now = await admin
+            .from("exam_chapters")
+            .select("content")
+            .eq("exam_group", group)
+            .eq("grade", row.grade)
+            .eq("subject", subject)
+            .eq("chapter_slug", row.chapter_slug)
+            .single();
+          if ((now.data?.content as { concepts?: unknown } | null)?.concepts) return;
+        }
         const content = row.content as { conceptMap: { id: string; name: string; ncert: string[] }[]; mappedAt?: string };
         const qs = all.filter((q) => q.grade === row.grade && q.chapter_slug === row.chapter_slug);
         const exam = group === "jee" ? "JEE Main and JEE Advanced" : "NEET UG";
