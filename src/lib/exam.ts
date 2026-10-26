@@ -45,6 +45,62 @@ export const isExamGroup = (v: unknown): v is ExamGroup => v === "jee" || v === 
 export const isExamSubject = (v: unknown): v is ExamSubject =>
   v === "physics" || v === "chemistry" || v === "maths" || v === "biology";
 
+/**
+ * Units the current (2023 on) NCERT books dropped. Their past questions have no current
+ * chapter, so they are grouped under the old unit; "other" holds stray removed topics.
+ */
+export const OLD_UNITS: Record<ExamSubject, Record<string, string>> = {
+  physics: {
+    "communication-systems": "Communication Systems",
+    other: "Baaki hataye gaye topics",
+  },
+  chemistry: {
+    "p-block-elements": "p-Block Elements",
+    "s-block-elements": "s-Block Elements",
+    "solid-state": "Solid State",
+    "surface-chemistry": "Surface Chemistry",
+    "states-of-matter": "States of Matter (Gases & Liquids)",
+    metallurgy: "Metallurgy (Isolation of Elements)",
+    hydrogen: "Hydrogen",
+    polymers: "Polymers",
+    "chemistry-in-everyday-life": "Chemistry in Everyday Life",
+    "environmental-chemistry": "Environmental Chemistry",
+    other: "Baaki hataye gaye topics",
+  },
+  maths: {
+    "mathematical-reasoning": "Mathematical Reasoning",
+    "mathematical-induction": "Mathematical Induction",
+    other: "Baaki hataye gaye topics",
+  },
+  biology: {
+    "transport-in-plants": "Transport in Plants",
+    "mineral-nutrition": "Mineral Nutrition",
+    "digestion-and-absorption": "Digestion and Absorption",
+    "reproduction-in-organisms": "Reproduction in Organisms",
+    "food-production": "Strategies for Enhancement in Food Production",
+    "environmental-issues": "Environmental Issues",
+    other: "Baaki hataye gaye topics",
+  },
+};
+
+export const isOldUnit = (subject: ExamSubject, unit: unknown): unit is string =>
+  typeof unit === "string" && Object.hasOwn(OLD_UNITS[subject], unit);
+
+export interface ExamOldUnitStat {
+  unit: string;
+  name: string;
+  questions: number;
+  years: number[];
+}
+
+export interface ExamOldUnitView {
+  group: ExamGroup;
+  subject: ExamSubject;
+  unit: string;
+  name: string;
+  questions: ExamQuestionView[];
+}
+
 /** URL part for a chapter: "11-b1-c3-motion-in-a-plane" (class first, then the book chapter slug). */
 export const chapterParam = (grade: number, slug: string) => `${grade}-${slug}`;
 export function parseChapterParam(p: string): { grade: 11 | 12; slug: string } | null {
@@ -71,6 +127,8 @@ export interface ExamSubjectOverview {
   chapters: ExamChapterStat[];
   /** Questions from topics that the current NCERT books no longer teach. */
   outOfSyllabus: number;
+  /** Dropped units with their asked questions, most asked first. */
+  oldUnits: ExamOldUnitStat[];
 }
 
 export interface ExamPaperInfo {
