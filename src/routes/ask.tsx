@@ -216,6 +216,7 @@ function AskPage() {
         <div ref={end} />
       </div>
 
+      <div className="h-6 shrink-0" aria-hidden />
       <form
         className="sticky bottom-[calc(var(--nav-h)+0.75rem)] mt-auto flex items-end gap-2 rounded-2xl border border-border bg-card p-2 shadow-sticker-lg"
         onSubmit={(e) => {
