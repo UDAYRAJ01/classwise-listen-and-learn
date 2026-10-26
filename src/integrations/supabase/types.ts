@@ -134,6 +134,7 @@ export type Database = {
           body: string
           chapter_slug: string | null
           concept: string | null
+          concept_id: string | null
           created_at: string
           figure: Json | null
           grade: number | null
@@ -141,6 +142,8 @@ export type Database = {
           id: string
           in_syllabus: boolean
           kind: string
+          ncert_kind: string | null
+          ncert_ref: string | null
           number: number
           options: Json
           page: number | null
@@ -149,13 +152,16 @@ export type Database = {
           qno: string | null
           solution: Json | null
           solution_ok: boolean
+          source_type: string | null
           subject: string
+          topic: string | null
         }
         Insert: {
           answer?: string | null
           body: string
           chapter_slug?: string | null
           concept?: string | null
+          concept_id?: string | null
           created_at?: string
           figure?: Json | null
           grade?: number | null
@@ -163,6 +169,8 @@ export type Database = {
           id?: string
           in_syllabus?: boolean
           kind?: string
+          ncert_kind?: string | null
+          ncert_ref?: string | null
           number: number
           options?: Json
           page?: number | null
@@ -171,13 +179,16 @@ export type Database = {
           qno?: string | null
           solution?: Json | null
           solution_ok?: boolean
+          source_type?: string | null
           subject: string
+          topic?: string | null
         }
         Update: {
           answer?: string | null
           body?: string
           chapter_slug?: string | null
           concept?: string | null
+          concept_id?: string | null
           created_at?: string
           figure?: Json | null
           grade?: number | null
@@ -185,6 +196,8 @@ export type Database = {
           id?: string
           in_syllabus?: boolean
           kind?: string
+          ncert_kind?: string | null
+          ncert_ref?: string | null
           number?: number
           options?: Json
           page?: number | null
@@ -193,7 +206,9 @@ export type Database = {
           qno?: string | null
           solution?: Json | null
           solution_ok?: boolean
+          source_type?: string | null
           subject?: string
+          topic?: string | null
         }
         Relationships: [
           {
