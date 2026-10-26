@@ -292,7 +292,8 @@ async function extractPaper(spec: PaperSpec) {
     for (const q of o!.questions) {
       if (!q.body.trim()) continue;
       if (!subjectOrder.includes(q.subject)) subjectOrder.push(q.subject);
-      const k = `${q.subject}:${q.printedNumber}`;
+      // Straight-through numbering: the number alone identifies a question.
+      const k = spec.exam === "jee-advanced" ? `${q.subject}:${q.printedNumber}` : String(q.printedNumber);
       const prev = merged.get(k);
       if (!prev || prev.body.length < q.body.length * 0.6) merged.set(k, { ...q, page: i + 1 });
     }
@@ -305,6 +306,16 @@ async function extractPaper(spec: PaperSpec) {
     );
     return hits.find((e) => e.subject === q.subject)?.answer ?? hits[0]?.answer ?? null;
   };
+
+  // Subjects come in blocks; a lone question whose subject differs from both neighbours
+  // (which agree with each other) was mislabelled from its content.
+  if (!restarts) {
+    const list = [...merged.values()].sort((a, b) => a.printedNumber - b.printedNumber);
+    for (let i = 1; i < list.length - 1; i++) {
+      const [prev, cur, next] = [list[i - 1]!, list[i]!, list[i + 1]!];
+      if (prev.subject === next.subject && cur.subject !== prev.subject) cur.subject = prev.subject;
+    }
+  }
 
   const rows = [...merged.values()].map((q) => {
     const number = restarts
