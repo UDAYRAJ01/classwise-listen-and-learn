@@ -180,9 +180,20 @@ const isTitle = (s: string) =>
  *   Maths "Miscellaneous Exercise" items become "Misc 3".
  */
 export function locate(lines: Line[]): Located[] {
+  // Font-aware reading gives clean heading titles but some books style headings oddly, so
+  // a plain-text pass fills any section the font pass could not recognise.
+  const byFont = locateWith(lines, true);
+  const plain = locateWith(lines, false);
+  const key = (x: Located) => `${x.kind}:${x.ref}`;
+  const seen = new Set(byFont.map(key));
+  return [...byFont, ...plain.filter((x) => !seen.has(key(x)))];
+}
+
+function locateWith(lines: Line[], useFonts: boolean): Located[] {
   const offset = printedOffset(lines);
   // Books whose fonts carry weight let headings be recognised by the bold font.
-  const hasBold = lines.some((l) => l.runs.some((r) => r.bold) && /^\d{1,2}\.\d{1,2}/.test(l.text));
+  const hasBold =
+    useFonts && lines.some((l) => l.runs.some((r) => r.bold) && /^\d{1,2}\.\d{1,2}/.test(l.text));
   // Body text size = the most common line size; top-level headings are set larger.
   const sizeVotes = new Map<number, number>();
   for (const l of lines) sizeVotes.set(Math.round(l.size), (sizeVotes.get(Math.round(l.size)) ?? 0) + l.text.length);
@@ -281,7 +292,7 @@ export function locate(lines: Line[]): Located[] {
     if ((m = sec.exec(t))) {
       const ref = m[1]!;
       let title = (m[2] ?? "").trim();
-      const large = (l.runs[0]?.size ?? l.size) >= bodySize + 2;
+      const large = useFonts && (l.runs[0]?.size ?? l.size) >= bodySize + 2;
       if (hasBold || large) {
         // A heading is set in the bold font or a larger size: its number and the words in the
         // same style after it.
