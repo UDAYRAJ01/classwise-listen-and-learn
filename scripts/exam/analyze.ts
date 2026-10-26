@@ -571,7 +571,10 @@ type Written = {
 };
 
 async function index() {
+  // --group=jee|neet writes one exam group only (so the two can run side by side).
+  const onlyGroup = args.get("group");
   for (const group of ["jee", "neet"] as const) {
+    if (onlyGroup && onlyGroup !== group) continue;
     if (ONLY && !ONLY.includes(group) && !ONLY.some((o) => GROUP_SUBJECTS[group].includes(o as Subject))) continue;
     for (const subject of GROUP_SUBJECTS[group]) {
       if (ONLY && SUBJECTS.some((s) => ONLY.includes(s)) && !ONLY.includes(subject)) continue;
