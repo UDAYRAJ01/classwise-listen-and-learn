@@ -17,6 +17,7 @@ import { getSubject, isBoard, type BoardId } from "@/lib/catalog";
 import { streamStructured } from "@/lib/server/ai.server";
 import { purgeNotes } from "@/lib/server/note-pipeline.server";
 import { chapterSlug } from "@/lib/slugs";
+import { tidyTitle } from "@/lib/text";
 import type { SyllabusBook } from "@/lib/types";
 
 interface InChapter {
@@ -88,13 +89,13 @@ async function apply(list: InList) {
     .maybeSingle();
   const oldBooks = (old.data?.books ?? []) as unknown as SyllabusBook[];
   const oldGist = new Map(
-    oldBooks.flatMap((b) => b.chapters.map((c) => [clean(c.title), c.gist] as const)),
+    oldBooks.flatMap((b) => b.chapters.map((c) => [clean(c.title).toLowerCase(), c.gist] as const)),
   );
   const missing: InChapter[] = [];
   for (const b of list.books)
     for (const c of b.chapters) {
-      c.title = clean(c.title);
-      c.gist = c.gist ? clean(c.gist) : (oldGist.get(c.title) ?? "");
+      c.title = tidyTitle(clean(c.title));
+      c.gist = c.gist ? clean(c.gist) : (oldGist.get(c.title.toLowerCase()) ?? "");
       if (!c.gist) missing.push(c);
     }
   if (!DRY) await writeGists(list, missing);
