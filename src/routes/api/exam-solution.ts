@@ -94,14 +94,14 @@ export const Route = createFileRoute("/api/exam-solution")({
             let checkedBy: ExamSolution["checkedBy"];
             if (key) {
               checkedBy = "key";
-              ok = answersMatch(normalizeAnswer(out.answer, q.kind), key);
+              ok = answersMatch(normalizeAnswer(out.answer, q.kind), key, q.kind);
               if (!ok) {
                 send({ type: "partial", data: { stage: "checking" } });
                 out = await solve(
                   "high",
                   `\n\nPichhli baar tumhara answer "${out.answer}" aaya jo key se match nahi hua. Shuru se dhyan se dobara solve karo.`,
                 );
-                ok = answersMatch(normalizeAnswer(out.answer, q.kind), key);
+                ok = answersMatch(normalizeAnswer(out.answer, q.kind), key, q.kind);
               }
             } else {
               // No key: two independent solutions must agree before the answer is shown.
@@ -109,7 +109,7 @@ export const Route = createFileRoute("/api/exam-solution")({
               send({ type: "partial", data: { stage: "checking" } });
               const second = await solve("high");
               const a = normalizeAnswer(out.answer, q.kind);
-              ok = Boolean(a) && answersMatch(a, normalizeAnswer(second.answer, q.kind));
+              ok = Boolean(a) && answersMatch(a, normalizeAnswer(second.answer, q.kind), q.kind);
             }
             const answer = key ?? normalizeAnswer(out.answer, q.kind) ?? out.answer;
             const solution = { steps: out.steps, trick: out.trick, analysis: out.analysis, trap: out.trap, answer, checkedBy };
