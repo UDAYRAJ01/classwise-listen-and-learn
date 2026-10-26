@@ -3,7 +3,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { BookOpen, ChevronDown, Lightbulb, NotebookText, Printer, Repeat, Sparkles, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
-import { Crumbs } from "@/components/crumbs";
+import { barIconClass, ScreenHeader } from "@/components/app/screen-header";
 import { QuestionCard } from "@/components/exam/question-card";
 import { RevisionButton } from "@/components/exam/revision-button";
 import { MathMarkdown } from "@/components/math-markdown";
@@ -80,35 +80,22 @@ function ChapterIndexPage() {
   const unmapped = view.questions.filter((q) => !view.concepts.some((c) => c.id === q.conceptId));
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <Crumbs
-        items={[
-          {
-            label: "JEE / NEET",
-            link: (
-              <Link to="/exam" className="hover:text-foreground">
-                JEE / NEET
-              </Link>
-            ),
-          },
-          {
-            label: meta.short,
-            link: (
-              <Link to="/exam/$group" params={{ group }} search={{ subject }} className="hover:text-foreground">
-                {meta.short} · {SUBJECT_NAMES[subject]}
-              </Link>
-            ),
-          },
-          { label: view.title },
-        ]}
-      />
-
-      <header className="mt-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-accent">
-          {meta.short} · {SUBJECT_NAMES[subject]} · Class {view.grade}
-        </p>
-        <h1 className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">{view.title}</h1>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm">
+    <>
+    <ScreenHeader
+      titleAs="p"
+      back={<Link to="/exam/$group" params={{ group }} search={{ subject }} />}
+      title={`${meta.short} · ${SUBJECT_NAMES[subject]}`}
+      subtitle={`Class ${view.grade} · ${view.questions.length} asli sawal`}
+      actions={
+        <button type="button" className={barIconClass} onClick={() => window.print()} aria-label="Print ya PDF">
+          <Printer />
+        </button>
+      }
+    />
+    <div className="mx-auto max-w-4xl px-4 pb-10 pt-4">
+      <header>
+        <h1 className="font-display text-[1.6rem] font-extrabold leading-tight sm:text-4xl">{view.title}</h1>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs sm:text-sm">
           <span className="rounded-full bg-ink px-3 py-1 font-semibold text-paper">{view.questions.length} asli sawal</span>
           {Object.entries(byExam).map(([e, n]) => (
             <span key={e} className="rounded-full bg-muted px-3 py-1 font-semibold">
@@ -137,9 +124,6 @@ function ChapterIndexPage() {
               </a>
             </Button>
           )}
-          <Button variant="paper" size="sm" onClick={() => window.print()}>
-            <Printer /> Print / PDF
-          </Button>
         </div>
       </header>
 
