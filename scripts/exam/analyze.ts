@@ -134,7 +134,11 @@ async function classify() {
         return `${c.key} — Class ${c.grade}: ${c.title}${h.length ? ` [${h.join("; ")}]` : ""}`;
       })
       .join("\n");
-    const todo = (await loadQuestions(subject)).filter((q) => REDO || !q.topic);
+    // --exam=jee-advanced,neet limits mapping to some exams (e.g. while other papers are still being read).
+    const exams = args.get("exam")?.split(",");
+    const todo = (await loadQuestions(subject)).filter(
+      (q) => (REDO || !q.topic) && (!exams || exams.includes(q.exam_papers.exam)),
+    );
     console.log(`${subject}: ${todo.length} questions to map`);
     const batches: QRow[][] = [];
     for (let i = 0; i < todo.length; i += 12) batches.push(todo.slice(i, i + 12));
