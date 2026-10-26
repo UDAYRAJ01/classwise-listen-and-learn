@@ -59,7 +59,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [ ] Phone + laptop browser check of every screen
 
 ## Running in background
-- Didi-voice audio for all checked Hinglish notes (`scripts/audio-batch.ts --loop`): 28 chapters / 777 parts on 27 Oct 20:23 UTC; restart if the process is gone
+- Didi-voice audio for all checked Hinglish notes (`scripts/audio-batch.ts --loop`): 28 chapters / 777 parts on 26 Oct 20:23 UTC
+- User (26 Oct): never let the voice job stay stopped. `scripts/audio-watchdog.sh` (started with `setsid nohup`) restarts it within 30 s; if the workspace itself restarted, start the watchdog again at the beginning of every turn
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
