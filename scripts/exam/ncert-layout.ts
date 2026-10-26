@@ -112,6 +112,12 @@ export function linesFromXml(xml: string): Line[] {
         const prev = seg[seg.length - 1];
         // Some headings are printed several times on top of each other (a shadow effect).
         if (prev && prev.text === r.text && r.x0 - prev.x1 <= 2) continue;
+        // A shadow of the number alone, followed by the full heading run at the same spot.
+        if (prev && r.text.startsWith(prev.text.trim()) && Math.abs(r.x0 - prev.x0) < 3) {
+          seg.pop();
+          seg.push(r);
+          continue;
+        }
         // ...or as a copy sitting inside the previous run ("6.1 Classification" + "Classification").
         if (prev && prev.text.endsWith(r.text.trim()) && r.x0 >= prev.x0 - 1 && r.x1 <= prev.x1 + 3) continue;
         // A wide gap means a new column (margin headings, two-column pages).
@@ -170,7 +176,7 @@ const tidy = (s: string) =>
 const upperCase = (s: string) => s === s.toUpperCase() && /[A-Z]{3}/.test(s);
 
 const isLooseTitle = (s: string) =>
-  !/^E?XAMPLE\b/i.test(s) && /^[A-Za-z(“"‘']/.test(s) && s.length >= 3 && s.length <= 120 && !/[=×÷]/.test(s);
+  !/^(E?XAMPLE|FIG(URE)?|TABLE)\b/i.test(s) && /^[A-Za-z(“"‘']/.test(s) && s.length >= 3 && s.length <= 120 && !/[=×÷]/.test(s);
 
 /** "propertieS of matter anD their meaSUrement" → "Properties of Matter and Their Measurement". */
 export function fixSmallCaps(s: string): string {
@@ -189,7 +195,7 @@ export function fixSmallCaps(s: string): string {
 }
 
 const isTitle = (s: string) =>
-  !/^E?XAMPLE\b/i.test(s) &&
+  !/^(E?XAMPLE|FIG(URE)?|TABLE)\b/i.test(s) &&
   /^[A-Z(“"‘']/.test(s) && s.length >= 3 && s.length <= 100 && !/[=×÷]/.test(s) && !/\.\s*$/.test(s.replace(/\?$/, ""));
 
 /**
@@ -325,6 +331,8 @@ function locateWith(lines: Line[], useFonts: boolean): Located[] {
         let titleX: number | null = null;
         for (const r of l.runs) {
           if (!sameStyle(r)) break;
+          // A run-in bold sentence after the heading words is body text.
+          if (/\d\s+\S/.test(boldText) && r.text.trim().split(/\s+/).length >= 5) break;
           if (boldText && titleX === null) titleX = r.x;
           boldText += boldText && !/\s$/.test(boldText) ? ` ${r.text}` : r.text;
         }
