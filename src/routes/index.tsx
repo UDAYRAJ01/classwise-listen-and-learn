@@ -242,6 +242,27 @@ function Home() {
         </ul>
       </section>
 
+      {/* JEE / NEET */}
+      <section className="mx-auto max-w-6xl px-4 pb-16">
+        <Link
+          to="/exam"
+          className="sticker press group grid gap-6 rounded-3xl bg-ink p-6 text-paper sm:p-8 md:grid-cols-[1fr_auto] md:items-center"
+        >
+          <div>
+            <p className="font-hand text-xl text-highlight">Class 11 + 12 · Entrance</p>
+            <h2 className="mt-1 text-3xl font-extrabold sm:text-4xl">JEE aur NEET mein jo baar-baar aata hai</h2>
+            <p className="mt-2 max-w-2xl opacity-85">
+              Pichhle 10 saal ke asli paper se har chapter ka index: kaunsa concept kitni baar aaya, asli sawal + hal,
+              trick, aur NCERT mein kahan likha hai.
+            </p>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-xl bg-highlight px-5 py-3 font-bold text-ink">
+            <Target className="h-5 w-5" /> Index kholo
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </span>
+        </Link>
+      </section>
+
       {/* Features */}
       <section className="border-y-2 border-border bg-card">
         <div className="mx-auto max-w-6xl px-4 py-16">
