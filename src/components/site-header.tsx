@@ -13,9 +13,7 @@ export function Logo({ className = "" }: { className?: string }) {
       className={`group inline-flex items-center gap-2 ${className}`}
       aria-label="PadhoSuno home"
     >
-      <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-        <Headphones className="h-5 w-5" strokeWidth={2.5} />
-      </span>
+      <img src="/favicon.svg" alt="" width={36} height={36} className="h-9 w-9" />
       <span className="font-display text-xl font-extrabold tracking-tight">
         Padho<span className="text-accent">Suno</span>
       </span>
