@@ -24,6 +24,7 @@ import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authent
 import { Route as ExamGroupIndexRouteImport } from './routes/exam.$group.index'
 import { Route as ExamGroupSubjectChapterRouteImport } from './routes/exam.$group.$subject.$chapter'
 import { Route as LearnBoardGradeIndexRouteImport } from './routes/learn.$board.$grade.index'
+import { Route as ExamGroupSubjectOldUnitRouteImport } from './routes/exam.$group.$subject.old.$unit'
 import { Route as LearnBoardGradeSubjectIndexRouteImport } from './routes/learn.$board.$grade.$subject.index'
 import { Route as LearnBoardGradeSubjectChapterRouteImport } from './routes/learn.$board.$grade.$subject.$chapter'
 
@@ -102,6 +103,11 @@ const LearnBoardGradeIndexRoute = LearnBoardGradeIndexRouteImport.update({
   path: '/learn/$board/$grade/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamGroupSubjectOldUnitRoute = ExamGroupSubjectOldUnitRouteImport.update({
+  id: '/exam/$group/$subject/old/$unit',
+  path: '/exam/$group/$subject/old/$unit',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LearnBoardGradeSubjectIndexRoute =
   LearnBoardGradeSubjectIndexRouteImport.update({
     id: '/learn/$board/$grade/$subject/',
@@ -130,6 +136,7 @@ export interface FileRoutesByFullPath {
   '/exam/$group/': typeof ExamGroupIndexRoute
   '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
+  '/exam/$group/$subject/old/$unit': typeof ExamGroupSubjectOldUnitRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/exam/$group': typeof ExamGroupIndexRoute
   '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade': typeof LearnBoardGradeIndexRoute
+  '/exam/$group/$subject/old/$unit': typeof ExamGroupSubjectOldUnitRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject': typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/exam/$group/': typeof ExamGroupIndexRoute
   '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
+  '/exam/$group/$subject/old/$unit': typeof ExamGroupSubjectOldUnitRoute
   '/learn/$board/$grade/$subject/$chapter': typeof LearnBoardGradeSubjectChapterRoute
   '/learn/$board/$grade/$subject/': typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/exam/$group/'
     | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade/'
+    | '/exam/$group/$subject/old/$unit'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject/'
   fileRoutesByTo: FileRoutesByTo
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/exam/$group'
     | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade'
+    | '/exam/$group/$subject/old/$unit'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject'
   id:
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/exam/$group/'
     | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade/'
+    | '/exam/$group/$subject/old/$unit'
     | '/learn/$board/$grade/$subject/$chapter'
     | '/learn/$board/$grade/$subject/'
   fileRoutesById: FileRoutesById
@@ -244,6 +256,7 @@ export interface RootRouteChildren {
   ExamGroupIndexRoute: typeof ExamGroupIndexRoute
   ExamGroupSubjectChapterRoute: typeof ExamGroupSubjectChapterRoute
   LearnBoardGradeIndexRoute: typeof LearnBoardGradeIndexRoute
+  ExamGroupSubjectOldUnitRoute: typeof ExamGroupSubjectOldUnitRoute
   LearnBoardGradeSubjectChapterRoute: typeof LearnBoardGradeSubjectChapterRoute
   LearnBoardGradeSubjectIndexRoute: typeof LearnBoardGradeSubjectIndexRoute
 }
@@ -355,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LearnBoardGradeIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/exam/$group/$subject/old/$unit': {
+      id: '/exam/$group/$subject/old/$unit'
+      path: '/exam/$group/$subject/old/$unit'
+      fullPath: '/exam/$group/$subject/old/$unit'
+      preLoaderRoute: typeof ExamGroupSubjectOldUnitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/learn/$board/$grade/$subject/': {
       id: '/learn/$board/$grade/$subject/'
       path: '/learn/$board/$grade/$subject'
@@ -398,6 +418,7 @@ const rootRouteChildren: RootRouteChildren = {
   ExamGroupIndexRoute: ExamGroupIndexRoute,
   ExamGroupSubjectChapterRoute: ExamGroupSubjectChapterRoute,
   LearnBoardGradeIndexRoute: LearnBoardGradeIndexRoute,
+  ExamGroupSubjectOldUnitRoute: ExamGroupSubjectOldUnitRoute,
   LearnBoardGradeSubjectChapterRoute: LearnBoardGradeSubjectChapterRoute,
   LearnBoardGradeSubjectIndexRoute: LearnBoardGradeSubjectIndexRoute,
 }
