@@ -111,7 +111,7 @@ export function linesFromXml(xml: string): Line[] {
       for (const r of row) {
         const prev = seg[seg.length - 1];
         // Some headings are printed several times on top of each other (a shadow effect).
-        if (prev && prev.text === r.text && Math.abs(prev.x0 - r.x0) < 3) continue;
+        if (prev && prev.text === r.text && r.x0 < prev.x1) continue;
         // A wide gap means a new column (margin headings, two-column pages).
         if (prev && r.x0 - prev.x1 > 14) flush();
         seg.push(r);
@@ -281,14 +281,18 @@ export function locate(lines: Line[]): Located[] {
     if ((m = sec.exec(t))) {
       const ref = m[1]!;
       let title = (m[2] ?? "").trim();
-      const large = l.size >= bodySize + 2;
-      if (hasBold && !large) {
-        // A body-size heading is set in the bold font: its number and the bold words after it.
-        if (!l.runs[0]?.bold) continue;
+      const large = (l.runs[0]?.size ?? l.size) >= bodySize + 2;
+      if (hasBold || large) {
+        // A heading is set in the bold font or a larger size: its number and the words in the
+        // same style after it.
+        const head = l.runs[0]!;
+        if (!large && !head.bold) continue;
+        const sameStyle = (r: { bold: boolean; size: number }) =>
+          large ? Math.abs(r.size - head.size) <= 1 : r.bold;
         let boldText = "";
         let titleX: number | null = null;
         for (const r of l.runs) {
-          if (!r.bold) break;
+          if (!sameStyle(r)) break;
           if (boldText && titleX === null) titleX = r.x;
           boldText += boldText && !/\s$/.test(boldText) ? ` ${r.text}` : r.text;
         }
@@ -299,10 +303,10 @@ export function locate(lines: Line[]): Located[] {
         let y = l.y;
         for (let j = i + 1, added = 0; j < lines.length && added < 6; j++) {
           const n = lines[j]!;
-          if (n.page !== l.page || n.y - y > 22) break;
-          if (n.y - y < 2 || n.size < l.size - 2) continue;
+          if (n.page !== l.page || n.y - y > head.size * 2.2) break;
+          if (n.y - y < 2 || n.size < head.size - 2) continue;
           if (titleX !== null && Math.abs(n.x - titleX) > 30) continue;
-          if (!n.runs.every((r) => r.bold) || /^\(?[\da-z]\)?[.)]?\s/.test(n.text) || title.length > 90) break;
+          if (!n.runs.every(sameStyle) || /^\(?[\da-z]\)?[.)]?\s/.test(n.text) || title.length > 90) break;
           titleX ??= n.x;
           title = `${title} ${n.text}`.trim();
           y = n.y;
