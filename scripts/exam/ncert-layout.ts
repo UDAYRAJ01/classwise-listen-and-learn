@@ -18,6 +18,8 @@ export interface Line {
   size: number;
   x: number;
   y: number;
+  /** Text runs in reading order with their weight (bold = heading font). */
+  runs: { text: string; bold: boolean }[];
 }
 
 export interface Located {
@@ -36,44 +38,81 @@ const decode = (s: string) =>
     .replace(/&#39;/g, "'")
     .replace(/&amp;/g, "&");
 
-/** Parses `pdftotext -bbox` output into lines (one per baseline and column). */
-export function linesFromBbox(html: string): Line[] {
+interface Run {
+  text: string;
+  bold: boolean;
+  x0: number;
+  x1: number;
+  base: number;
+  size: number;
+}
+
+const BOLD_FONT = /Bold|Demi|Black|Heavy|Semi|,B$/i;
+
+/**
+ * Parses `pdftohtml -xml -zoom 1` output into lines (one per baseline and column). Text runs
+ * keep their font, so a bold "13.3" can be told apart from "13.3" inside a sentence.
+ */
+export function linesFromXml(xml: string): Line[] {
   const out: Line[] = [];
-  const pages = html.split(/<page\b/).slice(1);
-  pages.forEach((pageHtml, pi) => {
-    const words: { x0: number; x1: number; y0: number; y1: number; t: string }[] = [];
-    for (const m of pageHtml.matchAll(
-      /<word xMin="([\d.]+)" yMin="([\d.]+)" xMax="([\d.]+)" yMax="([\d.]+)">([^<]*)<\/word>/g,
-    )) {
-      words.push({ x0: +m[1]!, y0: +m[2]!, x1: +m[3]!, y1: +m[4]!, t: decode(m[5]!) });
+  const pages = xml.split(/<page\b/).slice(1);
+  pages.forEach((pageXml, pi) => {
+    const fonts = new Map<string, { size: number; bold: boolean }>();
+    for (const m of pageXml.matchAll(/<fontspec id="(\d+)" size="([\d.-]+)" family="([^"]*)"/g)) {
+      fonts.set(m[1]!, { size: Number(m[2]), bold: BOLD_FONT.test(m[3]!) });
     }
-    // Group by baseline (yMax), tolerant to small caps and superscripts.
-    words.sort((a, b) => a.y1 - b.y1 || a.x0 - b.x0);
-    const rows: (typeof words)[] = [];
-    for (const w of words) {
-      const row = rows.find((r) => Math.abs(r[0]!.y1 - w.y1) <= 2.5);
-      if (row) row.push(w);
-      else rows.push([w]);
+    const runs: Run[] = [];
+    for (const m of pageXml.matchAll(
+      /<text top="([\d.-]+)" left="([\d.-]+)" width="([\d.-]+)" height="([\d.-]+)" font="(\d+)">([\s\S]*?)<\/text>/g,
+    )) {
+      const raw = m[6]!;
+      const text = decode(raw.replace(/<[^>]+>/g, ""));
+      if (!text.trim()) continue;
+      const font = fonts.get(m[5]!);
+      const top = Number(m[1]);
+      const height = Number(m[4]);
+      runs.push({
+        text,
+        bold: Boolean(font?.bold) || /<b>/.test(raw),
+        x0: Number(m[2]),
+        x1: Number(m[2]) + Number(m[3]),
+        base: top + height,
+        size: font?.size ?? height,
+      });
+    }
+    // Pages carried over from another layout tool keep their fonts in an earlier page.
+    runs.sort((a, b) => a.base - b.base || a.x0 - b.x0);
+    const rows: Run[][] = [];
+    for (const r of runs) {
+      const row = rows.find((rw) => Math.abs(rw[0]!.base - r.base) <= 3);
+      if (row) row.push(r);
+      else rows.push([r]);
     }
     for (const row of rows) {
       row.sort((a, b) => a.x0 - b.x0);
-      let seg: typeof words = [];
+      let seg: Run[] = [];
       const flush = () => {
         if (!seg.length) return;
         let text = "";
-        seg.forEach((w, i) => {
-          const gap = i ? w.x0 - seg[i - 1]!.x1 : 0;
-          text += i && gap > 1 ? ` ${w.t}` : w.t;
+        seg.forEach((r, i) => {
+          const gap = i ? r.x0 - seg[i - 1]!.x1 : 0;
+          text += i && gap > 1 && !/\s$/.test(text) ? ` ${r.text}` : r.text;
         });
-        const size = Math.max(...seg.map((w) => w.y1 - w.y0));
-        out.push({ page: pi + 1, text: text.trim(), size, x: seg[0]!.x0, y: seg[0]!.y1 });
+        out.push({
+          page: pi + 1,
+          text: text.replace(/\s+/g, " ").trim(),
+          size: Math.max(...seg.map((r) => r.size)),
+          x: seg[0]!.x0,
+          y: Math.max(...seg.map((r) => r.base)),
+          runs: seg.map((r) => ({ text: r.text, bold: r.bold })),
+        });
         seg = [];
       };
-      for (const w of row) {
+      for (const r of row) {
         const prev = seg[seg.length - 1];
-        // A wide gap means a new column (margin notes, two-column pages, tab stops after numbers are small).
-        if (prev && w.x0 - prev.x1 > 14) flush();
-        seg.push(w);
+        // A wide gap means a new column (margin headings, two-column pages).
+        if (prev && r.x0 - prev.x1 > 14) flush();
+        seg.push(r);
       }
       flush();
     }
@@ -83,8 +122,10 @@ export function linesFromBbox(html: string): Line[] {
 }
 
 export function readLines(pdf: string): Line[] {
-  const html = execFileSync("pdftotext", ["-bbox", pdf, "-"], { maxBuffer: 256 << 20 }).toString();
-  return linesFromBbox(html);
+  const xml = execFileSync("pdftohtml", ["-xml", "-i", "-q", "-stdout", "-zoom", "1", pdf], {
+    maxBuffer: 256 << 20,
+  }).toString();
+  return linesFromXml(xml);
 }
 
 /** Printed page = PDF page + the offset most pages agree on (page numbers sit at the top or bottom). */
