@@ -121,6 +121,8 @@ const tidy = (s: string) =>
     .trim()
     .slice(0, 140);
 
+const upperCase = (s: string) => s === s.toUpperCase() && /[A-Z]{3}/.test(s);
+
 const isTitle = (s: string) =>
   !/^E?XAMPLE\b/i.test(s) &&
   /^[A-Z(“"‘']/.test(s) && s.length >= 3 && s.length <= 100 && !/[=×÷]/.test(s) && !/\.\s*$/.test(s.replace(/\?$/, ""));
@@ -231,6 +233,21 @@ export function locate(lines: Line[]): Located[] {
         if (next && next.page === l.page && Math.abs(next.y - l.y) < 40) title = next.text;
       }
       if (!isTitle(title)) continue;
+      // A long heading wraps onto the next line: join it when the wrap is obvious
+      // (all-capitals heading, or a line ending in a joining word like "and" / "of").
+      const next = lines[i + 1];
+      if (
+        next &&
+        next.page === l.page &&
+        next.y - l.y > 0 &&
+        next.y - l.y < 16 &&
+        Math.abs(next.size - l.size) < 0.6 &&
+        next.text.length < 60 &&
+        ((upperCase(title) && upperCase(next.text)) ||
+          /\b(and|of|for|in|to|the|with|on|its|their|a)$/i.test(title))
+      ) {
+        title = `${title} ${next.text}`;
+      }
       if (exerciseSet !== null && exerciseSet !== "") exerciseSet = null; // Maths: next section ends EXERCISE n.m
       const cand = { ref, title, page: l.page, size: l.size };
       sections.set(ref, [...(sections.get(ref) ?? []), cand]);
@@ -238,9 +255,8 @@ export function locate(lines: Line[]): Located[] {
   }
 
   // The real heading is the occurrence outside the contents box (usually set in capitals).
-  const upper = (s: string) => s === s.toUpperCase() && /[A-Z]/.test(s);
   const score = (c: { title: string; page: number; size: number }) =>
-    (contentsPage(c.page) ? 0 : 100) + (upper(c.title) ? 10 : 0) + c.size / 100;
+    (contentsPage(c.page) ? 0 : 100) + (upperCase(c.title) ? 10 : 0) + c.size / 100;
   const secs: Located[] = [];
   for (const [ref, cands] of sections) {
     const best = [...cands].sort((a, b) => score(b) - score(a) || a.page - b.page)[0]!;
