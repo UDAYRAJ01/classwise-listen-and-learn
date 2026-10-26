@@ -3,6 +3,7 @@
  *
  *   bun scripts/exam/analyze.ts --stage=classify   # each question → NCERT Class 11/12 chapter (or "not in NCERT now")
  *   bun scripts/exam/analyze.ts --stage=home       # removed-from-NCERT topics → the current chapter of their unit (listed apart)
+ *   bun scripts/exam/analyze.ts --stage=units      # the rest → the dropped NCERT unit (p-Block, Solid State…)
  *   bun scripts/exam/analyze.ts --stage=concepts   # per chapter: exam concepts, each question → concept + NCERT location
  *   bun scripts/exam/analyze.ts --stage=index      # per chapter and exam group: explanation, memory hook, why / next, revision sheet
  *   options: --only=physics  --workers=4  --redo
@@ -71,6 +72,7 @@ interface QRow {
   chapter_slug: string | null;
   topic: string | null;
   in_syllabus: boolean;
+  old_unit: string | null;
   concept_id: string | null;
   exam_papers: { exam: string; year: number; label: string };
 }
@@ -81,7 +83,7 @@ async function loadQuestions(subject: Subject): Promise<QRow[]> {
     const r = await admin
       .from("exam_questions")
       .select(
-        "id, subject, kind, body, passage, options, answer, has_figure, figure, grade, chapter_slug, topic, in_syllabus, concept_id, exam_papers!inner(exam, year, label)",
+        "id, subject, kind, body, passage, options, answer, has_figure, figure, grade, chapter_slug, topic, in_syllabus, old_unit, concept_id, exam_papers!inner(exam, year, label)",
       )
       .eq("subject", subject)
       .order("id")
@@ -248,6 +250,53 @@ async function home() {
       }
     });
     console.log(`${subject}: ${placed}/${todo.length} placed in a current chapter`);
+  }
+}
+
+// ---------------------------------------------------------------- stage 1c: dropped units
+/** Removed-topic questions with no current chapter are grouped under the NCERT unit that was dropped. */
+async function units() {
+  for (const subject of SUBJECTS) {
+    if (ONLY && !ONLY.includes(subject)) continue;
+    const names = OLD_UNITS[subject];
+    const ids = Object.keys(names);
+    const todo = (await loadQuestions(subject)).filter(
+      (q) => q.topic && !q.in_syllabus && !q.chapter_slug && (REDO || !q.old_unit),
+    );
+    console.log(`${subject}: ${todo.length} questions to group by dropped unit`);
+    const batches: QRow[][] = [];
+    for (let i = 0; i < todo.length; i += 20) batches.push(todo.slice(i, i + 20));
+    await pool(batches, WORKERS, async (batch) => {
+      const out = await askJson<{ items: { n: number; unit: string }[] }>({
+        instructions: `Each past JEE / NEET question below is on a topic that the current NCERT Class 11–12 ${subject} books dropped. Pick the old NCERT unit it belongs to; "other" when none fits.`,
+        text: `Units:\n${ids.map((id) => `${id} — ${names[id]}`).join("\n")}\n\nQuestions:\n${batch
+          .map((q, i) => `#${i + 1} (topic: ${q.topic})\n${questionText(q, 250)}`)
+          .join("\n\n")}`,
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          required: ["items"],
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                required: ["n", "unit"],
+                properties: { n: { type: "integer" }, unit: { type: "string", enum: ids } },
+              },
+            },
+          },
+        },
+        effort: "low",
+      });
+      for (const item of out.items) {
+        const q = batch[item.n - 1];
+        if (!q || !ids.includes(item.unit)) continue;
+        const up = await admin.from("exam_questions").update({ old_unit: item.unit }).eq("id", q.id);
+        if (up.error) throw up.error;
+      }
+    });
   }
 }
 
@@ -663,7 +712,7 @@ async function index() {
   }
 }
 
-const stages: Record<string, () => Promise<void>> = { classify, home, concepts, index };
+const stages: Record<string, () => Promise<void>> = { classify, home, units, concepts, index };
 const run = stages[STAGE];
 if (!run) {
   console.error(`unknown stage ${STAGE}`);
