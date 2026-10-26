@@ -145,6 +145,7 @@ export type Database = {
           ncert_kind: string | null
           ncert_ref: string | null
           number: number
+          old_unit: string | null
           options: Json
           page: number | null
           paper_id: string
@@ -172,6 +173,7 @@ export type Database = {
           ncert_kind?: string | null
           ncert_ref?: string | null
           number: number
+          old_unit?: string | null
           options?: Json
           page?: number | null
           paper_id: string
@@ -199,6 +201,7 @@ export type Database = {
           ncert_kind?: string | null
           ncert_ref?: string | null
           number?: number
+          old_unit?: string | null
           options?: Json
           page?: number | null
           paper_id?: string
@@ -573,6 +576,19 @@ export type Database = {
           slug?: string | null
           source_url?: string | null
           year?: number | null
+        }
+        Relationships: []
+      }
+      exam_old_unit_stats: {
+        Row: {
+          advanced_count: number | null
+          exam_group: string | null
+          main_count: number | null
+          neet_count: number | null
+          old_unit: string | null
+          questions: number | null
+          subject: string | null
+          years: number[] | null
         }
         Relationships: []
       }
