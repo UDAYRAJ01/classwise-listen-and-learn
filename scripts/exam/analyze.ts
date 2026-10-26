@@ -117,7 +117,22 @@ async function classify() {
     if (ONLY && !ONLY.includes(subject)) continue;
     const chapters = await chaptersFor(subject);
     const keys = chapters.map((c) => c.key);
-    const list = chapters.map((c) => `${c.key} — Class ${c.grade}: ${c.title}`).join("\n");
+    // Main section headings tell the model what the current (shortened) books still teach.
+    const heads = await admin
+      .from("ncert_sections")
+      .select("grade, chapter_slug, ref, heading")
+      .eq("subject", subject)
+      .eq("kind", "section");
+    if (heads.error) throw heads.error;
+    const list = chapters
+      .map((c) => {
+        const h = heads.data
+          .filter((x) => x.grade === c.grade && x.chapter_slug === c.slug && x.ref.split(".").length === 2)
+          .sort((a, b) => Number(a.ref.split(".")[1]) - Number(b.ref.split(".")[1]))
+          .map((x) => clip(x.heading, 45));
+        return `${c.key} — Class ${c.grade}: ${c.title}${h.length ? ` [${h.join("; ")}]` : ""}`;
+      })
+      .join("\n");
     const todo = (await loadQuestions(subject)).filter((q) => REDO || !q.topic);
     console.log(`${subject}: ${todo.length} questions to map`);
     const batches: QRow[][] = [];
