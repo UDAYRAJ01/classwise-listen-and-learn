@@ -292,49 +292,29 @@ async function extractPaper(spec: PaperSpec) {
   const seq: Q[] = outs.flatMap((o, i) =>
     o!.questions.filter((q) => q.body.trim()).map((q) => ({ ...q, page: i + 1 })),
   );
-  if (spec.exam === "jee-advanced") {
-    // Each subject is one block and its numbering restarts at 1. The block decides the
-    // subject (by majority), so a chemistry question that reads like physics stays chemistry.
-    const blocks: Q[][] = [];
-    for (const q of seq) {
-      const cur = blocks.at(-1);
-      if (!cur || q.printedNumber < cur.at(-1)!.printedNumber) blocks.push([q]);
-      else cur.push(q);
-    }
-    for (const b of blocks) {
-      const votes = new Map<string, number>();
-      for (const q of b) votes.set(q.subject, (votes.get(q.subject) ?? 0) + 1);
-      const top = [...votes.entries()].sort((x, y) => y[1] - x[1])[0]![0] as Q["subject"];
-      for (const q of b) q.subject = top;
-    }
-  }
+  // JEE Advanced (2018 on) restarts numbering in every subject; other papers number straight through.
+  const maxNo = Math.max(0, ...seq.map((q) => q.printedNumber));
+  const restarts = spec.exam === "jee-advanced" && maxNo < 0.6 * new Set(seq.map((q) => `${q.subject}:${q.printedNumber}`)).size;
+  // Reading order: page order for restarting papers, printed number otherwise.
+  if (!restarts) seq.sort((a, b) => a.printedNumber - b.printedNumber || a.page - b.page);
+  // Subjects are printed in blocks; the block decides a question's subject, not its wording.
+  const fixed = segmentSubjects(seq.map((q) => q.subject));
+  seq.forEach((q, i) => (q.subject = fixed[i]!));
+
   const subjectOrder: string[] = [];
   const merged = new Map<string, Q>();
   for (const q of seq) {
     if (!subjectOrder.includes(q.subject)) subjectOrder.push(q.subject);
-    // Straight-through numbering: the number alone identifies a question.
-    const k = spec.exam === "jee-advanced" ? `${q.subject}:${q.printedNumber}` : String(q.printedNumber);
+    const k = restarts ? `${q.subject}:${q.printedNumber}` : String(q.printedNumber);
     const prev = merged.get(k);
     if (!prev || prev.body.length < q.body.length * 0.6) merged.set(k, q);
   }
-  // JEE Advanced restarts numbering in every subject; the others number straight through.
-  const restarts = spec.exam === "jee-advanced";
   const keyFor = (q: Q) => {
     const hits = keyEntries.filter(
       (e) => e.printedNumber === q.printedNumber && (!restarts || !e.subject || e.subject === q.subject),
     );
     return hits.find((e) => e.subject === q.subject)?.answer ?? hits[0]?.answer ?? null;
   };
-
-  // Subjects come in blocks; a lone question whose subject differs from both neighbours
-  // (which agree with each other) was mislabelled from its content.
-  if (!restarts) {
-    const list = [...merged.values()].sort((a, b) => a.printedNumber - b.printedNumber);
-    for (let i = 1; i < list.length - 1; i++) {
-      const [prev, cur, next] = [list[i - 1]!, list[i]!, list[i + 1]!];
-      if (prev.subject === next.subject && cur.subject !== prev.subject) cur.subject = prev.subject;
-    }
-  }
 
   const rows = [...merged.values()].map((q) => {
     const number = restarts
