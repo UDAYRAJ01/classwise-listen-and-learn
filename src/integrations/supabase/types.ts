@@ -142,6 +142,8 @@ export type Database = {
           options: Json
           page: number | null
           paper_id: string
+          passage: string | null
+          qno: string | null
           solution: Json | null
           solution_ok: boolean
           subject: string
@@ -162,6 +164,8 @@ export type Database = {
           options?: Json
           page?: number | null
           paper_id: string
+          passage?: string | null
+          qno?: string | null
           solution?: Json | null
           solution_ok?: boolean
           subject: string
@@ -182,6 +186,8 @@ export type Database = {
           options?: Json
           page?: number | null
           paper_id?: string
+          passage?: string | null
+          qno?: string | null
           solution?: Json | null
           solution_ok?: boolean
           subject?: string

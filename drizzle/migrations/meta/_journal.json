@@ -64,6 +64,13 @@
       "when": 1793005152136,
       "tag": "0008_exam_prep_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793005555320,
+      "tag": "0009_exam_question_label",
+      "breakpoints": true
     }
   ]
 }
