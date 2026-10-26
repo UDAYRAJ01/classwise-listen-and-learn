@@ -13,6 +13,7 @@
  */
 import { supabaseAdmin as admin } from "@/integrations/supabase/client.server";
 import type { Json } from "@/integrations/supabase/types";
+import { OLD_UNITS } from "@/lib/exam";
 import type { SyllabusBook } from "@/lib/types";
 
 import { args, askJson, pool } from "./lib";
