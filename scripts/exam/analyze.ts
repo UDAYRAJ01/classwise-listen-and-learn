@@ -242,7 +242,7 @@ async function concepts() {
                 properties: {
                   id: { type: "string" },
                   name: { type: "string" },
-                  ncert: { type: "array", items: { type: "string", ...(refList.length ? { enum: refList } : {}) } },
+                  ncert: { type: "array", items: { type: "string" } },
                 },
               },
             },
@@ -256,7 +256,7 @@ async function concepts() {
                   n: { type: "integer" },
                   concept: { type: "string" },
                   source: { type: "string", enum: ["ncert-example", "ncert-exercise", "ncert-text", "beyond-ncert"] },
-                  ref: { type: refList.length ? "string" : "string", ...(refList.length ? { enum: refList } : {}) },
+                  ref: { type: "string" },
                 },
               },
             },
@@ -264,13 +264,22 @@ async function concepts() {
         },
         effort: "medium",
       });
+      // Refs are checked against the index here (a schema enum would be too large for big chapters).
+      const known = new Set(refList);
+      const norm = (r: string) => r.trim().replace(/\s+/g, " ").toLowerCase();
+      const byNorm = new Map(refList.map((r) => [norm(r), r]));
+      const fixRef = (r: string) => byNorm.get(norm(r)) ?? null;
+      for (const c of out.concepts) c.ncert = c.ncert.map(fixRef).filter((r): r is string => Boolean(r));
       const ids = new Set(out.concepts.map((c) => c.id));
       let mapped = 0;
       for (const a of out.questions) {
         const q = qs[a.n - 1];
         if (!q || !ids.has(a.concept)) continue;
-        const [kind, ...rest] = a.ref.split(" ");
+        const concept = out.concepts.find((c) => c.id === a.concept)!;
+        const ref = fixRef(a.ref) ?? concept.ncert[0] ?? null;
+        const [kind, ...rest] = ref ? ref.split(" ") : [null];
         let source = a.source;
+        if (!ref || !known.has(ref)) source = source === "beyond-ncert" ? source : "ncert-text";
         // The source label must agree with the kind of location it points at.
         if (source === "ncert-example" && kind !== "example") source = "ncert-text";
         if (source === "ncert-exercise" && kind !== "exercise") source = "ncert-text";
@@ -278,9 +287,9 @@ async function concepts() {
           .from("exam_questions")
           .update({
             concept_id: a.concept,
-            concept: out.concepts.find((c) => c.id === a.concept)!.name,
-            ncert_kind: refList.length ? kind : null,
-            ncert_ref: refList.length ? rest.join(" ") : null,
+            concept: concept.name,
+            ncert_kind: ref ? kind : null,
+            ncert_ref: ref ? rest.join(" ") : null,
             source_type: source as "ncert-example" | "ncert-exercise" | "ncert-text" | "beyond-ncert",
           })
           .eq("id", q.id);
