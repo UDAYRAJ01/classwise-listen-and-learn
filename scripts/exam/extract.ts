@@ -171,12 +171,15 @@ Rules:
 
 async function storePage(slug: string, png: string, n: number) {
   const webp = png.replace(/\.png$/, ".webp");
+  const done = `${webp}.uploaded`;
+  if (existsSync(done)) return;
   if (!existsSync(webp)) execFileSync("magick", [png, "-quality", "72", webp]);
   const path = `${slug}/${n}.webp`;
   const up = await admin.storage
     .from("exam-pages")
     .upload(path, readFileSync(webp), { contentType: "image/webp", upsert: true });
   if (up.error) throw up.error;
+  writeFileSync(done, "");
 }
 
 async function extractPaper(spec: PaperSpec) {
