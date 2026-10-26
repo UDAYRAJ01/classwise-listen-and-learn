@@ -55,12 +55,13 @@ const BOLD_FONT = /Bold|Demi|Black|Heavy|Semi|,B$/i;
  */
 export function linesFromXml(xml: string): Line[] {
   const out: Line[] = [];
+  // A font is declared once, on the first page that uses it.
+  const fonts = new Map<string, { size: number; bold: boolean }>();
+  for (const m of xml.matchAll(/<fontspec id="(\d+)" size="([\d.-]+)" family="([^"]*)"/g)) {
+    fonts.set(m[1]!, { size: Number(m[2]), bold: BOLD_FONT.test(m[3]!) });
+  }
   const pages = xml.split(/<page\b/).slice(1);
   pages.forEach((pageXml, pi) => {
-    const fonts = new Map<string, { size: number; bold: boolean }>();
-    for (const m of pageXml.matchAll(/<fontspec id="(\d+)" size="([\d.-]+)" family="([^"]*)"/g)) {
-      fonts.set(m[1]!, { size: Number(m[2]), bold: BOLD_FONT.test(m[3]!) });
-    }
     const runs: Run[] = [];
     for (const m of pageXml.matchAll(
       /<text top="([\d.-]+)" left="([\d.-]+)" width="([\d.-]+)" height="([\d.-]+)" font="(\d+)">([\s\S]*?)<\/text>/g,
@@ -80,7 +81,6 @@ export function linesFromXml(xml: string): Line[] {
         size: font?.size ?? height,
       });
     }
-    // Pages carried over from another layout tool keep their fonts in an earlier page.
     runs.sort((a, b) => a.base - b.base || a.x0 - b.x0);
     const rows: Run[][] = [];
     for (const r of runs) {
@@ -179,6 +179,8 @@ const isTitle = (s: string) =>
  */
 export function locate(lines: Line[]): Located[] {
   const offset = printedOffset(lines);
+  // Books whose fonts carry weight let headings be recognised by the bold font.
+  const hasBold = lines.some((l) => l.runs.some((r) => r.bold) && /^\d{1,2}\.\d{1,2}/.test(l.text));
   const printed = (p: number) => (offset === null ? null : p + offset);
 
   // Chapter number = the prefix most numbered headings share.
@@ -273,14 +275,35 @@ export function locate(lines: Line[]): Located[] {
     if ((m = sec.exec(t))) {
       const ref = m[1]!;
       let title = (m[2] ?? "").trim();
-      if (!title) {
+      if (hasBold) {
+        // A real heading is set in the bold font: its number and the bold words after it.
+        if (!l.runs[0]?.bold) continue;
+        let boldText = "";
+        for (const r of l.runs) {
+          if (!r.bold) break;
+          boldText += boldText && !/\s$/.test(boldText) ? ` ${r.text}` : r.text;
+        }
+        title = boldText.replace(/^\s*[u•▪■]?\s*\d{1,2}(?:\.\d{1,2}){1,2}\.?\s*/, "").trim();
+        // Margin headings stack their words on the following bold lines.
+        let y = l.y;
+        for (let j = i + 1; j < lines.length && j < i + 8; j++) {
+          const n = lines[j]!;
+          if (n.page !== l.page || n.y - y > 22) break;
+          if (n.y - y < 2) continue; // another column on the same baseline
+          if (!n.runs.every((r) => r.bold) || /^\d/.test(n.text) || title.length > 90) break;
+          if (title && Math.abs(n.x - (l.x + (l.text.length - title.length) * 0)) > 140) break;
+          title = `${title} ${n.text}`.trim();
+          y = n.y;
+          if (!upperCase(n.text) && !/\b(and|of|for|in|to|the|with|on|its|their|a|an)$/i.test(n.text) && n.text.length > 25) break;
+        }
+      } else if (!title) {
         const next = lines[i + 1];
         if (next && next.page === l.page && Math.abs(next.y - l.y) < 40) title = next.text;
       }
       if (!isTitle(title)) continue;
       // A long heading wraps onto the next line: join it when the wrap is obvious
       // (all-capitals heading, or a line ending in a joining word like "and" / "of").
-      const next = lines[i + 1];
+      const next = hasBold ? undefined : lines[i + 1];
       if (
         next &&
         next.page === l.page &&
