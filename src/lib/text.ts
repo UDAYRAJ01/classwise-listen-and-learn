@@ -93,7 +93,12 @@ export function tidyTitle(input: string): string {
  * split off its word by the PDF ("PHYSICAL Q UANTITIES") is joined back.
  */
 export function tidyHeading(input: string): string {
-  // English has no one-letter capital words except "A" and "I", so any other one is a split.
-  const joined = input.replace(/\b([B-HJ-Z]) (?=[A-Z]{3,}\b)/g, "$1");
+  const joined = input
+    // "POISSON ’ S" → "POISSON’S"; the PDF font also drops the Q of "EQUATIONS".
+    .replace(/\s*’\s*S\b/g, "’S")
+    .replace(/\bE U ATION/g, "EQUATION")
+    // English has no one-letter capital words except "A" and "I", so any other one standing
+    // alone before a word is a split ("Q UANTITIES"); a possessive S is not.
+    .replace(/(?<![’'\w])([B-HJ-Z]) (?=[A-Z]{3,}\b)/g, "$1");
   return tidyTitle(joined);
 }

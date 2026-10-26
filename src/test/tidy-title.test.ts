@@ -26,5 +26,14 @@ describe("NCERT section headings", () => {
     expect(tidyHeading("DIMENSIONS OF PHYSICAL Q UANTITIES")).toBe("Dimensions of Physical Quantities");
     expect(tidyHeading("MOTION IN A PLANE")).toBe("Motion in a Plane");
     expect(tidyHeading("Rounding off the Uncertain Digits")).toBe("Rounding off the Uncertain Digits");
+    expect(tidyHeading("KINEMATIC E U ATIONS FOR UNIFORMLY ACCELERATED MOTION")).toBe(
+      "Kinematic Equations for Uniformly Accelerated Motion",
+    );
+    expect(tidyHeading("P OISSON ’ S R ATIO")).toBe("Poisson’s Ratio");
+    expect(tidyHeading("S TRUCTURE OF P ROTEINS")).toBe("Structure of Proteins");
+  });
+
+  it("keeps possessives apart from the next word", () => {
+    expect(tidyHeading("NEWTON’S FIRST LAW OF MOTION")).toBe("Newton’s First Law of Motion");
   });
 });
