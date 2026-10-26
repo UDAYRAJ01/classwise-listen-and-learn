@@ -44,8 +44,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [ ] Browser check of the full flow with real data (chapter page, solution button, paper image, revision)
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
-- [ ] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text — resumed 26 Oct; Sanskrit finished. Hindi running: `bun scripts/verify-notes.ts --board=cbse --grades=10-12 --subject=hindi --rewrite-before=2026-10-25T14:00:00Z`
-- [ ] Second pass for Class 11–12 Hindi chapters converted late: after the Hindi run, `--grades=11-12 --subject=hindi --rewrite-before=2026-10-25T14:12:00Z`
+- [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
+- [x] Second pass for Class 11–12 Hindi chapters converted late
 - [x] Class 11 History "Nomadic Empires": text split out of the Chapter 2 PDF, textbook link fixed, notes written + checked
 - [x] Class 11 Hindi Vitan: dropped "लेखकों के बारे में" (an appendix, not a chapter)
 - [x] Bold-word parser: "**=**", "**;**", unclosed highlights and p*** handled; Python/Java stars kept
