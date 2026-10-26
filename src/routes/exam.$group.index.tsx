@@ -177,8 +177,9 @@ function GroupPage() {
       {current.outOfSyllabus > 0 && (
         <p className="mt-6 flex items-start gap-2 text-sm text-muted-foreground">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
-          {current.outOfSyllabus} purane sawal un topics se the jo ab NCERT (aur naye syllabus) mein nahi hain — unhe yahan
-          nahi gina gaya.
+          {current.outOfSyllabus} purane sawal un topics se the jo ab NCERT book mein nahi hain (book chhoti ki gayi hai) —
+          unhe chapter ginti mein nahi joda. Inme se kuch topics exam syllabus mein ab bhi ho sakte hain, isliye apna latest
+          syllabus ek baar zaroor dekh lo.
         </p>
       )}
     </div>
