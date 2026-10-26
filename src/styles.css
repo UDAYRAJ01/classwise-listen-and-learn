@@ -79,6 +79,9 @@
   --shadow-sticker-sm: 0 1px 2px oklch(0.25 0.03 260 / 0.08);
   --shadow-sticker-lg: 0 2px 4px oklch(0.25 0.03 260 / 0.05), 0 20px 40px -20px oklch(0.25 0.03 260 / 0.25);
   --shadow-lift: 0 18px 40px -18px oklch(0.24 0.035 265 / 0.35);
+  /* A printed book lying on a shelf */
+  --shadow-book: 0 1px 1px oklch(0.25 0.03 260 / 0.1), 0 6px 14px -6px oklch(0.25 0.03 260 / 0.35);
+  --shadow-bar: 0 -1px 0 oklch(0.25 0.03 260 / 0.06), 0 -8px 24px -12px oklch(0.25 0.03 260 / 0.18);
 
   --animate-wiggle: wiggle 0.5s ease-in-out;
   --animate-float: float 6s ease-in-out infinite;
@@ -176,8 +179,20 @@
     border-color: var(--color-border);
   }
 
+  :root {
+    /* Height of the phone tab bar; 0 when it is not on screen. */
+    --nav-h: 0px;
+  }
+
+  @media (max-width: 767.98px) {
+    :root:has([data-bottom-nav]) {
+      --nav-h: calc(3.75rem + env(safe-area-inset-bottom));
+    }
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   body {
