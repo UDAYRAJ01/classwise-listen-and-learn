@@ -210,14 +210,6 @@ async function sectionsFor(grade: number, subject: string, slug: string): Promis
   return r.data;
 }
 
-const CONCEPT_INSTRUCTIONS = `You analyse all past JEE / NEET questions of ONE NCERT chapter and build its exam concept map.
-1. "concepts": 4–14 exam concepts that together cover every question (merge near-duplicates; a concept is what a student must know to solve, e.g. "Range & max height of projectile", "Relative velocity – river crossing"). id = short kebab-case English, name = short English (≤ 6 words). For each concept give "ncert": the 1–3 location refs from the NCERT list where it is taught (format "section 3.6", "example 3.4", "exercise 3.12").
-2. "questions": for EVERY question number: its concept id, "source" and "ref":
-   - source "ncert-example" / "ncert-exercise" when the question is clearly modelled on that NCERT worked example / exercise question (same situation or same calculation with changed numbers) — ref = that row, e.g. "example 3.4";
-   - source "ncert-text" when it tests a fact, formula or statement written in the chapter text — ref = the section where it is written, e.g. "section 3.6";
-   - source "beyond-ncert" when it needs ideas beyond the NCERT text — ref = the closest section.
-   Only use refs that appear in the NCERT list. Be strict: do not claim an example/exercise match unless it is really similar.`;
-
 async function chapterText(grade: number, subject: string, slug: string): Promise<string> {
   const r = await admin
     .from("chapter_sources")
