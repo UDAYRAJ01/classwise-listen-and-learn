@@ -2,6 +2,7 @@
  * Turns extracted past-paper questions into the JEE / NEET chapter index.
  *
  *   bun scripts/exam/analyze.ts --stage=classify   # each question → NCERT Class 11/12 chapter (or "not in NCERT now")
+ *   bun scripts/exam/analyze.ts --stage=home       # removed-from-NCERT topics → the current chapter of their unit (listed apart)
  *   bun scripts/exam/analyze.ts --stage=concepts   # per chapter: exam concepts, each question → concept + NCERT location
  *   bun scripts/exam/analyze.ts --stage=index      # per chapter and exam group: explanation, memory hook, why / next, revision sheet
  *   options: --only=physics  --workers=4  --redo
@@ -69,6 +70,7 @@ interface QRow {
   grade: number | null;
   chapter_slug: string | null;
   topic: string | null;
+  in_syllabus: boolean;
   concept_id: string | null;
   exam_papers: { exam: string; year: number; label: string };
 }
@@ -79,7 +81,7 @@ async function loadQuestions(subject: Subject): Promise<QRow[]> {
     const r = await admin
       .from("exam_questions")
       .select(
-        "id, subject, kind, body, passage, options, answer, has_figure, figure, grade, chapter_slug, topic, concept_id, exam_papers!inner(exam, year, label)",
+        "id, subject, kind, body, passage, options, answer, has_figure, figure, grade, chapter_slug, topic, in_syllabus, concept_id, exam_papers!inner(exam, year, label)",
       )
       .eq("subject", subject)
       .order("id")
@@ -193,6 +195,62 @@ async function classify() {
   }
 }
 
+// ---------------------------------------------------------------- stage 1b: home chapter
+const HOME_INSTRUCTIONS = `These past JEE / NEET questions test topics that are NOT in the current rationalised NCERT Class 11–12 books (removed in 2023). For each, pick the current chapter of the same unit where a student would revise it (e.g. arithmetic progression → Sequences and Series; logic gates → Semiconductor Electronics; sound Doppler effect → Waves; error propagation → Units and Measurement).
+Answer "none" when the whole chapter / unit is gone and no current chapter is its natural home (e.g. Solid State, Surface Chemistry, Polymers, Chemistry in Everyday Life, Hydrogen, s-Block, Environmental Chemistry, Communication Systems, Mathematical Reasoning).`;
+
+/** Questions on removed topics get the current chapter of their unit, still marked not-in-syllabus. */
+async function home() {
+  for (const subject of SUBJECTS) {
+    if (ONLY && !ONLY.includes(subject)) continue;
+    const chapters = await chaptersFor(subject);
+    const keys = chapters.map((c) => c.key);
+    const list = chapters.map((c) => `${c.key} — Class ${c.grade}: ${c.title}`).join("\n");
+    const todo = (await loadQuestions(subject)).filter((q) => q.topic && !q.in_syllabus && (REDO || !q.chapter_slug));
+    console.log(`${subject}: ${todo.length} removed-topic questions to place`);
+    const batches: QRow[][] = [];
+    for (let i = 0; i < todo.length; i += 15) batches.push(todo.slice(i, i + 15));
+    let placed = 0;
+    await pool(batches, WORKERS, async (batch) => {
+      const out = await askJson<{ items: { n: number; chapter: string }[] }>({
+        instructions: HOME_INSTRUCTIONS,
+        text: `Chapters (${subject}):\n${list}\n\nQuestions:\n${batch
+          .map((q, i) => `#${i + 1} (topic: ${q.topic})\n${questionText(q, 300)}`)
+          .join("\n\n")}`,
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          required: ["items"],
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                required: ["n", "chapter"],
+                properties: { n: { type: "integer" }, chapter: { type: "string", enum: [...keys, "none"] } },
+              },
+            },
+          },
+        },
+        effort: "low",
+      });
+      for (const item of out.items) {
+        const q = batch[item.n - 1];
+        const ch = chapters.find((c) => c.key === item.chapter);
+        if (!q || !ch) continue;
+        const up = await admin
+          .from("exam_questions")
+          .update({ grade: ch.grade, chapter_slug: ch.slug, in_syllabus: false, concept_id: null })
+          .eq("id", q.id);
+        if (up.error) throw up.error;
+        placed++;
+      }
+    });
+    console.log(`${subject}: ${placed}/${todo.length} placed in a current chapter`);
+  }
+}
+
 // ---------------------------------------------------------------- stage 2: concepts
 interface Section {
   kind: string;
@@ -249,7 +307,8 @@ async function concepts() {
     const work = chapters
       .map((ch) => ({
         ch,
-        qs: all.filter((q) => q.grade === ch.grade && q.chapter_slug === ch.slug),
+        // Topics removed from NCERT have a home chapter for listing but are not part of its concept map.
+        qs: all.filter((q) => q.in_syllabus && q.grade === ch.grade && q.chapter_slug === ch.slug),
       }))
       .filter((w) => w.qs.length > 0 && (REDO || w.qs.some((q) => !q.concept_id)));
     console.log(`${subject}: ${work.length} chapters need a concept map`);
@@ -517,7 +576,7 @@ async function index() {
     for (const subject of GROUP_SUBJECTS[group]) {
       if (ONLY && SUBJECTS.some((s) => ONLY.includes(s)) && !ONLY.includes(subject)) continue;
       const chapters = await chaptersFor(subject);
-      const all = (await loadQuestions(subject)).filter((q) => groupOf(q.exam_papers.exam) === group);
+      const all = (await loadQuestions(subject)).filter((q) => q.in_syllabus && groupOf(q.exam_papers.exam) === group);
       const rows = await admin
         .from("exam_chapters")
         .select("grade, chapter_slug, content")
@@ -589,7 +648,7 @@ async function index() {
   }
 }
 
-const stages: Record<string, () => Promise<void>> = { classify, concepts, index };
+const stages: Record<string, () => Promise<void>> = { classify, home, concepts, index };
 const run = stages[STAGE];
 if (!run) {
   console.error(`unknown stage ${STAGE}`);
