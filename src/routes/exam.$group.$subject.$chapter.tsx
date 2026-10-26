@@ -108,33 +108,37 @@ function ChapterIndexPage() {
             </span>
           )}
         </div>
-        <div className="no-print mt-4 flex flex-wrap gap-2">
-          <Button variant="paper" size="sm" asChild>
+        <div className="no-print no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+          <Button variant="paper" size="sm" className="h-9 shrink-0 rounded-full" asChild>
             <Link
               to="/learn/$board/$grade/$subject/$chapter"
               params={{ board: "cbse", grade: String(view.grade), subject, chapter: view.slug }}
             >
-              <NotebookText /> Is chapter ke notes
+              <NotebookText /> Chapter ke notes
             </Link>
           </Button>
           {view.pdfUrl && (
-            <Button variant="paper" size="sm" asChild>
+            <Button variant="paper" size="sm" className="h-9 shrink-0 rounded-full" asChild>
               <a href={view.pdfUrl} target="_blank" rel="noreferrer">
-                <BookOpen /> NCERT chapter (PDF)
+                <BookOpen /> NCERT PDF
               </a>
             </Button>
           )}
         </div>
       </header>
 
-      <section className="sticker mt-6 rounded-2xl bg-card p-5" aria-label="Revision">
-        <p className="flex items-center gap-2 font-display text-lg font-bold">
-          <Repeat className="h-5 w-5 text-primary" /> Revision system
+      <section
+        className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:p-4"
+        aria-label="Revision"
+      >
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
+          <Repeat className="h-5 w-5" />
+        </span>
+        <p className="min-w-0 flex-1 text-sm">
+          <span className="block font-display font-bold">Revision</span>
+          <span className="block text-xs text-muted-foreground">1, 3, 7, 15, 30 din baad yaad dilayenge</span>
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Index padh liya ya revise kar liya? “Revise kiya” dabao — agla revision 1, 3, 7, 15, 30 din baad yaad dilayenge.
-        </p>
-        <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} className="mt-3" />
+        <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} />
       </section>
 
       {view.questions.length === 0 ? (
