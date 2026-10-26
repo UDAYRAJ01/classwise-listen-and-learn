@@ -58,3 +58,32 @@ export function sentence(input: string): string {
   if (!t) return "";
   return /[.!?।:;]$/.test(t) ? t : `${t}.`;
 }
+
+const SMALL_WORDS = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "into", "of", "on", "or", "the", "to", "with"]);
+
+/**
+ * Chapter titles copied from book PDFs are sometimes ALL CAPS or all lower case. Those become
+ * Title Case ("LAWS OF MOTION" → "Laws of Motion"); titles with mixed case, roman numerals
+ * and non-Latin scripts are left as they are.
+ */
+export function tidyTitle(input: string): string {
+  const title = input.replace(/\s+/g, " ").trim();
+  if (!/[A-Za-z]/.test(title)) return title;
+  if (title !== title.toUpperCase() && title !== title.toLowerCase()) return title;
+  let first = true;
+  return title
+    .split(" ")
+    .map((word) => {
+      const lower = word.toLowerCase();
+      const out =
+        /^[IVX]+[.:,]?$/.test(word) || /\d/.test(word) || !/[A-Za-z]/.test(word)
+          ? word
+          : !first && SMALL_WORDS.has(lower)
+            ? lower
+            : lower.replace(/(^|[-‘'“(])([a-z])/g, (_, p: string, c: string) => p + c.toUpperCase());
+      // The word after a colon or dash starts a new phrase.
+      first = /[:–—]$/.test(word) || word === "–" || word === ":";
+      return out;
+    })
+    .join(" ");
+}
