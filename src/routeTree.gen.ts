@@ -15,6 +15,7 @@ import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as ApiAudioRouteImport } from './routes/api/audio'
+import { Route as ApiExamSolutionRouteImport } from './routes/api/exam-solution'
 import { Route as ApiNotesRouteImport } from './routes/api/notes'
 import { Route as ApiSyllabusRouteImport } from './routes/api/syllabus'
 import { Route as ApiTutorRouteImport } from './routes/api/tutor'
@@ -50,6 +51,11 @@ const NotebookRoute = NotebookRouteImport.update({
 const ApiAudioRoute = ApiAudioRouteImport.update({
   id: '/api/audio',
   path: '/api/audio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiExamSolutionRoute = ApiExamSolutionRouteImport.update({
+  id: '/api/exam-solution',
+  path: '/api/exam-solution',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiNotesRoute = ApiNotesRouteImport.update({
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
+  '/api/exam-solution': typeof ApiExamSolutionRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
+  '/api/exam-solution': typeof ApiExamSolutionRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
+  '/api/exam-solution': typeof ApiExamSolutionRoute
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/notebook'
     | '/api/audio'
+    | '/api/exam-solution'
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/notebook'
     | '/api/audio'
+    | '/api/exam-solution'
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/notebook'
     | '/api/audio'
+    | '/api/exam-solution'
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   NotebookRoute: typeof NotebookRoute
   ApiAudioRoute: typeof ApiAudioRoute
+  ApiExamSolutionRoute: typeof ApiExamSolutionRoute
   ApiNotesRoute: typeof ApiNotesRoute
   ApiSyllabusRoute: typeof ApiSyllabusRoute
   ApiTutorRoute: typeof ApiTutorRoute
@@ -238,6 +251,13 @@ declare module '@tanstack/react-router' {
       path: '/api/audio'
       fullPath: '/api/audio'
       preLoaderRoute: typeof ApiAudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/exam-solution': {
+      id: '/api/exam-solution'
+      path: '/api/exam-solution'
+      fullPath: '/api/exam-solution'
+      preLoaderRoute: typeof ApiExamSolutionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/notes': {
@@ -310,6 +330,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   NotebookRoute: NotebookRoute,
   ApiAudioRoute: ApiAudioRoute,
+  ApiExamSolutionRoute: ApiExamSolutionRoute,
   ApiNotesRoute: ApiNotesRoute,
   ApiSyllabusRoute: ApiSyllabusRoute,
   ApiTutorRoute: ApiTutorRoute,
