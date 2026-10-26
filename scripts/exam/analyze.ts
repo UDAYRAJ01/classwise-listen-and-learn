@@ -562,11 +562,9 @@ async function index() {
           schema: indexSchema(ids, true),
           effort: "high",
         });
-        const concepts = used.map((c) => ({
-          ...c,
-          ...(draft.concepts.find((x) => x.id === c.id) ?? {}),
-          ...(reviewed.concepts.find((x) => x.id === c.id) ?? {}),
-        }));
+        // Only reviewed text is published: a concept the reviewer dropped keeps its name and
+        // NCERT places but no written lines (never the unchecked draft).
+        const concepts = used.map((c) => ({ ...c, ...(reviewed.concepts.find((x) => x.id === c.id) ?? {}) }));
         const up = await admin
           .from("exam_chapters")
           .update({
