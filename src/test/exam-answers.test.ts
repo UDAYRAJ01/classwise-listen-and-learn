@@ -24,6 +24,12 @@ describe("past-paper answers", () => {
 
   it("treats dropped questions as bonus", () => {
     expect(normalizeAnswer("Dropped", "single")).toBe("BONUS");
+    expect(normalizeAnswer("Due to internal review, all candidates are awarded +4 marks.", "multiple")).toBe("BONUS");
+  });
+
+  it("treats a coaching key's NA as no answer", () => {
+    expect(normalizeAnswer("(NA)", "single")).toBeNull();
+    expect(normalizeAnswer("N.A.", "single")).toBeNull();
   });
 
   it("accepts a worked answer inside the key's range and rejects one outside", () => {

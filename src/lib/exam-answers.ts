@@ -16,7 +16,9 @@ export function normalizeAnswer(raw: string | null | undefined, kind: string): s
     .replace(/^\[(.*)\]$/, "$1")
     .trim();
   if (!s) return null;
-  if (/DROP|BONUS|DELETED|CANCEL|MARKS TO ALL/.test(s)) return "BONUS";
+  if (/DROP|BONUS|DELETED|CANCEL|MARKS TO ALL|AWARDED|ALL CANDIDATES/.test(s)) return "BONUS";
+  // "NA" / "(NA)" in a coaching key means the key gives no answer, not that marks were given.
+  if (/^\(?N\.?\s?A\.?\)?$/.test(s)) return null;
   if (OPTION_KINDS.has(kind)) {
     s = s.replace(/[()[\]]/g, " ").replace(/\bOR\b|\bAND\b|&|\//g, ",");
     const map: Record<string, string> = { "1": "A", "2": "B", "3": "C", "4": "D" };
