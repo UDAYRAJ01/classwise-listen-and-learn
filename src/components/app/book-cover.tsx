@@ -115,7 +115,7 @@ export function BookTile({
     <Link
       to="/learn/$board/$grade/$subject"
       params={{ board, grade: String(grade), subject: subject.slug }}
-      search={multi ? { book: bookIndex } : {}}
+      search={multi && bookIndex > 0 ? { book: bookIndex } : {}}
       className="group block rounded-lg outline-offset-4"
     >
       <span className="relative block transition-transform duration-200 group-hover:-translate-y-1 group-active:scale-[0.97]">
