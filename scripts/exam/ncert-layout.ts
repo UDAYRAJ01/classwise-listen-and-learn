@@ -112,6 +112,8 @@ export function linesFromXml(xml: string): Line[] {
         const prev = seg[seg.length - 1];
         // Some headings are printed several times on top of each other (a shadow effect).
         if (prev && prev.text === r.text && r.x0 - prev.x1 <= 2) continue;
+        // ...or as a copy sitting inside the previous run ("6.1 Classification" + "Classification").
+        if (prev && prev.text.endsWith(r.text.trim()) && r.x0 >= prev.x0 - 1 && r.x1 <= prev.x1 + 3) continue;
         // A wide gap means a new column (margin headings, two-column pages).
         if (prev && r.x0 - prev.x1 > 14) flush();
         seg.push(r);
@@ -336,7 +338,15 @@ function locateWith(lines: Line[], useFonts: boolean): Located[] {
           if (n.page !== l.page || n.y - y > head.size * 2.2) break;
           if (n.y - y < 2 || n.size < head.size - 2) continue;
           if (titleX !== null && Math.abs(n.x - titleX) > 30) continue;
-          if (!n.runs.every(sameStyle) || /^\(?[\da-z]\)?[.)]?\s/.test(n.text) || title.length > 90) break;
+          if (!n.runs.every(sameStyle) || /^\(?[\da-z]\)?[.)]?\s|^\d+\.\d/.test(n.text) || title.length > 90) break;
+          // Only obvious wraps: a narrow margin column, a dangling joining word or hyphen,
+          // or an all-capitals heading. A bold sentence below a heading is body text.
+          const wraps =
+            n.text.length <= 22 ||
+            /(\b(and|of|for|in|to|the|with|on|its|their|a|an)|-)$/i.test(title) ||
+            (upperCase(title) && upperCase(n.text)) ||
+            /^[a-z]/.test(n.text);
+          if (!wraps) break;
           titleX ??= n.x;
           title = `${title} ${n.text}`.trim();
           y = n.y;
