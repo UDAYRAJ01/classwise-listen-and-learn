@@ -1,5 +1,6 @@
 /**
- * One-off repair (the extractor now does this itself): cut every stored paper-figure crop
+ * One-off repair (the extractor now does this itself): cut every stored paper crop (figures and
+ * the "Asli paper mein" view)
  * above an answer / solution line printed inside it, so the picture never shows the answer.
  *   bun scripts/exam/trim-figures.ts [--dry]
  */
@@ -28,8 +29,7 @@ for (const p of papers) {
   const qs = await admin
     .from("exam_questions")
     .select("id, qno, page, figure")
-    .eq("paper_id", p.id)
-    .eq("has_figure", true);
+    .eq("paper_id", p.id);
   if (qs.error) throw qs.error;
   const linesByPage = new Map<number, ReturnType<typeof pageLines>>();
   for (const q of qs.data) {
