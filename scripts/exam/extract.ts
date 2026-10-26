@@ -14,6 +14,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 
 import { supabaseAdmin as admin } from "@/integrations/supabase/client.server";
 
+import type { Box, TextLine } from "@/lib/exam-figure";
+
+import { pageLines, trimAnswerFromBox } from "./figure-box";
 import { args, askJson, normalizeAnswer, pool, StopRun } from "./lib";
 import { segmentSubjects, snapBlocks } from "./segment";
 
@@ -397,6 +400,12 @@ For each listed question, transcribe exactly the shared text it needs (Markdown 
     return /^(?:\d+\s+)?Correct Answer\s*:?\s*(\([A-D1-4]\))/i.exec(head)?.[1] ?? null;
   };
 
+  const pageLinesCache = new Map<number, TextLine[]>();
+  const linesOf = (page: number) => {
+    if (!pageLinesCache.has(page)) pageLinesCache.set(page, pageLines(pdf, page));
+    return pageLinesCache.get(page)!;
+  };
+
   const rows = [...merged.values()].map((q) => {
     const number = restarts
       ? (subjectOrder.indexOf(q.subject) + 1) * 100 + q.printedNumber
@@ -417,7 +426,8 @@ For each listed question, transcribe exactly the shared text it needs (Markdown 
       has_figure: q.hasFigure,
       figure: {
         page: q.page,
-        box: q.box.length === 4 ? q.box : [0, 0, 1000, 1000],
+        // The crop must not show an answer / solution printed under the question.
+        box: q.box.length === 4 ? trimAnswerFromBox(q.box as Box, linesOf(q.page)) : [0, 0, 1000, 1000],
         note: q.figureNote,
       },
     };
