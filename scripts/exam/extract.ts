@@ -286,18 +286,34 @@ async function extractPaper(spec: PaperSpec) {
 
   // Merge: one row per (subject order, printed number); a later duplicate only fills gaps.
   type Q = PageOut["questions"][number] & { page: number };
+  const seq: Q[] = outs.flatMap((o, i) =>
+    o!.questions.filter((q) => q.body.trim()).map((q) => ({ ...q, page: i + 1 })),
+  );
+  if (spec.exam === "jee-advanced") {
+    // Each subject is one block and its numbering restarts at 1. The block decides the
+    // subject (by majority), so a chemistry question that reads like physics stays chemistry.
+    const blocks: Q[][] = [];
+    for (const q of seq) {
+      const cur = blocks.at(-1);
+      if (!cur || q.printedNumber < cur.at(-1)!.printedNumber) blocks.push([q]);
+      else cur.push(q);
+    }
+    for (const b of blocks) {
+      const votes = new Map<string, number>();
+      for (const q of b) votes.set(q.subject, (votes.get(q.subject) ?? 0) + 1);
+      const top = [...votes.entries()].sort((x, y) => y[1] - x[1])[0]![0] as Q["subject"];
+      for (const q of b) q.subject = top;
+    }
+  }
   const subjectOrder: string[] = [];
   const merged = new Map<string, Q>();
-  outs.forEach((o, i) => {
-    for (const q of o!.questions) {
-      if (!q.body.trim()) continue;
-      if (!subjectOrder.includes(q.subject)) subjectOrder.push(q.subject);
-      // Straight-through numbering: the number alone identifies a question.
-      const k = spec.exam === "jee-advanced" ? `${q.subject}:${q.printedNumber}` : String(q.printedNumber);
-      const prev = merged.get(k);
-      if (!prev || prev.body.length < q.body.length * 0.6) merged.set(k, { ...q, page: i + 1 });
-    }
-  });
+  for (const q of seq) {
+    if (!subjectOrder.includes(q.subject)) subjectOrder.push(q.subject);
+    // Straight-through numbering: the number alone identifies a question.
+    const k = spec.exam === "jee-advanced" ? `${q.subject}:${q.printedNumber}` : String(q.printedNumber);
+    const prev = merged.get(k);
+    if (!prev || prev.body.length < q.body.length * 0.6) merged.set(k, q);
+  }
   // JEE Advanced restarts numbering in every subject; the others number straight through.
   const restarts = spec.exam === "jee-advanced";
   const keyFor = (q: Q) => {
