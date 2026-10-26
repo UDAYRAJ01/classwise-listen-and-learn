@@ -26,7 +26,10 @@ import {
   type NcertPlace,
 } from "@/lib/exam";
 import { examChapterQuery } from "@/lib/exam-queries";
+import { tidyHeading } from "@/lib/text";
 import { cn } from "@/lib/utils";
+
+const clipText = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
 export const Route = createFileRoute("/exam/$group/$subject/$chapter")({
   loader: async ({ params, context }) => {
