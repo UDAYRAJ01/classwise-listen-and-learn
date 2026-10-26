@@ -19,7 +19,7 @@ export interface Line {
   x: number;
   y: number;
   /** Text runs in reading order with their weight (bold = heading font). */
-  runs: { text: string; bold: boolean }[];
+  runs: { text: string; bold: boolean; x: number; size: number }[];
 }
 
 export interface Located {
@@ -104,12 +104,14 @@ export function linesFromXml(xml: string): Line[] {
           size: Math.max(...seg.map((r) => r.size)),
           x: seg[0]!.x0,
           y: Math.max(...seg.map((r) => r.base)),
-          runs: seg.map((r) => ({ text: r.text, bold: r.bold })),
+          runs: seg.map((r) => ({ text: r.text, bold: r.bold, x: r.x0, size: r.size })),
         });
         seg = [];
       };
       for (const r of row) {
         const prev = seg[seg.length - 1];
+        // Some headings are printed several times on top of each other (a shadow effect).
+        if (prev && prev.text === r.text && Math.abs(prev.x0 - r.x0) < 3) continue;
         // A wide gap means a new column (margin headings, two-column pages).
         if (prev && r.x0 - prev.x1 > 14) flush();
         seg.push(r);
@@ -181,6 +183,10 @@ export function locate(lines: Line[]): Located[] {
   const offset = printedOffset(lines);
   // Books whose fonts carry weight let headings be recognised by the bold font.
   const hasBold = lines.some((l) => l.runs.some((r) => r.bold) && /^\d{1,2}\.\d{1,2}/.test(l.text));
+  // Body text size = the most common line size; top-level headings are set larger.
+  const sizeVotes = new Map<number, number>();
+  for (const l of lines) sizeVotes.set(Math.round(l.size), (sizeVotes.get(Math.round(l.size)) ?? 0) + l.text.length);
+  const bodySize = [...sizeVotes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 10;
   const printed = (p: number) => (offset === null ? null : p + offset);
 
   // Chapter number = the prefix most numbered headings share.
@@ -275,26 +281,32 @@ export function locate(lines: Line[]): Located[] {
     if ((m = sec.exec(t))) {
       const ref = m[1]!;
       let title = (m[2] ?? "").trim();
-      if (hasBold) {
-        // A real heading is set in the bold font: its number and the bold words after it.
+      const large = l.size >= bodySize + 2;
+      if (hasBold && !large) {
+        // A body-size heading is set in the bold font: its number and the bold words after it.
         if (!l.runs[0]?.bold) continue;
         let boldText = "";
+        let titleX: number | null = null;
         for (const r of l.runs) {
           if (!r.bold) break;
+          if (boldText && titleX === null) titleX = r.x;
           boldText += boldText && !/\s$/.test(boldText) ? ` ${r.text}` : r.text;
         }
         title = boldText.replace(/^\s*[u•▪■]?\s*\d{1,2}(?:\.\d{1,2}){1,2}\.?\s*/, "").trim();
-        // Margin headings stack their words on the following bold lines.
+        if (title && titleX === null) titleX = l.x;
+        // Margin headings stack their words on the following bold lines; lines of the
+        // neighbouring text column (far to the side) and superscripts are skipped.
         let y = l.y;
-        for (let j = i + 1; j < lines.length && j < i + 8; j++) {
+        for (let j = i + 1, added = 0; j < lines.length && added < 6; j++) {
           const n = lines[j]!;
           if (n.page !== l.page || n.y - y > 22) break;
-          if (n.y - y < 2) continue; // another column on the same baseline
-          if (!n.runs.every((r) => r.bold) || /^\d/.test(n.text) || title.length > 90) break;
-          if (title && Math.abs(n.x - (l.x + (l.text.length - title.length) * 0)) > 140) break;
+          if (n.y - y < 2 || n.size < l.size - 2) continue;
+          if (titleX !== null && Math.abs(n.x - titleX) > 30) continue;
+          if (!n.runs.every((r) => r.bold) || /^\(?[\da-z]\)?[.)]?\s/.test(n.text) || title.length > 90) break;
+          titleX ??= n.x;
           title = `${title} ${n.text}`.trim();
           y = n.y;
-          if (!upperCase(n.text) && !/\b(and|of|for|in|to|the|with|on|its|their|a|an)$/i.test(n.text) && n.text.length > 25) break;
+          added++;
         }
       } else if (!title) {
         const next = lines[i + 1];
