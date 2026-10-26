@@ -198,6 +198,11 @@ async function extractPaper(spec: PaperSpec) {
 
   const existing = await admin.from("exam_papers").select("id, status").eq("slug", spec.slug).maybeSingle();
   if (existing.data?.status && existing.data.status !== "new" && !REDO) {
+    // Keep the label / answer source in step with papers.json without re-reading the paper.
+    await admin
+      .from("exam_papers")
+      .update({ label: spec.label, answer_source: spec.answers, held_on: spec.heldOn ?? null })
+      .eq("id", existing.data.id);
     console.log(`${spec.slug}: already ${existing.data.status}`);
     return;
   }
