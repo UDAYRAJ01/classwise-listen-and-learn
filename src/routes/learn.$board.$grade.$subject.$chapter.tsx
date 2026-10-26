@@ -438,194 +438,170 @@ function ChapterView({
   const hasError = !record && gen.status === "error" && gen.error;
 
   return (
-    <div className="pb-44">
-      <div className="mx-auto max-w-6xl px-4 pt-8">
-        <Crumbs
-          items={[
-            {
-              label,
-              link: (
-                <Link
-                  to="/learn/$board/$grade"
-                  params={{ board, grade: String(grade) }}
-                  className="hover:text-foreground"
-                >
-                  {BOARDS[board].short} · {label}
-                </Link>
-              ),
-            },
-            {
-              label: subject.name,
-              link: (
-                <Link
-                  to="/learn/$board/$grade/$subject"
-                  params={{ board, grade: String(grade), subject: subject.slug }}
-                  className="hover:text-foreground"
-                >
-                  {subject.name}
-                </Link>
-              ),
-            },
-            { label: meta.number ? `Chapter ${meta.number}` : "Topic" },
-          ]}
-        />
+    <div className="pb-40">
+      <ScreenHeader
+        titleAs="p"
+        back={
+          meta.custom ? (
+            <Link
+              to="/learn/$board/$grade/$subject"
+              params={{ board, grade: String(grade), subject: subject.slug }}
+            />
+          ) : (
+            <Link
+              to="/learn/$board/$grade/$subject"
+              params={{ board, grade: String(grade), subject: subject.slug }}
+              search={bookIndex > 0 ? { book: bookIndex } : {}}
+            />
+          )
+        }
+        title={meta.number ? `Chapter ${meta.number}` : meta.custom ? "Aapka topic" : "Chapter"}
+        subtitle={`${subject.name} · ${label}`}
+        actions={
+          <>
+            <button
+              type="button"
+              className={barIconClass}
+              onClick={toggleSave}
+              aria-pressed={isSaved}
+              aria-label={isSaved ? "Saved — hatao" : "Save karo"}
+            >
+              {isSaved ? <BookmarkCheck className="text-accent" /> : <Bookmark />}
+            </button>
+            <button type="button" className={barIconClass} onClick={share} aria-label="Share karein">
+              <Share2 />
+            </button>
+          </>
+        }
+      />
 
-        <header className="mt-6 flow-root">
+      <div className="mx-auto max-w-6xl px-4 pt-4">
+        <header className="flex items-start gap-4">
           {meta.cover && (
             <img
               src={meta.cover}
               alt={`${meta.bookName ?? "NCERT"} book cover`}
-              width={96}
-              height={136}
-              className="no-print float-right ml-4 hidden h-36 w-auto rounded-md border border-border shadow-sticker sm:block"
+              width={80}
+              height={112}
+              className="no-print w-14 shrink-0 rounded-md shadow-book sm:w-20"
             />
           )}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-1.5 truncate text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <SubjectIcon name={subject.icon} className={cn("h-3.5 w-3.5 shrink-0", tone.text)} />
+              <span className="truncate">{meta.bookName ?? subject.name}</span>
+            </p>
+            <h1 className="mt-1 font-display text-[1.6rem] font-extrabold leading-tight sm:text-4xl">
+              {meta.title}
+            </h1>
+          </div>
+        </header>
+
+        <div className="no-print mt-4 flex items-center justify-between gap-3">
+          <div role="tablist" aria-label="Bhasha" className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5">
+            {LANGS.map((l) => (
+              <Link
+                key={l.id}
+                to="/learn/$board/$grade/$subject/$chapter"
+                params={{ board, grade: String(grade), subject: subject.slug, chapter }}
+                search={{ lang: l.id, ...(searchTitle ? { title: searchTitle } : {}) }}
+                onClick={() => notebook.setPrefs({ lang: l.id })}
+                role="tab"
+                replace
+                aria-selected={lang === l.id}
+                data-active={lang === l.id}
+                title={readyLangs?.includes(l.id) ? "Taiyaar hai — turant khulega" : "Pehli baar banega"}
+                className="relative rounded-md px-3 py-1.5 text-sm font-bold text-muted-foreground transition-colors data-[active=true]:bg-card data-[active=true]:text-foreground data-[active=true]:shadow-sm"
+              >
+                {l.native}
+                {readyLangs?.includes(l.id) && lang !== l.id && (
+                  <span
+                    className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-tone-leaf"
+                    aria-label="ready"
+                  />
+                )}
+              </Link>
+            ))}
+          </div>
+          {record && (
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm font-bold",
-                tone.soft,
+                "inline-flex items-center gap-1 text-xs font-bold tabular-nums lg:hidden",
+                isRead ? "text-tone-leaf" : "text-muted-foreground",
               )}
+              title="Kitne hisse padhe"
             >
-              <SubjectIcon name={subject.icon} className={cn("h-4 w-4", tone.text)} />
-              {subject.name} · {label}
+              {isRead ? <BookCheck className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />}
+              {isRead ? requiredParts.length : readCount}/{requiredParts.length}
             </span>
-            {meta.bookName && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-sm font-semibold text-muted-foreground">
-                <BookOpen className="h-4 w-4" /> {meta.bookName}
-              </span>
-            )}
-            {meta.textbookUrl ? (
+          )}
+        </div>
+
+        <div className="no-print no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
+          <button
+            type="button"
+            className={actionChip}
+            data-on={isRead}
+            onClick={toggleRead}
+            aria-pressed={isRead}
+            disabled={!record && !isRead}
+            title="Poora chapter padh ya sun liya? Ye apne aap bhi mark hota hai."
+          >
+            {isRead ? <BookCheck /> : <BookOpen />}
+            {isRead ? "Padh liya" : "Padh liya?"}
+          </button>
+          <button
+            type="button"
+            className={actionChip}
+            data-on={isDone}
+            onClick={toggleDone}
+            aria-pressed={isDone}
+            title="Quiz ke baad, jab chapter achhe se yaad ho jaye"
+          >
+            {isDone ? <CheckCircle2 /> : <Circle />}
+            {isDone ? "Yaad ho gaya" : "Yaad ho gaya?"}
+          </button>
+          <button type="button" className={actionChip} onClick={() => setCardsOpen(true)} disabled={!record}>
+            <Brain className="text-tone-sun" /> Flashcards
+          </button>
+          {(!record || mcqs.length > 0) && (
+            <button type="button" className={actionChip} onClick={() => setQuizOpen(true)} disabled={!record}>
+              <Target className="text-accent" /> Quiz
+            </button>
+          )}
+          {meta.textbookUrl ? (
+            <a href={meta.textbookUrl} target="_blank" rel="noopener noreferrer" className={actionChip}>
+              <ExternalLink /> {meta.textbookIsBook ? "NCERT book" : "NCERT PDF"}
+            </a>
+          ) : (
+            board === "icse" &&
+            !meta.custom && (
               <a
-                href={meta.textbookUrl}
+                href="https://cisce.org/regulations-and-syllabuses/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="no-print inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
+                title="CISCE ki official free textbook PDF nahi hoti — school ki prescribed book se milao."
+                className={actionChip}
               >
-                <ExternalLink className="h-4 w-4" />{" "}
-                {meta.textbookIsBook ? "NCERT textbook" : "NCERT textbook (PDF)"}
+                <ExternalLink /> CISCE syllabus
               </a>
-            ) : (
-              board === "icse" &&
-              !meta.custom && (
-                <a
-                  href="https://cisce.org/regulations-and-syllabuses/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="CISCE ki official free textbook PDF nahi hoti — school ki prescribed book se milao."
-                  className="no-print inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-sm font-bold hover:bg-muted"
-                >
-                  <ExternalLink className="h-4 w-4" /> CISCE syllabus
-                </a>
-              )
-            )}
-            {meta.custom && (
-              <span className="rounded-full bg-secondary px-3 py-1 text-sm font-bold">
-                Aapka topic
-              </span>
-            )}
-            {board === "cbse" && !meta.custom && (
-              <ExamLinks grade={grade} subject={subject.slug} chapter={chapter} />
-            )}
-          </div>
-          <h1 className="mt-4 max-w-4xl text-4xl font-extrabold sm:text-5xl">
-            {meta.number && (
-              <span className="mr-3 font-hand text-3xl font-bold text-accent sm:text-4xl">
-                Ch {meta.number}.
-              </span>
-            )}
-            {meta.title}
-          </h1>
-
-          <div className="no-print mt-6 flex flex-wrap items-center gap-3">
-            <div
-              role="tablist"
-              aria-label="Bhasha"
-              className="sticker inline-flex gap-1 rounded-xl bg-card p-1"
-            >
-              {LANGS.map((l) => (
-                <Link
-                  key={l.id}
-                  to="/learn/$board/$grade/$subject/$chapter"
-                  params={{ board, grade: String(grade), subject: subject.slug, chapter }}
-                  search={{ lang: l.id, ...(searchTitle ? { title: searchTitle } : {}) }}
-                  onClick={() => notebook.setPrefs({ lang: l.id })}
-                  role="tab"
-                  aria-selected={lang === l.id}
-                  data-active={lang === l.id}
-                  title={
-                    readyLangs?.includes(l.id)
-                      ? "Taiyaar hai — turant khulega"
-                      : "Pehli baar banega"
-                  }
-                  className="relative rounded-lg px-3 py-1.5 text-sm font-bold hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper"
-                >
-                  {l.native}
-                  {readyLangs?.includes(l.id) && lang !== l.id && (
-                    <span
-                      className="absolute right-1 top-1 h-1.5 w-1.5 rounded-full bg-tone-leaf"
-                      aria-label="ready"
-                    />
-                  )}
-                </Link>
-              ))}
-            </div>
-            <Button variant="paper" onClick={toggleSave} aria-pressed={isSaved}>
-              {isSaved ? <BookmarkCheck className="text-accent" /> : <Bookmark />}
-              {isSaved ? "Saved" : "Save"}
-            </Button>
-            <Button
-              variant={isRead ? "ink" : "paper"}
-              onClick={toggleRead}
-              aria-pressed={isRead}
-              disabled={!record && !isRead}
-              title="Poora chapter padh ya sun liya? Ye apne aap bhi mark hota hai."
-            >
-              {isRead ? <BookCheck /> : <BookOpen />}
-              {isRead ? "Padh liya" : "Padh liya?"}
-            </Button>
-            <Button
-              variant={isDone ? "ink" : "paper"}
-              onClick={toggleDone}
-              aria-pressed={isDone}
-              title="Quiz ke baad, jab chapter achhe se yaad ho jaye"
-            >
-              {isDone ? <CheckCircle2 /> : <Circle />}
-              {isDone ? "Yaad ho gaya" : "Yaad ho gaya?"}
-            </Button>
-            <Button variant="sun" onClick={() => setCardsOpen(true)} disabled={!record}>
-              <Brain /> Flashcards
-            </Button>
-            {(!record || mcqs.length > 0) && (
-              <Button variant="marker" onClick={() => setQuizOpen(true)} disabled={!record}>
-                <Target /> Quiz
-              </Button>
-            )}
-            <Button variant="ghost" onClick={share} aria-label="Share karein">
-              <Share2 /> <span className="hidden sm:inline">Share</span>
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => window.print()}
-              disabled={!record}
-              aria-label="Print ya PDF save karein"
-            >
-              <Printer /> <span className="hidden sm:inline">Print / PDF</span>
-            </Button>
-          </div>
-
-          {record && (
-            <ReadMeter
-              className="no-print mt-5 lg:hidden"
-              read={readCount}
-              total={requiredParts.length}
-              done={isRead}
-            />
+            )
           )}
-        </header>
+          {board === "cbse" && !meta.custom && (
+            <ExamLinks grade={grade} subject={subject.slug} chapter={chapter} />
+          )}
+          <button
+            type="button"
+            className={cn(actionChip, "hidden md:inline-flex")}
+            onClick={() => window.print()}
+            disabled={!record}
+          >
+            <Printer /> Print / PDF
+          </button>
+        </div>
       </div>
 
-      <div className="mx-auto mt-10 grid max-w-6xl gap-10 px-4 lg:grid-cols-[200px_1fr]">
+      <div className="mx-auto mt-6 grid max-w-6xl gap-10 px-4 lg:mt-8 lg:grid-cols-[200px_1fr]">
         <aside className="no-print hidden lg:block">
           <nav aria-label="Is chapter mein" className="sticky top-24 space-y-1">
             {record && (
