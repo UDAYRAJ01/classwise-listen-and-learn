@@ -79,7 +79,9 @@ function ExamHome() {
               <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
                 <div className="rounded-2xl bg-muted px-2 py-3">
                   <dt className="text-xs font-semibold text-muted-foreground">Sawal</dt>
-                  <dd className="font-display text-2xl font-extrabold">{o.totalQuestions}</dd>
+                  <dd className="font-display text-2xl font-extrabold">
+                    {o.papers.reduce((n, p) => n + p.questions, 0)}
+                  </dd>
                 </div>
                 <div className="rounded-2xl bg-muted px-2 py-3">
                   <dt className="text-xs font-semibold text-muted-foreground">Paper</dt>

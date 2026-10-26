@@ -99,7 +99,7 @@ function GroupPage() {
       <header className="mt-6">
         <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{meta.name} — chapter index</h1>
         <p className="mt-2 max-w-3xl text-muted-foreground">
-          {data.totalQuestions} asli sawal, {data.papers.length} paper. Chapters us order mein jitni baar woh aaye — upar wale
+          {data.papers.reduce((n, p) => n + p.questions, 0)} asli sawal, {data.papers.length} paper. Chapters us order mein jitni baar woh aaye — upar wale
           pehle pakko.
         </p>
       </header>
