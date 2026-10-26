@@ -122,18 +122,18 @@ function ClassShelfPage() {
 
         <ul className={shelfGridClass}>
           {items.map((it, i) => (
-                <li key={`${it.subject.slug}-${it.index}`}>
-                  <BookTile
-                    board={board}
-                    grade={grade}
-                    subject={it.subject}
-                    book={it.book}
-                    bookIndex={it.index}
-                    multi={it.multi}
-                    eager={i < 6}
-                  />
-                </li>
-              ))}
+            <li key={`${it.subject.slug}-${it.index}`}>
+              <BookTile
+                board={board}
+                grade={grade}
+                subject={it.subject}
+                book={it.book}
+                bookIndex={it.index}
+                multi={it.multi}
+                eager={i < 6}
+              />
+            </li>
+          ))}
         </ul>
       </div>
     </>

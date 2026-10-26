@@ -128,7 +128,11 @@ function SectionTitle({
               </span>
             )}
           </h2>
-          {sub && <p className="font-hand text-sm leading-tight text-muted-foreground sm:text-lg">{sub}</p>}
+          {sub && (
+            <p className="font-hand text-sm leading-tight text-muted-foreground sm:text-lg">
+              {sub}
+            </p>
+          )}
         </div>
       </div>
       {right}
@@ -346,7 +350,10 @@ export function NoteView({
                 <Block
                   key={i}
                   {...blockProps(`trick-${i}`, t.title ?? "Trick")}
-                  className={cn("tape sticker rounded-md p-4 pr-11 pt-6 sm:p-5 sm:pr-12 sm:pt-7", STICKY_TONES[i % 4])}
+                  className={cn(
+                    "tape sticker rounded-md p-4 pr-11 pt-6 sm:p-5 sm:pr-12 sm:pt-7",
+                    STICKY_TONES[i % 4],
+                  )}
                 >
                   <span className="mb-2 inline-block rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">
                     {TRICK_LABEL[(t.kind as TrickKind) ?? "shortcut"] ?? "Trick"}

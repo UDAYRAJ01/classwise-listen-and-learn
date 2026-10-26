@@ -33,10 +33,14 @@ export const Route = createFileRoute("/me")({
       { title: "Profile — Class, Bhasha, Awaaz aur App | PadhoSuno" },
       {
         name: "description",
-        content: "Apni class, notes ki bhasha aur awaaz chuno, sign in karo aur PadhoSuno app phone par install karo.",
+        content:
+          "Apni class, notes ki bhasha aur awaaz chuno, sign in karo aur PadhoSuno app phone par install karo.",
       },
       { property: "og:title", content: "Profile — PadhoSuno" },
-      { property: "og:description", content: "Class, bhasha, awaaz, sign in aur app install — ek jagah." },
+      {
+        property: "og:description",
+        content: "Class, bhasha, awaaz, sign in aur app install — ek jagah.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -81,7 +85,11 @@ function MePage() {
             </button>
           </li>
           <Row icon={<Languages />} title="Bhasha">
-            <div role="radiogroup" aria-label="Notes ki bhasha" className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5">
+            <div
+              role="radiogroup"
+              aria-label="Notes ki bhasha"
+              className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5"
+            >
               {LANGS.map((l) => (
                 <button
                   key={l.id}
@@ -98,7 +106,11 @@ function MePage() {
             </div>
           </Row>
           <Row icon={<Headphones />} title="Kaun padhaye?">
-            <div role="radiogroup" aria-label="Awaaz" className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5">
+            <div
+              role="radiogroup"
+              aria-label="Awaaz"
+              className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5"
+            >
               {(["didi", "bhaiya"] as const).map((v) => (
                 <button
                   key={v}
@@ -121,9 +133,14 @@ function MePage() {
               </RowIcon>
               <span className="min-w-0 flex-1">
                 <span className="block font-bold">Suno aur saath padho</span>
-                <span className="block text-sm text-muted-foreground">Jo bol raha hai, wahan apne aap scroll</span>
+                <span className="block text-sm text-muted-foreground">
+                  Jo bol raha hai, wahan apne aap scroll
+                </span>
               </span>
-              <Switch checked={prefs.follow} onCheckedChange={(follow) => notebook.setPrefs({ follow })} />
+              <Switch
+                checked={prefs.follow}
+                onCheckedChange={(follow) => notebook.setPrefs({ follow })}
+              />
             </label>
           </li>
         </ul>
@@ -131,8 +148,13 @@ function MePage() {
         <InstallCard />
 
         <div className="flex items-center justify-between gap-4 px-1 pt-2 text-xs text-muted-foreground">
-          <p>Notes AI se textbook ke hisaab se bante hain. Exam se pehle book se ek baar milayein.</p>
-          <Link to="/admin/reports" className="inline-flex shrink-0 items-center gap-1 hover:text-foreground">
+          <p>
+            Notes AI se textbook ke hisaab se bante hain. Exam se pehle book se ek baar milayein.
+          </p>
+          <Link
+            to="/admin/reports"
+            className="inline-flex shrink-0 items-center gap-1 hover:text-foreground"
+          >
             <Flag className="h-3.5 w-3.5" /> Owner
           </Link>
         </div>
@@ -173,12 +195,19 @@ function Row({ icon, title, children }: { icon: ReactNode; title: string; childr
 function AccountCard() {
   const email = useAuthEmail();
   if (email === undefined)
-    return <div className="h-[5.5rem] animate-pulse rounded-2xl border border-border bg-muted" aria-hidden />;
+    return (
+      <div
+        className="h-[5.5rem] animate-pulse rounded-2xl border border-border bg-muted"
+        aria-hidden
+      />
+    );
   if (!email)
     return (
       <div className="rounded-2xl bg-primary p-4 text-primary-foreground">
         <p className="font-display text-lg font-extrabold">Sign in karo</p>
-        <p className="mt-0.5 text-sm opacity-85">Notebook, progress aur streak har device par saath rahenge.</p>
+        <p className="mt-0.5 text-sm opacity-85">
+          Notebook, progress aur streak har device par saath rahenge.
+        </p>
         <Button asChild variant="paper" className="mt-3 h-10 rounded-full">
           <Link to="/auth" search={{ next: "/me" }}>
             <LogIn /> Sign in / Account banao
@@ -223,7 +252,9 @@ function InstallCard() {
         <p className="font-bold">PadhoSuno app</p>
         {state.kind === "ready" ? (
           <>
-            <p className="text-sm text-muted-foreground">Home screen par icon — ek tap mein khulega.</p>
+            <p className="text-sm text-muted-foreground">
+              Home screen par icon — ek tap mein khulega.
+            </p>
             <Button
               variant="ink"
               size="sm"
