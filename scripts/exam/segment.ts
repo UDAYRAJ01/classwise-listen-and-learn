@@ -23,7 +23,7 @@ export function segmentSubjects<S extends string>(labels: S[], minCount = 5): S[
   const K = subjects.length;
 
   // cost[k] = fewest disagreements so far when the current question sits in block k.
-  let cost = subjects.map((s) => (labels[0] === s ? 0 : 1));
+  let cost: number[] = subjects.map((s) => (labels[0] === s ? 0 : 1));
   const back: number[][] = [];
   for (let i = 1; i < n; i++) {
     const next: number[] = [];
