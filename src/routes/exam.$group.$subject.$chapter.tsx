@@ -150,10 +150,17 @@ function ChapterIndexPage() {
         <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} className="mt-3" />
       </section>
 
-      {!view.ready && (
-        <p className="mt-6 rounded-2xl bg-sticky px-4 py-3 text-sticky-foreground">
-          Is chapter ka concept index abhi likha ja raha hai. Tab tak neeche asli sawal dekh sakte ho.
+      {view.questions.length === 0 ? (
+        <p className="mt-6 rounded-2xl border border-border bg-card px-4 py-3">
+          Humne jitne {meta.short} paper dekhe, unme is chapter se koi sawal nahi aaya. Iska matlab yeh chapter kam
+          weightage wala hai — pehle upar wale chapters pakko, phir NCERT se iska ek baar revision kar lo.
         </p>
+      ) : (
+        !view.ready && (
+          <p className="mt-6 rounded-2xl bg-sticky px-4 py-3 text-sticky-foreground">
+            Is chapter ka concept index abhi likha ja raha hai. Tab tak neeche asli sawal dekh sakte ho.
+          </p>
+        )
       )}
 
       {view.plan && (
