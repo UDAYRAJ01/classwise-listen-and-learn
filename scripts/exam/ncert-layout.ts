@@ -111,7 +111,7 @@ export function linesFromXml(xml: string): Line[] {
       for (const r of row) {
         const prev = seg[seg.length - 1];
         // Some headings are printed several times on top of each other (a shadow effect).
-        if (prev && prev.text === r.text && r.x0 < prev.x1) continue;
+        if (prev && prev.text === r.text && r.x0 - prev.x1 <= 2) continue;
         // A wide gap means a new column (margin headings, two-column pages).
         if (prev && r.x0 - prev.x1 > 14) flush();
         seg.push(r);
