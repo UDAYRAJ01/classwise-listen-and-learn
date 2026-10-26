@@ -513,7 +513,57 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      exam_chapter_stats: {
+        Row: {
+          advanced_count: number | null
+          chapter_slug: string | null
+          exam_group: string | null
+          grade: number | null
+          main_count: number | null
+          neet_count: number | null
+          papers: number | null
+          questions: number | null
+          subject: string | null
+          years: number[] | null
+        }
+        Relationships: []
+      }
+      exam_coverage: {
+        Row: {
+          answer_source: string | null
+          exam: string | null
+          exam_group: string | null
+          held_on: string | null
+          label: string | null
+          question_count: number | null
+          slug: string | null
+          source_url: string | null
+          year: number | null
+        }
+        Insert: {
+          answer_source?: string | null
+          exam?: string | null
+          exam_group?: never
+          held_on?: string | null
+          label?: string | null
+          question_count?: number | null
+          slug?: string | null
+          source_url?: string | null
+          year?: number | null
+        }
+        Update: {
+          answer_source?: string | null
+          exam?: string | null
+          exam_group?: never
+          held_on?: string | null
+          label?: string | null
+          question_count?: number | null
+          slug?: string | null
+          source_url?: string | null
+          year?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: {
