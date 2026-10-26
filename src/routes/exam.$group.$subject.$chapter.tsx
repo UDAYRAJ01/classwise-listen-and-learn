@@ -227,6 +227,7 @@ function ChapterIndexPage() {
         </section>
       )}
     </div>
+    </>
   );
 }
 
