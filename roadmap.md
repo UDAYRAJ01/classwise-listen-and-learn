@@ -59,9 +59,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
 
 ## Ready next (phone app polish)
-- [ ] Designed covers for ICSE/ISC books (real publisher covers are not free to use; keep subject-colour covers unless the owner supplies images)
-- [ ] Reader: "next chapter" card at the end of every chapter
 - [ ] Notebook: per-book progress list (same covers as the shelf)
+- [ ] ICSE/ISC books keep subject-colour covers (publisher covers are not free to use) — swap in real images only if the owner supplies them
 
 ## Running in background
 - Didi-voice audio for all checked Hinglish notes (`scripts/audio-batch.ts --loop`): 28 chapters / 777 parts on 26 Oct 20:23 UTC
