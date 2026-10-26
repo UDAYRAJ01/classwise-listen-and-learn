@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 // Inline text may sit inside a <p> or <button>, where a <div> or nested <p> is invalid HTML
 // (and breaks hydration), so inline mode renders paragraphs as spans.
 const INLINE_COMPONENTS = {
-  p: ({ children }: { children?: ReactNode }) => <span className="block">{children}</span>,
+  p: ({ children }: { children?: ReactNode }) => <span>{children}</span>,
 };
 
 /**
