@@ -47,6 +47,155 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_chapters: {
+        Row: {
+          chapter_slug: string
+          content: Json
+          created_at: string
+          exam_group: string
+          grade: number
+          id: string
+          question_count: number
+          subject: string
+        }
+        Insert: {
+          chapter_slug: string
+          content: Json
+          created_at?: string
+          exam_group: string
+          grade: number
+          id?: string
+          question_count?: number
+          subject: string
+        }
+        Update: {
+          chapter_slug?: string
+          content?: Json
+          created_at?: string
+          exam_group?: string
+          grade?: number
+          id?: string
+          question_count?: number
+          subject?: string
+        }
+        Relationships: []
+      }
+      exam_papers: {
+        Row: {
+          created_at: string
+          exam: string
+          held_on: string | null
+          id: string
+          key_url: string | null
+          label: string
+          pages: number | null
+          question_count: number
+          slug: string
+          source_url: string
+          status: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          exam: string
+          held_on?: string | null
+          id?: string
+          key_url?: string | null
+          label: string
+          pages?: number | null
+          question_count?: number
+          slug: string
+          source_url: string
+          status?: string
+          year: number
+        }
+        Update: {
+          created_at?: string
+          exam?: string
+          held_on?: string | null
+          id?: string
+          key_url?: string | null
+          label?: string
+          pages?: number | null
+          question_count?: number
+          slug?: string
+          source_url?: string
+          status?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      exam_questions: {
+        Row: {
+          answer: string | null
+          body: string
+          chapter_slug: string | null
+          concept: string | null
+          created_at: string
+          figure: Json | null
+          grade: number | null
+          has_figure: boolean
+          id: string
+          in_syllabus: boolean
+          kind: string
+          number: number
+          options: Json
+          page: number | null
+          paper_id: string
+          solution: Json | null
+          solution_ok: boolean
+          subject: string
+        }
+        Insert: {
+          answer?: string | null
+          body: string
+          chapter_slug?: string | null
+          concept?: string | null
+          created_at?: string
+          figure?: Json | null
+          grade?: number | null
+          has_figure?: boolean
+          id?: string
+          in_syllabus?: boolean
+          kind?: string
+          number: number
+          options?: Json
+          page?: number | null
+          paper_id: string
+          solution?: Json | null
+          solution_ok?: boolean
+          subject: string
+        }
+        Update: {
+          answer?: string | null
+          body?: string
+          chapter_slug?: string | null
+          concept?: string | null
+          created_at?: string
+          figure?: Json | null
+          grade?: number | null
+          has_figure?: boolean
+          id?: string
+          in_syllabus?: boolean
+          kind?: string
+          number?: number
+          options?: Json
+          page?: number | null
+          paper_id?: string
+          solution?: Json | null
+          solution_ok?: boolean
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_questions_paper_id_fkey"
+            columns: ["paper_id"]
+            isOneToOne: false
+            referencedRelation: "exam_papers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       generation_events: {
         Row: {
           created_at: string
@@ -65,6 +214,45 @@ export type Database = {
           id?: never
           ip_hash?: string
           kind?: string
+        }
+        Relationships: []
+      }
+      ncert_sections: {
+        Row: {
+          chapter_slug: string
+          grade: number
+          heading: string
+          id: string
+          kind: string
+          page: number
+          pdf_url: string
+          printed_page: number | null
+          ref: string
+          subject: string
+        }
+        Insert: {
+          chapter_slug: string
+          grade: number
+          heading?: string
+          id?: string
+          kind: string
+          page: number
+          pdf_url: string
+          printed_page?: number | null
+          ref: string
+          subject: string
+        }
+        Update: {
+          chapter_slug?: string
+          grade?: number
+          heading?: string
+          id?: string
+          kind?: string
+          page?: number
+          pdf_url?: string
+          printed_page?: number | null
+          ref?: string
+          subject?: string
         }
         Relationships: []
       }
