@@ -1,0 +1,10 @@
+## JEE / NEET pipeline rules
+
+These also govern the exam code in `src/lib/exam*.ts`, `src/lib/exam.functions.ts` and the `/exam` routes.
+
+- Real past papers listed in `papers.json` are read offline by `extract.ts` (page reads cached under /tmp/exam/out, page images in the private `exam-pages` bucket, served by signed URL) into `exam_papers`/`exam_questions`; question counts and weightage are always counted from stored questions, never asked from the model. Figure crops are cut above any answer/solution line printed in the paper (`src/lib/exam-figure.ts`, applied by the extractor) so a picture never gives the answer away.
+- A question's subject comes from the paper's subject blocks (`segment.ts`, snapped to the exam's fixed per-subject counts), not from its wording; each paper's `answer_source` (official/coaching/none) is shown to students as is, so never label a coaching key official.
+- Re-reading a paper upserts by (paper, number) and keeps the chapter/concept mapping (and a checked solution if the answer is unchanged) of every question whose text is unchanged, so a redo never wipes paid analysis.
+- `analyze.ts` runs classify → home → units → concepts → index; questions on topics removed from current NCERT keep `in_syllabus=false` (home stage gives them their unit's chapter, the units stage files the rest under a dropped unit from `OLD_UNITS` in `src/lib/exam.ts` with its own page), are left out of weightage views and concept maps, and are listed apart on the chapter page.
+- A new concept map drops that chapter's written index (ids change); every "NCERT example/exercise jaisa" claim must be confirmed against the stored book text (`ncert-snippet.ts`) or it is demoted to a section; each written index passes an expert review against the NCERT chapter before it is stored.
+- Exam answers are compared only through `src/lib/exam-answers.ts` (pipeline and solution route alike); a worked solution that disagrees with the key (or, without a key, with a second independent solve) is stored with `solution_ok=false` and never shown.

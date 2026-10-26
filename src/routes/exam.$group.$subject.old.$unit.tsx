@@ -2,10 +2,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Info, Printer } from "lucide-react";
 
-import { Crumbs } from "@/components/crumbs";
+import { barIconClass, ScreenHeader } from "@/components/app/screen-header";
 import { QuestionCard } from "@/components/exam/question-card";
 import { ErrorCard } from "@/components/state-cards";
-import { Button } from "@/components/ui/button";
 import {
   EXAM_GROUPS,
   EXAM_NAMES,
@@ -69,35 +68,22 @@ function OldUnitPage() {
   const latest = years[0];
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <Crumbs
-        items={[
-          {
-            label: "JEE / NEET",
-            link: (
-              <Link to="/exam" className="hover:text-foreground">
-                JEE / NEET
-              </Link>
-            ),
-          },
-          {
-            label: meta.short,
-            link: (
-              <Link to="/exam/$group" params={{ group }} search={{ subject }} className="hover:text-foreground">
-                {meta.short} · {SUBJECT_NAMES[subject]}
-              </Link>
-            ),
-          },
-          { label: view.name },
-        ]}
-      />
-
-      <header className="mt-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-accent">
-          {meta.short} · {SUBJECT_NAMES[subject]} · NCERT se hata unit
-        </p>
-        <h1 className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">{view.name}</h1>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm">
+    <>
+    <ScreenHeader
+      titleAs="p"
+      back={<Link to="/exam/$group" params={{ group }} search={{ subject }} />}
+      title={`${meta.short} · ${SUBJECT_NAMES[subject]}`}
+      subtitle="NCERT se hata unit"
+      actions={
+        <button type="button" className={barIconClass} onClick={() => window.print()} aria-label="Print ya PDF">
+          <Printer />
+        </button>
+      }
+    />
+    <div className="mx-auto max-w-4xl px-4 pb-10 pt-4">
+      <header>
+        <h1 className="font-display text-[1.6rem] font-extrabold leading-tight sm:text-4xl">{view.name}</h1>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs sm:text-sm">
           <span className="rounded-full bg-ink px-3 py-1 font-semibold text-paper">{view.questions.length} asli sawal</span>
           {Object.entries(byExam).map(([e, n]) => (
             <span key={e} className="rounded-full bg-muted px-3 py-1 font-semibold">
@@ -110,25 +96,19 @@ function OldUnitPage() {
             </span>
           )}
         </div>
-        <div className="no-print mt-4">
-          <Button variant="paper" size="sm" onClick={() => window.print()}>
-            <Printer /> Print / PDF
-          </Button>
-        </div>
       </header>
 
-      <p className="mt-6 flex gap-3 rounded-2xl bg-sticky px-4 py-3 text-sticky-foreground">
-        <Info className="mt-1 h-4 w-4 shrink-0" />
+      <p className="mt-5 flex gap-3 rounded-2xl bg-sticky px-4 py-3 text-sm text-sticky-foreground">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
         <span>
-          Yeh unit NCERT ki nayi book (2023 se) mein nahi hai, isliye iska NCERT page nahi diya. Purane {meta.short}{" "}
-          papers mein yeh {view.questions.length} baar aaya
-          {latest ? ` (aakhri baar ${latest} mein)` : ""}. Agar yeh tumhare saal ke {meta.short} syllabus mein hai to
-          neeche ke sawal zaroor practise karo; nahi hai to chhod do aur upar ke chapters par time lagao.
+          Nayi NCERT book (2023 se) mein ye unit nahi hai. Purane {meta.short} papers mein{" "}
+          {view.questions.length} baar aaya{latest ? ` (aakhri ${latest})` : ""}. Apne saal ke syllabus mein ho to
+          hi practise karo.
         </span>
       </p>
 
       <section className="mt-8" aria-labelledby="old-unit-q">
-        <h2 id="old-unit-q" className="font-display text-2xl font-extrabold">
+        <h2 id="old-unit-q" className="font-display text-xl font-extrabold">
           Asli sawal — naye pehle
         </h2>
         <div className="mt-4 space-y-3">
@@ -138,5 +118,6 @@ function OldUnitPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

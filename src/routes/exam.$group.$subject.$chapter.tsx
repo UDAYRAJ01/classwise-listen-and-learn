@@ -1,9 +1,9 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { BookOpen, ChevronDown, Lightbulb, NotebookText, Printer, Repeat, Sparkles, TriangleAlert } from "lucide-react";
+import { BookOpen, ChevronDown, Lightbulb, NotebookText, Printer, Sparkles, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
-import { Crumbs } from "@/components/crumbs";
+import { barIconClass, ScreenHeader } from "@/components/app/screen-header";
 import { QuestionCard } from "@/components/exam/question-card";
 import { RevisionButton } from "@/components/exam/revision-button";
 import { MathMarkdown } from "@/components/math-markdown";
@@ -80,35 +80,22 @@ function ChapterIndexPage() {
   const unmapped = view.questions.filter((q) => !view.concepts.some((c) => c.id === q.conceptId));
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <Crumbs
-        items={[
-          {
-            label: "JEE / NEET",
-            link: (
-              <Link to="/exam" className="hover:text-foreground">
-                JEE / NEET
-              </Link>
-            ),
-          },
-          {
-            label: meta.short,
-            link: (
-              <Link to="/exam/$group" params={{ group }} search={{ subject }} className="hover:text-foreground">
-                {meta.short} · {SUBJECT_NAMES[subject]}
-              </Link>
-            ),
-          },
-          { label: view.title },
-        ]}
-      />
-
-      <header className="mt-6">
-        <p className="text-sm font-bold uppercase tracking-wide text-accent">
-          {meta.short} · {SUBJECT_NAMES[subject]} · Class {view.grade}
-        </p>
-        <h1 className="mt-1 font-display text-3xl font-extrabold sm:text-4xl">{view.title}</h1>
-        <div className="mt-4 flex flex-wrap gap-2 text-sm">
+    <>
+    <ScreenHeader
+      titleAs="p"
+      back={<Link to="/exam/$group" params={{ group }} search={{ subject }} />}
+      title={`${meta.short} · ${SUBJECT_NAMES[subject]}`}
+      subtitle={`Class ${view.grade} · ${view.questions.length} asli sawal`}
+      actions={
+        <button type="button" className={barIconClass} onClick={() => window.print()} aria-label="Print ya PDF">
+          <Printer />
+        </button>
+      }
+    />
+    <div className="mx-auto max-w-4xl px-4 pb-10 pt-4">
+      <header>
+        <h1 className="font-display text-[1.6rem] font-extrabold leading-tight sm:text-4xl">{view.title}</h1>
+        <div className="mt-3 flex flex-wrap gap-2 text-xs sm:text-sm">
           <span className="rounded-full bg-ink px-3 py-1 font-semibold text-paper">{view.questions.length} asli sawal</span>
           {Object.entries(byExam).map(([e, n]) => (
             <span key={e} className="rounded-full bg-muted px-3 py-1 font-semibold">
@@ -121,37 +108,26 @@ function ChapterIndexPage() {
             </span>
           )}
         </div>
-        <div className="no-print mt-4 flex flex-wrap gap-2">
-          <Button variant="paper" size="sm" asChild>
+        <div className="no-print no-scrollbar -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0">
+          <Button variant="paper" size="sm" className="h-9 shrink-0 rounded-full" asChild>
             <Link
               to="/learn/$board/$grade/$subject/$chapter"
               params={{ board: "cbse", grade: String(view.grade), subject, chapter: view.slug }}
             >
-              <NotebookText /> Is chapter ke notes
+              <NotebookText /> Chapter ke notes
             </Link>
           </Button>
           {view.pdfUrl && (
-            <Button variant="paper" size="sm" asChild>
+            <Button variant="paper" size="sm" className="h-9 shrink-0 rounded-full" asChild>
               <a href={view.pdfUrl} target="_blank" rel="noreferrer">
-                <BookOpen /> NCERT chapter (PDF)
+                <BookOpen /> NCERT PDF
               </a>
             </Button>
           )}
-          <Button variant="paper" size="sm" onClick={() => window.print()}>
-            <Printer /> Print / PDF
-          </Button>
         </div>
       </header>
 
-      <section className="sticker mt-6 rounded-2xl bg-card p-5" aria-label="Revision">
-        <p className="flex items-center gap-2 font-display text-lg font-bold">
-          <Repeat className="h-5 w-5 text-primary" /> Revision system
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Index padh liya ya revise kar liya? “Revise kiya” dabao — agla revision 1, 3, 7, 15, 30 din baad yaad dilayenge.
-        </p>
-        <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} className="mt-3" />
-      </section>
+      <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} className="mt-5" />
 
       {view.questions.length === 0 ? (
         <p className="mt-6 rounded-2xl border border-border bg-card px-4 py-3">
@@ -243,6 +219,7 @@ function ChapterIndexPage() {
         </section>
       )}
     </div>
+    </>
   );
 }
 

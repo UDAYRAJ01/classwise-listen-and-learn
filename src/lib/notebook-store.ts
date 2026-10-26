@@ -21,6 +21,9 @@ export interface Prefs {
   voice: "didi" | "bhaiya";
   rate: number;
   follow: boolean;
+  /** "Meri class": the board + class the student picked once; Home and Books open it. */
+  board: BoardId | null;
+  grade: number | null;
 }
 
 export interface NotebookState {
@@ -45,7 +48,30 @@ type RefKeyParts = Pick<ChapterRef, "board" | "grade" | "subject" | "chapter">;
 
 const KEY = "padhosuno:v1";
 const MAX_PROGRESS = 400;
-const DEFAULT_PREFS: Prefs = { lang: null, voice: "didi", rate: 1, follow: true };
+const DEFAULT_PREFS: Prefs = {
+  lang: null,
+  voice: "didi",
+  rate: 1,
+  follow: true,
+  board: null,
+  grade: null,
+};
+
+function sanitizePrefs(p: Partial<Prefs> | null | undefined): Prefs {
+  const merged = { ...DEFAULT_PREFS, ...(p ?? {}) };
+  const boardOk = merged.board === "cbse" || merged.board === "icse";
+  const gradeOk =
+    typeof merged.grade === "number" &&
+    Number.isInteger(merged.grade) &&
+    merged.grade >= 1 &&
+    merged.grade <= 12;
+  return {
+    ...merged,
+    // A class only counts together with its board.
+    board: boardOk && gradeOk ? merged.board : null,
+    grade: boardOk && gradeOk ? merged.grade : null,
+  };
+}
 const EMPTY: NotebookState = {
   saved: [],
   recent: [],
@@ -134,7 +160,7 @@ export function sanitize(p: Partial<NotebookState> | null | undefined): Notebook
     progress: sanitizeProgress(p?.progress, read),
     days: strings(p?.days),
     revisions: sanitizeRevisions(p?.revisions),
-    prefs: { ...DEFAULT_PREFS, ...(p?.prefs ?? {}) },
+    prefs: sanitizePrefs(p?.prefs),
   };
 }
 
@@ -172,7 +198,11 @@ export function mergeNotebooks(a: NotebookState, b: NotebookState): NotebookStat
         return [k, win];
       }),
     ),
-    prefs: { ...b.prefs, ...a.prefs },
+    // `a` wins, but a class picked on either device is never wiped by "not picked yet".
+    prefs:
+      a.prefs.grade === null && b.prefs.grade !== null
+        ? { ...b.prefs, ...a.prefs, board: b.prefs.board, grade: b.prefs.grade }
+        : { ...b.prefs, ...a.prefs },
   });
 }
 

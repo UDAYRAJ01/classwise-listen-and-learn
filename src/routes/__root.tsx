@@ -13,29 +13,24 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
+import { startInstallCapture } from "@/lib/install-prompt";
 import { startNotebookSync } from "@/lib/notebook-sync";
+import { BottomNav } from "@/components/app/bottom-nav";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="sticker-lg max-w-md rounded-3xl bg-card p-10 text-center">
-        <p className="font-hand text-2xl text-accent">Arre!</p>
-        <h1 className="mt-1 font-display text-7xl font-extrabold text-foreground">404</h1>
-        <h2 className="mt-3 text-xl font-bold text-foreground">Ye page notebook mein nahi mila</h2>
-        <p className="mt-2 text-muted-foreground">
-          Shayad link galat hai ya page hata diya gaya hai.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="sticker press inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 font-bold text-primary-foreground"
-          >
-            Home par chalo
-          </Link>
-        </div>
+      <div className="max-w-sm text-center">
+        <p className="font-display text-6xl font-extrabold text-primary">404</p>
+        <h1 className="mt-3 font-display text-xl font-extrabold">Ye page nahi mila</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Link galat hai ya page hata diya gaya hai.</p>
+        <Button asChild variant="ink" size="lg" className="mt-6">
+          <Link to="/">Home par chalo</Link>
+        </Button>
       </div>
     </div>
   );
@@ -50,27 +45,25 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center px-4">
-      <div className="sticker-lg max-w-md rounded-3xl bg-card p-10 text-center">
-        <h1 className="font-display text-2xl font-extrabold text-foreground">Page load nahi hua</h1>
-        <p className="mt-2 text-muted-foreground">
-          Hamari taraf se kuch gadbad hui. Refresh karke dekhiye ya home par wapas jaiye.
+      <div className="max-w-sm text-center">
+        <h1 className="font-display text-xl font-extrabold">Page load nahi hua</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Internet check karke dobara try karein.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <button
+          <Button
+            variant="ink"
+            size="lg"
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="sticker press inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 font-bold text-primary-foreground"
           >
             Dobara try karein
-          </button>
-          <a
-            href="/"
-            className="sticker press inline-flex items-center justify-center rounded-xl bg-card px-5 py-2.5 font-bold text-foreground"
-          >
-            Home
-          </a>
+          </Button>
+          <Button asChild variant="paper" size="lg">
+            <a href="/">Home</a>
+          </Button>
         </div>
       </div>
     </div>
@@ -81,8 +74,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "theme-color", content: "#f8f3e6" },
+      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      { name: "theme-color", content: "#f9fafc" },
+      { name: "application-name", content: "PadhoSuno" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "PadhoSuno" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
+      { name: "format-detection", content: "telephone=no" },
       { property: "og:site_name", content: "PadhoSuno" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -95,7 +94,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
     ],
   }),
   shellComponent: RootShell,
@@ -132,16 +134,18 @@ function RootComponent() {
   }, [router, queryClient]);
 
   useEffect(() => startNotebookSync(), []);
+  useEffect(() => startInstallCapture(), []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-dvh flex-col">
         <SiteHeader />
-        <main className="flex-1">
+        <main className="flex-1 pb-[var(--nav-h)]">
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
         </main>
         <SiteFooter />
+        <BottomNav />
       </div>
       <Toaster position="top-center" />
     </QueryClientProvider>

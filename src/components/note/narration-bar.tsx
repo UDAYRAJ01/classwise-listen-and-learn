@@ -58,8 +58,8 @@ export function NarrationBar({
   const dlBusy = dl.status === "working";
 
   return (
-    <div className="no-print fixed inset-x-0 bottom-0 z-50 px-3 pb-3 sm:px-4 sm:pb-4">
-      <div className="sticker-lg mx-auto max-w-4xl overflow-hidden rounded-2xl bg-card">
+    <div className="no-print fixed inset-x-0 bottom-[var(--nav-h)] z-50 px-2 pb-[max(0.5rem,calc(env(safe-area-inset-bottom)_-_var(--nav-h)))] sm:px-4 sm:pb-4">
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-border bg-card shadow-sticker-lg">
         {/* overall progress */}
         <div className="h-1.5 w-full bg-muted" aria-hidden>
           <div

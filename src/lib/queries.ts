@@ -2,10 +2,12 @@ import { queryOptions } from "@tanstack/react-query";
 
 import type { BoardId, Lang } from "./catalog";
 import {
+  fetchClassBooks,
   fetchClassChapters,
   fetchNote,
   fetchNoteLanguages,
   fetchSyllabus,
+  type ShelfBook,
 } from "./content.functions";
 
 export const syllabusQuery = (board: BoardId, grade: number, subject: string) =>
@@ -20,6 +22,16 @@ export const classChaptersQuery = (board: BoardId, grade: number) =>
   queryOptions({
     queryKey: ["class-chapters", board, grade],
     queryFn: () => fetchClassChapters({ data: { board, grade } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
+/** subject → textbooks (name, NCERT code, chapter slugs) for one class: the book shelf. */
+export const classBooksQuery = (board: BoardId, grade: number) =>
+  queryOptions({
+    queryKey: ["class-books", board, grade],
+    // Covers are a bonus: on failure the shelf falls back to one tile per subject.
+    queryFn: (): Promise<Record<string, ShelfBook[]>> =>
+      fetchClassBooks({ data: { board, grade } }).catch(() => ({})),
     staleTime: 1000 * 60 * 60,
   });
 

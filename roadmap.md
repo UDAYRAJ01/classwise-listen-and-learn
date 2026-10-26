@@ -47,6 +47,25 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Paper pictures no longer show the printed answer (199 question crops cut above "Answer: C" / "Ans. (4)")
 - [x] Browser check of the full flow with real data (chapter page, revision, asked questions, solution + key match, paper figure); solutions now name options as printed ((1)–(4) for Main/NEET)
 
+## Done (request of 27 Oct: phone-app design — clean, little text, books arranged class-wise like Kindle / Classplus)
+- [x] App shell: bottom tab bar on phone (Home, Books, JEE/NEET, Guru, Notebook), screen title bars with back button, slim desktop header/footer
+- [x] "Meri class" chosen once (synced), Home = continue card + my class's book covers
+- [x] Books tab: class 1–12 chips + book-cover shelf (official NCERT covers, designed covers for the rest), per-book progress
+- [x] Book screen: cover + progress + continue, book tabs, compact chapter list, compact Exam Mode + own-topic box
+- [x] Reader: compact title bar, action chips, no tab bar (audio bar docked), tighter phone reading layout
+- [x] JEE/NEET, Guru, Notebook, sign-in, owner pages in the same style with less text; Guru question box pinned at the bottom, one tap sends
+- [x] Profile screen: account, class, language, voice, install app
+- [x] Installable on phone home screen (app name, new icon, standalone, shortcuts)
+- [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
+
+## Ready next (phone app polish)
+- [ ] Notebook: per-book progress list (same covers as the shelf)
+- [ ] ICSE/ISC books keep subject-colour covers (publisher covers are not free to use) — swap in real images only if the owner supplies them
+
+## Running in background
+- Didi-voice audio for all checked Hinglish notes (`scripts/audio-batch.ts --loop`): 28 chapters / 777 parts on 26 Oct 20:23 UTC
+- User (26 Oct): never let the voice job stay stopped. `scripts/audio-watchdog.sh` (started with `setsid nohup`) restarts it within 30 s; if the workspace itself restarted, start the watchdog again at the beginning of every turn
+
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
 - [x] Second pass for Class 11–12 Hindi chapters converted late
@@ -61,4 +80,3 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
-- Pre-make didi-voice audio for all notes with `scripts/audio-batch.ts` (only checked notes; ~1,200 chapters, many hours + AI credits) — not started; user paused work on 25 Oct

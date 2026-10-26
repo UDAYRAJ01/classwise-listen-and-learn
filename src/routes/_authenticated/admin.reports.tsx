@@ -15,6 +15,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { ScreenHeader } from "@/components/app/screen-header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,22 +83,21 @@ function ReportsPage() {
 
   return (
     <div>
-      <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="font-hand text-lg text-accent">Sirf owner ke liye</p>
-            <h1 className="flex items-center gap-3 text-4xl font-extrabold">
-              <Flag className="h-8 w-8" /> Galti reports
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Students ki bheji galtiyan padho, sahi jaankari likho, phir chapter ke notes dobara
-              banwao.
-            </p>
-          </div>
-          <Button variant="ghost" onClick={signOut}>
+      <ScreenHeader
+        back={<Link to="/me" />}
+        title="Galti reports"
+        subtitle="Sirf owner ke liye"
+        actions={
+          <Button variant="ghost" size="sm" onClick={signOut}>
             <LogOut /> Sign out
           </Button>
-        </div>
+        }
+      />
+      <main className="mx-auto max-w-4xl px-4 pb-10 pt-4 sm:px-6">
+        <p className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Flag className="h-4 w-4 shrink-0" /> Students ki galtiyan padho, sahi jaankari likho, phir notes dobara
+          banwao.
+        </p>
 
         {admin.isLoading ? (
           <Loading />

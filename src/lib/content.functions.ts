@@ -74,6 +74,49 @@ export const fetchClassChapters = createServerFn({ method: "GET" })
     return out;
   });
 
+/** One textbook on a class shelf. */
+export interface ShelfBook {
+  name: string;
+  code: string | null;
+  /** Chapter slugs in book order (for per-book progress). */
+  slugs: string[];
+}
+
+/** subject → its textbooks (in book order) for one class; only subjects whose list exists. */
+export const fetchClassBooks = createServerFn({ method: "GET" })
+  .validator((input: unknown) => {
+    const i = input as { board?: unknown; grade?: unknown };
+    const grade = parseGrade(i?.grade as number);
+    if (!isBoard(i?.board) || grade === null) throw new Error("Invalid input");
+    return { board: i.board, grade };
+  })
+  .handler(async ({ data }): Promise<Record<string, ShelfBook[]>> => {
+    const sb = await publicClient();
+    const { data: rows, error } = await sb
+      .from("syllabi")
+      .select("subject, books")
+      .eq("board", data.board)
+      .eq("grade", data.grade);
+    if (error) throw new Error("Could not load books");
+    const out: Record<string, ShelfBook[]> = {};
+    for (const r of rows ?? []) {
+      const books = (r.books ?? []) as unknown as {
+        name?: string;
+        code?: string;
+        chapters?: { slug?: string }[];
+      }[];
+      const list = books
+        .map((b) => ({
+          name: typeof b.name === "string" && b.name.trim() ? b.name.trim() : "",
+          code: typeof b.code === "string" && b.code ? b.code : null,
+          slugs: (b.chapters ?? []).map((c) => c.slug).filter((s): s is string => !!s),
+        }))
+        .filter((b) => b.slugs.length > 0);
+      if (list.length) out[r.subject as string] = list;
+    }
+    return out;
+  });
+
 type NoteInput = SubjectInput & { chapter: string; lang: Lang };
 
 export const fetchNote = createServerFn({ method: "GET" })

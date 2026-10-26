@@ -113,14 +113,14 @@ function SectionTitle({
   return (
     <div
       id={`sec-${id}`}
-      className="mb-5 flex scroll-mt-28 flex-wrap items-end justify-between gap-3"
+      className="mb-4 flex scroll-mt-28 flex-wrap items-end justify-between gap-3 sm:mb-5"
     >
       <div className="flex items-center gap-3">
-        <span className="sticker grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-card">
+        <span className="sticker grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-card sm:h-11 sm:w-11">
           {icon}
         </span>
         <div>
-          <h2 className="flex flex-wrap items-center gap-2 text-2xl font-extrabold sm:text-3xl">
+          <h2 className="flex flex-wrap items-center gap-2 text-xl font-extrabold sm:text-3xl">
             {title}
             {seen && (
               <span className="no-print inline-flex items-center gap-1 rounded-full bg-tone-leaf/15 px-2 py-0.5 font-sans text-xs font-bold text-tone-leaf">
@@ -128,7 +128,11 @@ function SectionTitle({
               </span>
             )}
           </h2>
-          {sub && <p className="font-hand text-lg leading-tight text-muted-foreground">{sub}</p>}
+          {sub && (
+            <p className="font-hand text-sm leading-tight text-muted-foreground sm:text-lg">
+              {sub}
+            </p>
+          )}
         </div>
       </div>
       {right}
@@ -190,7 +194,7 @@ export function NoteView({
 
   return (
     <SeenContext.Provider value={seen}>
-      <div className="space-y-16">
+      <div className="space-y-10 sm:space-y-16">
         {/* Summary */}
         <section aria-labelledby="sec-summary" data-section="summary">
           <SectionTitle
@@ -200,12 +204,12 @@ export function NoteView({
           />
           <Block
             {...blockProps("intro", "Summary")}
-            className="sticker-lg rounded-2xl bg-card p-6 sm:p-8"
+            className="sticker-lg rounded-2xl bg-card p-4 sm:p-8"
           >
             {content.oneLiner ? (
-              <div className="mb-5 flex gap-3 pr-10">
-                <Quote className="mt-1 h-6 w-6 shrink-0 text-accent" />
-                <p className="font-hand text-2xl leading-snug text-foreground sm:text-[1.7rem]">
+              <div className="mb-4 flex gap-2.5 pr-9 sm:mb-5 sm:gap-3 sm:pr-10">
+                <Quote className="mt-1 h-5 w-5 shrink-0 text-accent sm:h-6 sm:w-6" />
+                <p className="font-hand text-xl leading-snug text-foreground sm:text-[1.7rem]">
                   <Emph text={content.oneLiner} />
                 </p>
               </div>
@@ -213,7 +217,7 @@ export function NoteView({
               <Skeleton lines={1} />
             )}
             {content.summary ? (
-              <p className="text-lg leading-relaxed text-foreground/90">
+              <p className="text-[1.0625rem] leading-relaxed text-foreground/90 sm:text-lg">
                 <Emph text={content.summary} />
               </p>
             ) : (
@@ -231,21 +235,21 @@ export function NoteView({
               title="Short Notes"
               sub="highlight wale words = sabse zaroori"
             />
-            <div className="grid gap-6 md:grid-cols-2">
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
               {keyPoints.map((g, i) => (
                 <Block
                   key={i}
                   {...blockProps(`kp-${i}`, g.heading ?? "Notes")}
-                  className="paper-ruled sticker rounded-2xl pb-5 pl-14 pr-12 pt-5"
+                  className="paper-ruled sticker rounded-2xl py-4 pl-10 pr-4 sm:pb-5 sm:pl-14 sm:pr-12 sm:pt-5"
                 >
-                  <h3 className="mb-2 font-display text-xl font-bold leading-[1.9rem] text-tone-ink">
+                  <h3 className="mb-2 pr-7 font-display text-lg font-bold leading-7 text-tone-ink sm:pr-0 sm:text-xl sm:leading-[1.9rem]">
                     <Emph text={g.heading} />
                   </h3>
                   <ul className="space-y-0">
                     {(g.points ?? []).map((p, j) => (
-                      <li key={j} className="relative leading-[1.9rem]">
+                      <li key={j} className="relative leading-7 sm:leading-[1.9rem]">
                         <span
-                          className="absolute -left-6 top-0 font-hand text-lg text-accent"
+                          className="absolute -left-5 top-0 font-hand text-lg text-accent sm:-left-6"
                           aria-hidden
                         >
                           ✱
@@ -257,7 +261,7 @@ export function NoteView({
                 </Block>
               ))}
               {streaming && keyPoints.length === 0 && (
-                <div className="paper-ruled sticker rounded-2xl p-6 pl-14">
+                <div className="paper-ruled sticker rounded-2xl p-4 pl-10 sm:p-6 sm:pl-14">
                   <Skeleton lines={4} />
                 </div>
               )}
@@ -279,7 +283,7 @@ export function NoteView({
                 <Block
                   key={k}
                   {...blockProps(`terms-${k}`, "Important words")}
-                  className="sticker rounded-2xl bg-card p-5 pr-12"
+                  className="sticker rounded-2xl bg-card p-4 pr-11 sm:p-5 sm:pr-12"
                 >
                   <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
                     {chunk.map((t, i) => (
@@ -309,7 +313,7 @@ export function NoteView({
             />
             <Block
               {...blockProps("formulas", "Formulas")}
-              className="paper-grid sticker rounded-2xl p-5 pr-12 sm:p-6"
+              className="paper-grid sticker rounded-2xl p-4 pr-11 sm:p-6 sm:pr-12"
             >
               <ul className="grid gap-4 sm:grid-cols-2">
                 {formulas.map((f, i) => (
@@ -341,12 +345,15 @@ export function NoteView({
               title="Yaad Karne Ki Tricks"
               sub={`${tricks.length} tricks · ek baar padho, hamesha yaad`}
             />
-            <div className="grid gap-7 sm:grid-cols-2">
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-7">
               {tricks.map((t, i) => (
                 <Block
                   key={i}
                   {...blockProps(`trick-${i}`, t.title ?? "Trick")}
-                  className={cn("tape sticker rounded-md p-5 pr-12 pt-7", STICKY_TONES[i % 4])}
+                  className={cn(
+                    "tape sticker rounded-md p-4 pr-11 pt-6 sm:p-5 sm:pr-12 sm:pt-7",
+                    STICKY_TONES[i % 4],
+                  )}
                 >
                   <span className="mb-2 inline-block rounded-full border border-border bg-card px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider">
                     {TRICK_LABEL[(t.kind as TrickKind) ?? "shortcut"] ?? "Trick"}
@@ -354,7 +361,7 @@ export function NoteView({
                   <h3 className="font-display text-lg font-bold">
                     <Emph text={t.title} />
                   </h3>
-                  <p className="mt-2 font-hand text-2xl leading-snug text-ink [&_mark]:font-bold">
+                  <p className="mt-2 font-hand text-xl leading-snug text-ink sm:text-2xl [&_mark]:font-bold">
                     <Emph text={t.trick} />
                   </p>
                   {t.explanation && (
@@ -379,7 +386,7 @@ export function NoteView({
             />
             <Block
               {...blockProps("mistakes", "Common mistakes")}
-              className="sticker rounded-2xl bg-card p-5 pr-12 sm:p-6"
+              className="sticker rounded-2xl bg-card p-4 pr-11 sm:p-6 sm:pr-12"
             >
               <ul className="grid gap-4">
                 {mistakes.map((m, i) => (
@@ -438,7 +445,7 @@ export function NoteView({
                   <li key={i}>
                     <Block
                       {...blockProps(`q-${i}`, `Question ${i + 1}`)}
-                      className="sticker rounded-2xl bg-card p-5 pr-12"
+                      className="sticker rounded-2xl bg-card p-4 pr-11 sm:p-5 sm:pr-12"
                     >
                       <div className="flex items-start gap-3">
                         <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-ink font-display text-sm font-bold text-paper">
@@ -489,7 +496,7 @@ export function NoteView({
             />
             <Block
               {...blockProps("revision", "Quick revision")}
-              className="sticker-lg rounded-2xl bg-ink p-6 pr-12 text-paper sm:p-8"
+              className="sticker-lg rounded-2xl bg-ink p-4 pr-11 text-paper sm:p-8 sm:pr-12"
             >
               <ul className="grid gap-3 sm:grid-cols-2">
                 {revision.map((r, i) => (
@@ -521,7 +528,7 @@ export function NoteView({
               className="grid gap-5 md:grid-cols-[1.4fr_1fr]"
             >
               {tips.length > 0 && (
-                <ul className="sticker space-y-3 rounded-2xl bg-card p-5 pr-12">
+                <ul className="sticker space-y-3 rounded-2xl bg-card p-4 pr-11 sm:p-5 sm:pr-12">
                   {tips.map((t, i) => (
                     <li key={i} className="flex gap-3">
                       <span className="font-display text-lg font-extrabold text-accent">
@@ -535,7 +542,7 @@ export function NoteView({
                 </ul>
               )}
               {content.funFact && (
-                <div className="sticker self-start rounded-2xl bg-secondary p-5 pr-12">
+                <div className="sticker self-start rounded-2xl bg-secondary p-4 sm:p-5 sm:pr-12">
                   <p className="font-display text-sm font-bold uppercase tracking-wider">
                     Mazedaar fact
                   </p>

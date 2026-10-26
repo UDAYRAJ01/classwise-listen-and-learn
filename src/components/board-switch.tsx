@@ -3,25 +3,32 @@ import { Link } from "@tanstack/react-router";
 import { BOARD_IDS, BOARDS, type BoardId } from "@/lib/catalog";
 import { cn } from "@/lib/utils";
 
-/** Segmented control. When `grade` is given it links to that grade on each board. */
+/**
+ * Segmented control. When `grade` is given it links to that grade on each board.
+ * `compact` shows short names (CBSE / ICSE) for phone title bars.
+ */
 export function BoardSwitch({
   value,
   grade,
   onChange,
+  compact = false,
   className,
 }: {
   value: BoardId;
   grade?: number;
   onChange?: (b: BoardId) => void;
+  compact?: boolean;
   className?: string;
 }) {
-  const base =
-    "relative rounded-lg px-4 py-2 text-sm font-bold transition-colors data-[active=true]:bg-ink data-[active=true]:text-paper hover:bg-muted data-[active=true]:hover:bg-ink";
+  const base = cn(
+    "relative rounded-md font-bold text-muted-foreground transition-colors data-[active=true]:bg-card data-[active=true]:text-foreground data-[active=true]:shadow-sm",
+    compact ? "px-2.5 py-1 text-xs" : "px-4 py-1.5 text-sm",
+  );
   return (
     <div
       role="tablist"
       aria-label="Board"
-      className={cn("sticker inline-flex gap-1 rounded-xl bg-card p-1", className)}
+      className={cn("inline-flex gap-0.5 rounded-lg bg-muted p-0.5", className)}
     >
       {BOARD_IDS.map((b) =>
         grade && !onChange ? (
@@ -34,7 +41,7 @@ export function BoardSwitch({
             data-active={value === b}
             className={base}
           >
-            {BOARDS[b].name}
+            {compact ? BOARDS[b].short : BOARDS[b].name}
           </Link>
         ) : (
           <button
@@ -46,7 +53,7 @@ export function BoardSwitch({
             onClick={() => onChange?.(b)}
             className={base}
           >
-            {BOARDS[b].name}
+            {compact ? BOARDS[b].short : BOARDS[b].name}
           </button>
         ),
       )}

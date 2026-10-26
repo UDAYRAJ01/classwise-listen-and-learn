@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AskRouteImport } from './routes/ask'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MeRouteImport } from './routes/me'
 import { Route as NotebookRouteImport } from './routes/notebook'
 import { Route as ApiAudioRouteImport } from './routes/api/audio'
 import { Route as ApiExamSolutionRouteImport } from './routes/api/exam-solution'
@@ -45,6 +46,11 @@ const AskRoute = AskRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeRoute = MeRouteImport.update({
+  id: '/me',
+  path: '/me',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotebookRoute = NotebookRouteImport.update({
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
+  '/me': typeof MeRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
   '/api/exam-solution': typeof ApiExamSolutionRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
+  '/me': typeof MeRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
   '/api/exam-solution': typeof ApiExamSolutionRoute
@@ -165,6 +173,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/ask': typeof AskRoute
   '/auth': typeof AuthRoute
+  '/me': typeof MeRoute
   '/notebook': typeof NotebookRoute
   '/api/audio': typeof ApiAudioRoute
   '/api/exam-solution': typeof ApiExamSolutionRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ask'
     | '/auth'
+    | '/me'
     | '/notebook'
     | '/api/audio'
     | '/api/exam-solution'
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/ask'
     | '/auth'
+    | '/me'
     | '/notebook'
     | '/api/audio'
     | '/api/exam-solution'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/ask'
     | '/auth'
+    | '/me'
     | '/notebook'
     | '/api/audio'
     | '/api/exam-solution'
@@ -246,6 +258,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AskRoute: typeof AskRoute
   AuthRoute: typeof AuthRoute
+  MeRoute: typeof MeRoute
   NotebookRoute: typeof NotebookRoute
   ApiAudioRoute: typeof ApiAudioRoute
   ApiExamSolutionRoute: typeof ApiExamSolutionRoute
@@ -289,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/me': {
+      id: '/me'
+      path: '/me'
+      fullPath: '/me'
+      preLoaderRoute: typeof MeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/notebook': {
@@ -408,6 +428,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AskRoute: AskRoute,
   AuthRoute: AuthRoute,
+  MeRoute: MeRoute,
   NotebookRoute: NotebookRoute,
   ApiAudioRoute: ApiAudioRoute,
   ApiExamSolutionRoute: ApiExamSolutionRoute,
