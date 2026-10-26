@@ -47,16 +47,21 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Paper pictures no longer show the printed answer (199 question crops cut above "Answer: C" / "Ans. (4)")
 - [x] Browser check of the full flow with real data (chapter page, revision, asked questions, solution + key match, paper figure); solutions now name options as printed ((1)–(4) for Main/NEET)
 
-## In progress (request of 27 Oct: phone-app design — clean, little text, books arranged class-wise like Kindle / Classplus)
-- [ ] App shell: bottom tab bar on phone (Home, Books, JEE/NEET, Guru, Notebook), screen title bars with back button, slim desktop header/footer
-- [ ] "Meri class" chosen once (synced), Home = continue card + my class's book covers
-- [ ] Books tab: class 1–12 chips + book-cover shelf (official NCERT covers, designed covers for the rest), per-book progress
-- [ ] Book screen: cover + progress + continue, book tabs, compact chapter list, compact Exam Mode + own-topic box
-- [ ] Reader: compact title bar, action chips, no tab bar (audio bar docked)
-- [ ] JEE/NEET, Guru, Notebook, sign-in, owner pages in the same style with less text
-- [ ] Profile screen: account, class, language, voice, install app
-- [ ] Installable on phone home screen (app name, icons, standalone)
-- [ ] Phone + laptop browser check of every screen
+## Done (request of 27 Oct: phone-app design — clean, little text, books arranged class-wise like Kindle / Classplus)
+- [x] App shell: bottom tab bar on phone (Home, Books, JEE/NEET, Guru, Notebook), screen title bars with back button, slim desktop header/footer
+- [x] "Meri class" chosen once (synced), Home = continue card + my class's book covers
+- [x] Books tab: class 1–12 chips + book-cover shelf (official NCERT covers, designed covers for the rest), per-book progress
+- [x] Book screen: cover + progress + continue, book tabs, compact chapter list, compact Exam Mode + own-topic box
+- [x] Reader: compact title bar, action chips, no tab bar (audio bar docked), tighter phone reading layout
+- [x] JEE/NEET, Guru, Notebook, sign-in, owner pages in the same style with less text; Guru question box pinned at the bottom, one tap sends
+- [x] Profile screen: account, class, language, voice, install app
+- [x] Installable on phone home screen (app name, new icon, standalone, shortcuts)
+- [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
+
+## Ready next (phone app polish)
+- [ ] Designed covers for ICSE/ISC books (real publisher covers are not free to use; keep subject-colour covers unless the owner supplies images)
+- [ ] Reader: "next chapter" card at the end of every chapter
+- [ ] Notebook: per-book progress list (same covers as the shelf)
 
 ## Running in background
 - Didi-voice audio for all checked Hinglish notes (`scripts/audio-batch.ts --loop`): 28 chapters / 777 parts on 26 Oct 20:23 UTC
