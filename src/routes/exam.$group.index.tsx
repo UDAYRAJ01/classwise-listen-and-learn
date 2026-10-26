@@ -174,13 +174,43 @@ function GroupPage() {
         </ol>
       )}
 
+      {current.oldUnits.length > 0 && (
+        <section className="mt-10" aria-labelledby="old-units">
+          <h2 id="old-units" className="font-display text-xl font-extrabold">
+            NCERT se hataye gaye units
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Yeh units nayi NCERT book mein nahi hain, par purane papers mein aaye the. Apne saal ke syllabus mein ho to hi
+            padho.
+          </p>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {current.oldUnits.map((u) => (
+              <li key={u.unit}>
+                <Link
+                  to="/exam/$group/$subject/old/$unit"
+                  params={{ group, subject, unit: u.unit }}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3 transition-colors hover:border-primary"
+                >
+                  <span className="min-w-0">
+                    <span className="block font-semibold">{u.name}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      {u.questions} sawal · aakhri baar {u.years[u.years.length - 1]}
+                    </span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {current.outOfSyllabus > 0 && (
         <p className="mt-6 flex items-start gap-2 text-sm text-muted-foreground">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
           {current.outOfSyllabus} purane sawal un topics se the jo ab NCERT book mein nahi hain (book chhoti ki gayi hai) —
           unhe chapter ginti mein nahi joda. Jinka chapter ab bhi hai, wo us chapter ke page par "Purane syllabus ke sawal"
-          mein milenge. Inme se kuch topics exam syllabus mein ab bhi ho sakte hain, isliye apna latest syllabus ek baar
-          zaroor dekh lo.
+          mein milenge; baaki upar ke hataye gaye units mein.
         </p>
       )}
     </div>
