@@ -37,13 +37,17 @@ export function normalizeAnswer(raw: string | null | undefined, kind: string): s
     .trim();
 }
 
-/** True when a worked answer means the same as the key (numeric keys may be a range). */
-export function answersMatch(given: string | null, official: string | null): boolean {
+/**
+ * True when a worked answer means the same as the key (numeric keys may be a range).
+ * For a single-correct question a key with several letters ("A or B" printed) accepts any one.
+ */
+export function answersMatch(given: string | null, official: string | null, kind?: string): boolean {
   if (!given || !official) return false;
   if (official === "BONUS") return true;
   const a = given.replace(/\s/g, "");
   const b = official.replace(/\s/g, "");
   if (a === b) return true;
+  if (kind === "single" && /^[A-D]$/.test(a) && /^[A-D](,[A-D])+$/.test(b)) return b.split(",").includes(a);
   // A key can list alternatives: "A,D" or "D" both accepted is printed as "[A, D] or [D]".
   const num = (x: string) => Number(x.replace(/,/g, ""));
   const range = /^(-?[\d.]+)-(-?[\d.]+)$/.exec(b);

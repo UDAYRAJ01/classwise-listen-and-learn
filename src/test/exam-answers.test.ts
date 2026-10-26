@@ -15,6 +15,13 @@ describe("past-paper answers", () => {
     expect(normalizeAnswer("[2520]", "integer")).toBe("2520");
   });
 
+  it("accepts either letter when the key allows two for a single-correct question", () => {
+    expect(normalizeAnswer("A or B", "single")).toBe("A,B");
+    expect(answersMatch("B", "A,B", "single")).toBe(true);
+    expect(answersMatch("C", "A,B", "single")).toBe(false);
+    expect(answersMatch("B", "A,B", "multiple")).toBe(false);
+  });
+
   it("treats dropped questions as bonus", () => {
     expect(normalizeAnswer("Dropped", "single")).toBe("BONUS");
   });
