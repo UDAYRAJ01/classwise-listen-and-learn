@@ -79,6 +79,9 @@ export const Route = createFileRoute("/api/exam-solution")({
           q.passage ? `Passage:\n${q.passage}` : "",
           `Sawal:\n${q.body}`,
           options.length ? `Options:\n${options.map((o, i) => `(${"ABCD"[i]}) ${o}`).join("\n")}` : "",
+          options.length && paper.exam !== "jee-advanced"
+            ? 'Student ko yeh options (1), (2), (3), (4) naam se dikhte hain (A=1, B=2, C=3, D=4). "steps", "trick", "analysis" aur "trap" mein options ko (1)–(4) hi likho; sirf "answer" field mein letter.'
+            : "",
           key ? `Answer key: ${key}` : "Answer key: (nahi mili — khud dhyan se solve karo)",
         ]
           .filter(Boolean)

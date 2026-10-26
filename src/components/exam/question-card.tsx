@@ -16,8 +16,6 @@ import {
 import { cn } from "@/lib/utils";
 
 /** NEET and JEE Main print options as (1)–(4); JEE Advanced as (A)–(D). */
-const optionLabel = (exam: ExamQuestionView["exam"], i: number) =>
-  exam === "jee-advanced" ? "ABCD"[i]! : String(i + 1);
 
 function answerText(q: ExamQuestionView, answer: string | null): string {
   if (!answer) return "—";

@@ -41,6 +41,9 @@ export const SUBJECT_NAMES: Record<ExamSubject, string> = {
   biology: "Biology",
 };
 
+/** Option names as printed: JEE Advanced uses (A)–(D), JEE Main and NEET (1)–(4). Stored keys are always A–D. */
+export const optionLabel = (exam: ExamName, i: number) => (exam === "jee-advanced" ? "ABCD"[i]! : String(i + 1));
+
 export const isExamGroup = (v: unknown): v is ExamGroup => v === "jee" || v === "neet";
 export const isExamSubject = (v: unknown): v is ExamSubject =>
   v === "physics" || v === "chemistry" || v === "maths" || v === "biology";
