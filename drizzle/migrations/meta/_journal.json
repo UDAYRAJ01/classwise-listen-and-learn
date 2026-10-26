@@ -99,6 +99,13 @@
       "when": 1793007815955,
       "tag": "0013_exam_concept_stats_view",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1793011642620,
+      "tag": "0014_exam_stats_current_syllabus",
+      "breakpoints": true
     }
   ]
 }
