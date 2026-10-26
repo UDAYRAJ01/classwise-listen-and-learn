@@ -42,7 +42,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Map every question to its NCERT chapter (3,912 in current NCERT; 730 on removed topics, 378 of them placed in their unit's chapter under "Purane syllabus ke sawal" and left out of weightage)
 - [ ] Concepts per chapter + NCERT example/exercise claims checked against the book text — running: `bun scripts/exam/analyze.ts --stage=concepts --workers=5`
 - [ ] Written index per chapter + expert review against the NCERT chapter: `--stage=index`
-- [ ] Browser check of the full flow with real data (chapter page, solution button, paper image, revision)
+- [x] Browser check of the full flow with real data (chapter page, revision, asked questions, solution + key match, paper figure); solutions now name options as printed ((1)–(4) for Main/NEET)
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
