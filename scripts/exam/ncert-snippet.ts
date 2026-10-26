@@ -17,15 +17,15 @@ export function ncertSnippet(body: string, kind: string, ref: string): string | 
   let m: RegExpExecArray | null;
   if ((m = /^Misc\s*(\d+)$/i.exec(ref))) {
     const i = body.search(/Miscellaneous\s+Exercises?/i);
-    return i < 0 ? null : from(body.slice(i), new RegExp(`(^|\\n)\\s*${m[1]}\\.\\s`));
+    return i < 0 ? null : from(body.slice(i), new RegExp(`(^|\\s)${m[1]}\\.\\s`));
   }
   if ((m = /^(\d+\.\d+)\s*Q(\d+)$/.exec(ref))) {
     const set = new RegExp(`EXERCISE\\s*${esc(m[1]!)}(?![\\d.])`, "i").exec(body);
-    return set ? from(body.slice(set.index), new RegExp(`(^|\\n)\\s*${m[2]}\\.\\s`)) : null;
+    return set ? from(body.slice(set.index), new RegExp(`(^|\\s)${m[2]}\\.\\s`)) : null;
   }
   if (exStart < 0) return null;
   const scope = body.slice(exStart);
-  if ((m = /^\d+\.Q(\d+)$/.exec(ref))) return from(scope, new RegExp(`(^|\\n)\\s*${m[1]}\\.\\s`));
+  if ((m = /^\d+\.Q(\d+)$/.exec(ref))) return from(scope, new RegExp(`(^|\\s)${m[1]}\\.\\s`));
   if (/^\d+\.\d+$/.test(ref)) return from(scope, new RegExp(`(^|\\n)\\s*${esc(ref)}(?![\\d])\\s`));
   return null;
 }
