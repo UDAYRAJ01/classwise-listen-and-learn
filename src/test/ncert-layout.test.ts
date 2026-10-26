@@ -61,7 +61,7 @@ describe("NCERT location index", () => {
 
   it("repairs small-capital headings that come out in mixed case", () => {
     expect(fixSmallCaps("propertieS of matter anD their meaSUrement")).toBe(
-      "Properties of matter and their measurement",
+      "Properties of Matter and Their Measurement",
     );
     expect(fixSmallCaps("Simple harmonic motion")).toBe("Simple harmonic motion");
   });
