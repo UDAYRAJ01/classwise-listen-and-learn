@@ -93,7 +93,8 @@ export function printedOffset(lines: Line[]): number | null {
   for (const l of lines) byPage.set(l.page, [...(byPage.get(l.page) ?? []), l]);
   const votes = new Map<number, number>();
   for (const [page, ls] of byPage) {
-    const ys = ls.map((l) => l.y);
+    // "Reprint 2026-27" sits below the page number on every page; it is not the page edge.
+    const ys = ls.filter((l) => !/^Reprint\b/i.test(l.text)).map((l) => l.y);
     const top = Math.min(...ys);
     const bottom = Math.max(...ys);
     for (const l of ls) {
@@ -142,8 +143,11 @@ export function locate(lines: Line[]): Located[] {
   // Chapter number = the prefix most numbered headings share.
   const votes = new Map<string, number>();
   for (const l of lines) {
-    const m = /^(\d{1,2})\.\d{1,2}(?:\.\d{1,2})?\.?(?:\s|$)/.exec(l.text);
-    if (m) votes.set(m[1]!, (votes.get(m[1]!) ?? 0) + 1);
+    // Only numbered headings vote (tables of values like "0.1  0.01" must not).
+    const m = /^(\d{1,2})\.\d{1,2}(?:\.\d{1,2})?\.?\s+(.+)$/.exec(l.text);
+    if (m && isTitle(m[2]!)) votes.set(m[1]!, (votes.get(m[1]!) ?? 0) + 1);
+    const f = /^(?:Fig(?:ure)?\.?|Table|Example|EXERCISE)\s*(\d{1,2})\.\d{1,2}\b/.exec(l.text);
+    if (f) votes.set(f[1]!, (votes.get(f[1]!) ?? 0) + 1);
   }
   const chapterNo = [...votes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
   if (!chapterNo) return [];
@@ -217,7 +221,7 @@ export function locate(lines: Line[]): Located[] {
           lastExercisePage = l.page;
           continue;
         }
-      } else if ((m = /^(\d{1,2})\.\s*(.*)$/.exec(t))) {
+      } else if ((m = /^(\d{1,2})\.(?:\s+(.*))?$/.exec(t))) {
         const ref = exerciseSet === "misc" ? `Misc ${m[1]}` : `${exerciseSet} Q${m[1]}`;
         add("exercise", ref, m[2] || lines[i + 1]?.text || "", l.page);
         lastExercisePage = l.page;
