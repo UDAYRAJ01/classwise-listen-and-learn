@@ -2,6 +2,7 @@ import { queryOptions } from "@tanstack/react-query";
 
 import type { BoardId, Lang } from "./catalog";
 import {
+  fetchClassBooks,
   fetchClassChapters,
   fetchNote,
   fetchNoteLanguages,
@@ -20,6 +21,14 @@ export const classChaptersQuery = (board: BoardId, grade: number) =>
   queryOptions({
     queryKey: ["class-chapters", board, grade],
     queryFn: () => fetchClassChapters({ data: { board, grade } }),
+    staleTime: 1000 * 60 * 60,
+  });
+
+/** subject → textbooks (name, NCERT code, chapter slugs) for one class: the book shelf. */
+export const classBooksQuery = (board: BoardId, grade: number) =>
+  queryOptions({
+    queryKey: ["class-books", board, grade],
+    queryFn: () => fetchClassBooks({ data: { board, grade } }),
     staleTime: 1000 * 60 * 60,
   });
 
