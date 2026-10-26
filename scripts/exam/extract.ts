@@ -317,12 +317,23 @@ async function extractPaper(spec: PaperSpec) {
     );
     return hits.find((e) => e.subject === q.subject)?.answer ?? hits[0]?.answer ?? null;
   };
+  // Papers that print their answers also print notes like "Due to printing inconsistency in
+  // Q.29 … marks will be awarded to all candidates" — that question is a bonus.
+  const bonus = new Set<number>();
+  if (!restarts) {
+    for (let i = 1; i <= pages.length; i++) {
+      const text = pageText(pdf, i).replace(/\s+/g, " ");
+      for (const m of text.matchAll(/Due to [^.]{0,80}?\bQ\.\s?(\d+)[^.]{0,200}?awarded to all candidates/gi)) {
+        bonus.add(Number(m[1]));
+      }
+    }
+  }
 
   const rows = [...merged.values()].map((q) => {
     const number = restarts
       ? (subjectOrder.indexOf(q.subject) + 1) * 100 + q.printedNumber
       : q.printedNumber;
-    const raw = keyFor(q) ?? q.printedAnswer;
+    const raw = keyFor(q) ?? q.printedAnswer ?? (bonus.has(q.printedNumber) ? "BONUS" : null);
     return {
       paper_id: paperId,
       number,
