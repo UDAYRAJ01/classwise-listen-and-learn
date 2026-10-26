@@ -15,6 +15,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { supabaseAdmin as admin } from "@/integrations/supabase/client.server";
 
 import { args, askJson, normalizeAnswer, pool, StopRun } from "./lib";
+import { segmentSubjects } from "./segment";
 
 interface PaperSpec {
   slug: string;
