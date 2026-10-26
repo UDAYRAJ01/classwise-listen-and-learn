@@ -1,0 +1,1 @@
+ALTER TABLE public.exam_papers ADD COLUMN answer_source text NOT NULL DEFAULT 'none' CHECK (answer_source IN ('official', 'coaching', 'none'));

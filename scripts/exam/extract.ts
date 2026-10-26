@@ -24,6 +24,10 @@ interface PaperSpec {
   url: string;
   heldOn?: string;
   keyUrl?: string;
+  /** Where the answers come from: the exam body's final key, a coaching key, or none. */
+  answers: "official" | "coaching" | "none";
+  /** Only these PDF pages (inclusive) belong to this paper. */
+  pageRange?: [number, number];
   /** Optional local copy (used when the source needs a browser to download). */
   file?: string;
   keyFile?: string;
@@ -177,8 +181,20 @@ async function storePage(slug: string, png: string, n: number) {
 
 async function extractPaper(spec: PaperSpec) {
   mkdirSync(`${ROOT}/pdf`, { recursive: true });
-  const pdf = spec.file ?? `${ROOT}/pdf/${spec.slug}.pdf`;
+  let pdf = spec.file ?? `${ROOT}/pdf/${spec.slug}.pdf`;
   await download(spec.url, pdf);
+  if (spec.pageRange) {
+    const part = `${ROOT}/pdf/${spec.slug}-part.pdf`;
+    if (!existsSync(part)) {
+      const dir = `${ROOT}/split/${spec.slug}`;
+      mkdirSync(dir, { recursive: true });
+      const [from, to] = spec.pageRange;
+      execFileSync("pdfseparate", ["-f", String(from), "-l", String(to), pdf, `${dir}/%04d.pdf`]);
+      const parts = readdirSync(dir).filter((f) => f.endsWith(".pdf")).sort().map((f) => `${dir}/${f}`);
+      execFileSync("pdfunite", [...parts, part]);
+    }
+    pdf = part;
+  }
 
   const existing = await admin.from("exam_papers").select("id, status").eq("slug", spec.slug).maybeSingle();
   if (existing.data?.status && existing.data.status !== "new" && !REDO) {
@@ -199,6 +215,7 @@ async function extractPaper(spec: PaperSpec) {
         source_url: spec.url,
         key_url: spec.keyUrl ?? null,
         pages: pages.length,
+        answer_source: spec.answers,
         status: "new",
       },
       { onConflict: "slug" },

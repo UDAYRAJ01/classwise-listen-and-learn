@@ -82,6 +82,7 @@ export type Database = {
       }
       exam_papers: {
         Row: {
+          answer_source: string
           created_at: string
           exam: string
           held_on: string | null
@@ -96,6 +97,7 @@ export type Database = {
           year: number
         }
         Insert: {
+          answer_source?: string
           created_at?: string
           exam: string
           held_on?: string | null
@@ -110,6 +112,7 @@ export type Database = {
           year: number
         }
         Update: {
+          answer_source?: string
           created_at?: string
           exam?: string
           held_on?: string | null
