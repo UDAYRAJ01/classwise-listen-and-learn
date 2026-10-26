@@ -87,3 +87,13 @@ export function tidyTitle(input: string): string {
     })
     .join(" ");
 }
+
+/**
+ * NCERT section headings read from the book PDFs: ALL CAPS becomes Title Case and a capital
+ * split off its word by the PDF ("PHYSICAL Q UANTITIES") is joined back.
+ */
+export function tidyHeading(input: string): string {
+  // English has no one-letter capital words except "A" and "I", so any other one is a split.
+  const joined = input.replace(/\b([B-HJ-Z]) (?=[A-Z]{3,}\b)/g, "$1");
+  return tidyTitle(joined);
+}

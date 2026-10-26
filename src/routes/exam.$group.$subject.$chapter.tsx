@@ -254,7 +254,7 @@ function NcertChip({ place }: { place: NcertPlace }) {
     >
       <BookOpen className="h-3.5 w-3.5 text-primary" />
       {placeLabel(place)}
-      {place.heading && place.kind === "section" ? ` · ${place.heading.slice(0, 40)}` : ""}
+      {place.heading && place.kind === "section" ? ` · ${clipText(tidyHeading(place.heading), 60)}` : ""}
       <span className="text-muted-foreground">
         · page {place.printedPage ?? `${place.page} (PDF)`}
       </span>

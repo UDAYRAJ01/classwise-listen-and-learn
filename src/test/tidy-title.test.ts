@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { tidyTitle } from "@/lib/text";
+import { tidyHeading, tidyTitle } from "@/lib/text";
 
 describe("chapter title capitals", () => {
   it("turns all-caps book titles into title case", () => {
@@ -18,5 +18,13 @@ describe("chapter title capitals", () => {
     expect(tidyTitle("The Living World")).toBe("The Living World");
     expect(tidyTitle("PART II")).toBe("Part II");
     expect(tidyTitle("दो बैलों की कथा")).toBe("दो बैलों की कथा");
+  });
+});
+
+describe("NCERT section headings", () => {
+  it("joins a capital the PDF split off and tidies the case", () => {
+    expect(tidyHeading("DIMENSIONS OF PHYSICAL Q UANTITIES")).toBe("Dimensions of Physical Quantities");
+    expect(tidyHeading("MOTION IN A PLANE")).toBe("Motion in a Plane");
+    expect(tidyHeading("Rounding off the Uncertain Digits")).toBe("Rounding off the Uncertain Digits");
   });
 });
