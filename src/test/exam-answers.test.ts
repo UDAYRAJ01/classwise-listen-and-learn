@@ -27,6 +27,14 @@ describe("past-paper answers", () => {
     expect(normalizeAnswer("Due to internal review, all candidates are awarded +4 marks.", "multiple")).toBe("BONUS");
   });
 
+  it("reads a key that prints the option's value instead of its number", () => {
+    expect(normalizeAnswer("(12)", "single", ["12", "6", "18", "9"])).toBe("A");
+    expect(normalizeAnswer("(111)", "single", ["$111$", "$100$", "$90$", "$122$"])).toBe("A");
+    // A value that matches no option, or two options, is not guessed.
+    expect(normalizeAnswer("(15)", "single", ["12", "6", "18", "9"])).toBeNull();
+    expect(normalizeAnswer("(12)", "single", ["12", "12", "18", "9"])).toBeNull();
+  });
+
   it("treats a coaching key's NA as no answer", () => {
     expect(normalizeAnswer("(NA)", "single")).toBeNull();
     expect(normalizeAnswer("N.A.", "single")).toBeNull();

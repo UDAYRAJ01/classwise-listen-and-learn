@@ -387,11 +387,22 @@ For each listed question, transcribe exactly the shared text it needs (Markdown 
     }
   }
 
+  // Papers with inline answers sometimes push "Correct Answer: (A)" of a page's last
+  // question onto the next page, where the page reader does not tie it to the question.
+  const lastOnPage = new Map<number, Q>();
+  for (const q of merged.values()) lastOnPage.set(q.page, q);
+  const spilledAnswer = (q: Q) => {
+    if (lastOnPage.get(q.page) !== q || q.page >= pages.length) return null;
+    const head = pageText(pdf, q.page + 1).trim().slice(0, 300);
+    return /^(?:\d+\s+)?Correct Answer\s*:?\s*(\([A-D1-4]\))/i.exec(head)?.[1] ?? null;
+  };
+
   const rows = [...merged.values()].map((q) => {
     const number = restarts
       ? (subjectOrder.indexOf(q.subject) + 1) * 100 + q.printedNumber
       : q.printedNumber;
-    const raw = keyFor(q) ?? q.printedAnswer ?? (bonus.has(q.printedNumber) ? "BONUS" : null);
+    const raw =
+      keyFor(q) ?? q.printedAnswer ?? (bonus.has(q.printedNumber) ? "BONUS" : null) ?? spilledAnswer(q);
     return {
       paper_id: paperId,
       number,
@@ -401,7 +412,7 @@ For each listed question, transcribe exactly the shared text it needs (Markdown 
       passage: q.passage,
       body: q.body.trim(),
       options: q.options,
-      answer: normalizeAnswer(raw, q.kind),
+      answer: normalizeAnswer(raw, q.kind, q.options),
       page: q.page,
       has_figure: q.hasFigure,
       figure: {
