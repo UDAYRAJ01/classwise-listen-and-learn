@@ -53,6 +53,7 @@ export function QuestionCard({ q }: { q: ExamQuestionView }) {
   });
   const solution = q.solution ?? gen.result;
   const isOption = q.options.length > 0;
+  const textlessOptions = isOption && q.options.every((o) => !o.trim());
   const correct = new Set(
     isOption && q.answer && /^[A-D](,[A-D])*$/.test(q.answer) ? q.answer.split(",") : [],
   );
@@ -94,7 +95,9 @@ export function QuestionCard({ q }: { q: ExamQuestionView }) {
       )}
 
       {isOption && (
-        <ol className="mt-3 grid gap-2 sm:grid-cols-2">
+        // Options printed as pictures (graphs, structures) live in the paper crop above;
+        // here they shrink to small letter boxes that still show the right answer.
+        <ol className={cn("mt-3 grid gap-2", textlessOptions ? "grid-cols-4" : "sm:grid-cols-2")}>
           {q.options.map((o, i) => {
             const letter = "ABCD"[i]!;
             const right = showAnswer && correct.has(letter);
@@ -107,7 +110,7 @@ export function QuestionCard({ q }: { q: ExamQuestionView }) {
                 )}
               >
                 <span className="font-bold text-muted-foreground">({optionLabel(q.exam, i)})</span>
-                <MathMarkdown inline>{o}</MathMarkdown>
+                {o.trim() && <MathMarkdown inline>{o}</MathMarkdown>}
                 {right && <CheckCircle2 className="ml-auto h-4 w-4 shrink-0 text-tone-leaf" aria-label="Sahi option" />}
               </li>
             );
