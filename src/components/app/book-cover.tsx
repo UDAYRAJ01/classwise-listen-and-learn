@@ -22,13 +22,13 @@ export function BookCover({
   className,
   eager,
 }: {
-  code?: string | null;
+  code?: string | null | undefined;
   title: string;
   subject: SubjectMeta;
   board: BoardId;
   grade: number;
-  className?: string;
-  eager?: boolean;
+  className?: string | undefined;
+  eager?: boolean | undefined;
 }) {
   const src = coverFor(code);
   const tone = TONE_CLASSES[subject.tone];
@@ -102,7 +102,7 @@ export function BookTile({
   bookIndex: number;
   /** The subject has more than one book: open this one. */
   multi: boolean;
-  eager?: boolean;
+  eager?: boolean | undefined;
 }) {
   const nb = useNotebook();
   const title = book?.name || subject.name;
@@ -156,12 +156,19 @@ export function BookTile({
   );
 }
 
+export interface ShelfItem {
+  subject: SubjectMeta;
+  book: ShelfBook | null;
+  index: number;
+  multi: boolean;
+}
+
 /** Every book of a class in subject order; subjects without a list yet get one tile. */
 export function shelfItems(
   subjects: SubjectMeta[],
   books: Record<string, ShelfBook[]> | undefined,
-): { subject: SubjectMeta; book: ShelfBook | null; index: number; multi: boolean }[] {
-  return subjects.flatMap((s) => {
+): ShelfItem[] {
+  return subjects.flatMap((s): ShelfItem[] => {
     const list = books?.[s.slug];
     if (!list?.length) return [{ subject: s, book: null, index: 0, multi: false }];
     return list.map((b, i) => ({ subject: s, book: b, index: i, multi: list.length > 1 }));

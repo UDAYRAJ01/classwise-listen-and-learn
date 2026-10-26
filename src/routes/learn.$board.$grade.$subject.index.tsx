@@ -160,7 +160,7 @@ function ChaptersPage() {
       .map((c) => ({ c, bookName: null }));
   }, [books, book, query, multi, show, nb, board, grade, subject.slug]);
 
-  const setSearch = (patch: SubjectSearch) =>
+  const setSearch = (patch: { show?: ShownFilter | undefined; book?: number | undefined }) =>
     navigate({
       to: "/learn/$board/$grade/$subject",
       params: { board, grade: String(grade), subject: subject.slug },
