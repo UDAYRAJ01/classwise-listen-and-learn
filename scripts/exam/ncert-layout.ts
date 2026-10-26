@@ -142,28 +142,25 @@ export function readLines(pdf: string): Line[] {
 export function printedOffset(lines: Line[]): number | null {
   const byPage = new Map<number, Line[]>();
   for (const l of lines) byPage.set(l.page, [...(byPage.get(l.page) ?? []), l]);
+  // Every page votes once for each offset its standalone numbers suggest. Page numbers sit
+  // at the top, bottom or side margin depending on the book; stray numbers in tables and
+  // figures point at random offsets, so only the offset most pages share wins.
   const votes = new Map<number, number>();
   for (const [page, ls] of byPage) {
-    // "Reprint 2026-27" sits below the page number on every page; it is not the page edge.
-    const ys = ls.filter((l) => !/^Reprint\b/i.test(l.text)).map((l) => l.y);
-    const top = Math.min(...ys);
-    const bottom = Math.max(...ys);
+    const offsets = new Set<number>();
     for (const l of ls) {
-      if (l.y - top > 40 && bottom - l.y > 40) continue;
-      // "127", or a running head such as "BINOMIAL THEOREM 127" / "128 MATHEMATICS".
       const m =
         /^(\d{1,3})$/.exec(l.text) ??
         /^[A-Z][A-Za-z ,&\-–:]+\s(\d{1,3})$/.exec(l.text) ??
         /^(\d{1,3})\s[A-Z][A-Za-z ,&\-–:]+$/.exec(l.text);
-      if (!m) continue;
-      const off = Number(m[1]) - page;
-      votes.set(off, (votes.get(off) ?? 0) + 1);
+      if (m) offsets.add(Number(m[1]) - page);
     }
+    for (const off of offsets) votes.set(off, (votes.get(off) ?? 0) + 1);
   }
   let best: number | null = null;
   let bestVotes = 0;
   for (const [off, v] of votes) if (v > bestVotes) [best, bestVotes] = [off, v];
-  return bestVotes >= Math.max(2, Math.floor(byPage.size / 4)) ? best : null;
+  return bestVotes >= Math.max(2, Math.floor(byPage.size / 3)) ? best : null;
 }
 
 const tidy = (s: string) =>
