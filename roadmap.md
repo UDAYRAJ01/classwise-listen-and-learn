@@ -43,6 +43,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Map every question to its NCERT chapter (3,912 in current NCERT; 730 on removed topics, 378 of them placed in their unit's chapter under "Purane syllabus ke sawal" and left out of weightage)
 - [x] Concepts per chapter + NCERT example/exercise claims checked against the book text (all 150 chapters)
 - [ ] Written index per chapter + expert review against the NCERT chapter — running per subject/group: `bun scripts/exam/analyze.ts --stage=index --only=<subject> --group=<jee|neet>` (skips finished chapters)
+- [x] Site search finds JEE / NEET pages ("jee physics", "neet pyq")
 - [x] Paper pictures no longer show the printed answer (164 crops cut above "Answer: C" / "Ans. (4)")
 - [x] Browser check of the full flow with real data (chapter page, revision, asked questions, solution + key match, paper figure); solutions now name options as printed ((1)–(4) for Main/NEET)
 
