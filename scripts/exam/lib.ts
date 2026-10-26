@@ -57,7 +57,7 @@ export async function askJson<T>(opts: {
           streamError = error;
         },
         providerOptions: {
-          openai: { store: false, reasoningEffort: opts.effort ?? "low" },
+          openai: { store: false, forceReasoning: true, reasoningEffort: opts.effort ?? "low" },
         },
       });
       for await (const _ of result.partialOutputStream) void _;
