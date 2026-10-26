@@ -98,8 +98,13 @@ export function printedOffset(lines: Line[]): number | null {
     const bottom = Math.max(...ys);
     for (const l of ls) {
       if (l.y - top > 40 && bottom - l.y > 40) continue;
-      if (!/^\d{1,3}$/.test(l.text)) continue;
-      const off = Number(l.text) - page;
+      // "127", or a running head such as "BINOMIAL THEOREM 127" / "128 MATHEMATICS".
+      const m =
+        /^(\d{1,3})$/.exec(l.text) ??
+        /^[A-Z][A-Z ,&\-–:]+\s(\d{1,3})$/.exec(l.text) ??
+        /^(\d{1,3})\s[A-Z][A-Z ,&\-–:]+$/.exec(l.text);
+      if (!m) continue;
+      const off = Number(m[1]) - page;
       votes.set(off, (votes.get(off) ?? 0) + 1);
     }
   }
@@ -140,7 +145,7 @@ export function locate(lines: Line[]): Located[] {
   const chapterNo = [...votes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
   if (!chapterNo) return [];
 
-  const sections = new Map<string, Located & { size: number }>();
+  const sections = new Map<string, { ref: string; title: string; page: number; size: number }[]>();
   const others = new Map<string, Located>();
   const add = (kind: SectionKind, ref: string, heading: string, page: number) => {
     const key = `${kind}:${ref}`;
@@ -156,7 +161,7 @@ export function locate(lines: Line[]): Located[] {
     const t = l.text.replace(/^[u•▪■]\s+/, "");
     let m: RegExpExecArray | null;
 
-    if ((m = /^EXERCISES?(?:\s+(\d{1,2}\.\d{1,2}))?\s*$/i.exec(t)) && l.text === l.text.toUpperCase()) {
+    if ((m = /^EXERCISES?(?:\s+(\d{1,2}\.\d{1,2}))?\s*$/i.exec(t))) {
       exerciseSet = m[1] ?? "";
       lastExercisePage = l.page;
       continue;
@@ -171,10 +176,12 @@ export function locate(lines: Line[]): Located[] {
     }
 
     if ((m = /^(?:Example|EXAMPLE|Problem|PROBLEM)\s+(\d{1,2}(?:\.\d{1,2})?)\b\.?\s*(.*)$/.exec(t))) {
-      const ref = m[1]!.includes(".") || !/^\d+$/.test(m[1]!) ? m[1]! : `${m[1]}`;
-      // "Example 3" in Maths is chapter-local; keep the chapter number in front for clarity.
-      const full = ref.includes(".") ? ref : `${chapterNo}.${ref}`;
-      if (full.startsWith(`${chapterNo}.`)) add("example", full, m[2] || lines[i + 1]?.text || "", l.page);
+      // Kept as printed: "6.1" in Physics, plain "3" in Maths. A dotted number from another
+      // chapter is a cross-reference in the text, not a worked example here.
+      const ref = m[1]!;
+      if (!ref.includes(".") || ref.startsWith(`${chapterNo}.`)) {
+        add("example", ref, m[2] || lines[i + 1]?.text || "", l.page);
+      }
       continue;
     }
     if ((m = new RegExp(`^Fig(?:ure)?\\.?\\s*(${chapterNo}\\.\\d{1,2})\\s*[:.]?\\s*(.*)$`).exec(t))) {
@@ -214,19 +221,28 @@ export function locate(lines: Line[]): Located[] {
         if (next && next.page === l.page && Math.abs(next.y - l.y) < 40) title = next.text;
       }
       if (!isTitle(title)) continue;
-      const prev = sections.get(ref);
-      if (!prev || l.size > prev.size + 0.5) {
-        sections.set(ref, {
-          kind: "section",
-          ref,
-          heading: tidy(title),
-          page: l.page,
-          printed_page: printed(l.page),
-          size: l.size,
-        });
-      }
+      if (exerciseSet !== null && exerciseSet !== "") exerciseSet = null; // Maths: next section ends EXERCISE n.m
+      const cand = { ref, title, page: l.page, size: l.size };
+      sections.set(ref, [...(sections.get(ref) ?? []), cand]);
     }
   }
-  const secs = [...sections.values()].map(({ size: _size, ...rest }) => rest);
+
+  // A chapter-opening contents box lists many section numbers on one page; the real heading
+  // is the occurrence elsewhere (usually set in capitals), so contents pages lose ties.
+  const refsPerPage = new Map<number, Set<string>>();
+  for (const [ref, cands] of sections) {
+    if (ref.split(".").length !== 2) continue;
+    for (const c of cands) refsPerPage.set(c.page, (refsPerPage.get(c.page) ?? new Set()).add(ref));
+  }
+  const contentsPage = (p: number) => (refsPerPage.get(p)?.size ?? 0) >= 4;
+  const upper = (s: string) => s === s.toUpperCase() && /[A-Z]/.test(s);
+  const score = (c: { title: string; page: number; size: number }) =>
+    (contentsPage(c.page) ? 0 : 100) + (upper(c.title) ? 10 : 0) + c.size / 100;
+  const secs: Located[] = [];
+  for (const [ref, cands] of sections) {
+    const best = [...cands].sort((a, b) => score(b) - score(a) || a.page - b.page)[0]!;
+    // A contents-box title is usually cut short; take the longer wording when it is the same heading.
+    secs.push({ kind: "section", ref, heading: tidy(best.title), page: best.page, printed_page: printed(best.page) });
+  }
   return [...secs, ...others.values()];
 }
