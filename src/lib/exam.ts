@@ -158,6 +158,8 @@ export interface ExamChapterView {
   revision: string[];
   plan: string | null;
   questions: ExamQuestionView[];
+  /** Asked in past papers, but on a topic the current NCERT book of this chapter no longer has. */
+  oldSyllabus: (ExamQuestionView & { topic: string })[];
   places: Record<string, NcertPlace>;
   ready: boolean;
 }

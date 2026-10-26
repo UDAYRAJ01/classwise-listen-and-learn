@@ -164,7 +164,7 @@ export const fetchExamChapter = createServerFn({ method: "GET" })
       sb
         .from("exam_questions")
         .select(
-          "id, qno, kind, passage, body, options, answer, page, has_figure, figure, concept_id, source_type, ncert_kind, ncert_ref, solution, solution_ok, exam_papers!inner(exam, year, label, slug, answer_source)",
+          "id, qno, kind, passage, body, options, answer, page, has_figure, figure, concept_id, source_type, ncert_kind, ncert_ref, solution, solution_ok, in_syllabus, topic, exam_papers!inner(exam, year, label, slug, answer_source)",
         )
         .eq("subject", data.subject)
         .eq("grade", grade)
@@ -193,7 +193,7 @@ export const fetchExamChapter = createServerFn({ method: "GET" })
     }
 
     type Paper = { exam: string; year: number; label: string; slug: string; answer_source: string };
-    const questions: ExamQuestionView[] = (qs.data ?? []).map((q) => {
+    const all = (qs.data ?? []).map((q) => {
       const paper = q.exam_papers as unknown as Paper;
       const fig = q.figure as { box?: number[] } | null;
       const sol = q.solution as Omit<ExamSolution, "ok"> | null;
@@ -218,10 +218,14 @@ export const fetchExamChapter = createServerFn({ method: "GET" })
         ncert: q.ncert_kind && q.ncert_ref ? (allPlaces.get(placeKey(q.ncert_kind, q.ncert_ref)) ?? null) : null,
         // A worked answer that disagreed with the key is never shown.
         solution: sol && q.solution_ok ? { ...sol, ok: true } : null,
+        inSyllabus: q.in_syllabus,
+        topic: (q.topic ?? "").replace(/\s*\(removed\)\s*$/i, ""),
       };
     });
     // Newest first: the latest pattern matters most.
-    questions.sort((a, b) => b.year - a.year || a.paper.localeCompare(b.paper) || Number(a.qno) - Number(b.qno));
+    all.sort((a, b) => b.year - a.year || a.paper.localeCompare(b.paper) || Number(a.qno) - Number(b.qno));
+    const questions: ExamQuestionView[] = all.filter((q) => q.inSyllabus).map(({ inSyllabus: _i, topic: _t, ...q }) => q);
+    const oldSyllabus = all.filter((q) => !q.inSyllabus).map(({ inSyllabus: _i, ...q }) => q);
 
     const content = (row.data?.content ?? {}) as {
       conceptMap?: ExamConcept[];
@@ -268,6 +272,7 @@ export const fetchExamChapter = createServerFn({ method: "GET" })
       revision: content.revision ?? [],
       plan: content.plan ?? null,
       questions,
+      oldSyllabus,
       places,
       ready: Boolean(content.concepts),
     };

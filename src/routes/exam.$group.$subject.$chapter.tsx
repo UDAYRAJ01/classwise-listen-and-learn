@@ -216,6 +216,28 @@ function ChapterIndexPage() {
           </div>
         </section>
       )}
+
+      {view.oldSyllabus.length > 0 && (
+        <section className="mt-10" aria-labelledby="old-q">
+          <details className="rounded-2xl border border-dashed border-border bg-card p-4 sm:p-5">
+            <summary className="cursor-pointer">
+              <h2 id="old-q" className="inline font-display text-xl font-extrabold">
+                Purane syllabus ke sawal ({view.oldSyllabus.length})
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Ye topics NCERT ki nayi book (2023 se) mein nahi hain:{" "}
+                {[...new Set(view.oldSyllabus.map((q) => q.topic).filter(Boolean))].slice(0, 6).join(", ")}. Isliye
+                upar ki ginti mein nahi jode. Apne exam ke current syllabus mein ho to hi padhna.
+              </p>
+            </summary>
+            <div className="mt-4 space-y-3">
+              {view.oldSyllabus.map((q) => (
+                <QuestionCard key={q.id} q={q} />
+              ))}
+            </div>
+          </details>
+        </section>
+      )}
     </div>
   );
 }
