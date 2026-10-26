@@ -98,36 +98,4 @@ export async function pool<T>(items: T[], workers: number, fn: (item: T) => Prom
   if (stop) throw stop;
 }
 
-/** Normalises an answer to the stored form: "A".."D", "A,C", or a number / range. */
-export function normalizeAnswer(raw: string | null | undefined, kind: string): string | null {
-  if (!raw) return null;
-  let s = raw.trim().toUpperCase().replace(/^ANS(WER)?\s*[:.-]?\s*/, "");
-  if (!s || /DROP|BONUS|DELETED|CANCEL/.test(s)) return s ? "BONUS" : null;
-  if (kind === "single" || kind === "multiple" || kind === "matrix") {
-    s = s.replace(/[()]/g, "").replace(/\bOR\b|AND|&|\//g, ",");
-    const map: Record<string, string> = { "1": "A", "2": "B", "3": "C", "4": "D" };
-    const letters = s
-      .split(/[\s,]+/)
-      .filter(Boolean)
-      .map((x) => map[x] ?? x)
-      .filter((x) => /^[A-D]$/.test(x));
-    if (letters.length === 0) return null;
-    return [...new Set(letters)].sort().join(",");
-  }
-  return s.replace(/\s+/g, " ").replace(/\bTO\b/g, "-");
-}
-
-/** True when two answers mean the same (numeric answers may be a range). */
-export function answersMatch(given: string | null, official: string | null): boolean {
-  if (!given || !official) return false;
-  if (official === "BONUS") return true;
-  const a = given.replace(/\s/g, "");
-  const b = official.replace(/\s/g, "");
-  if (a === b) return true;
-  const num = (x: string) => Number(x.replace(/,/g, ""));
-  const range = /^(-?[\d.]+)-(-?[\d.]+)$/.exec(b);
-  const ga = num(a);
-  if (range && !Number.isNaN(ga)) return ga >= num(range[1]!) - 1e-9 && ga <= num(range[2]!) + 1e-9;
-  if (!Number.isNaN(ga) && !Number.isNaN(num(b))) return Math.abs(ga - num(b)) <= 1e-6 + Math.abs(num(b)) * 0.01;
-  return false;
-}
+export { answersMatch, normalizeAnswer } from "@/lib/exam-answers";
