@@ -86,7 +86,9 @@ export function ExamMode({
             <Timer className="h-5 w-5" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="font-display text-sm font-extrabold">Exam Mode</p>
+            <p className="font-display text-sm font-extrabold">
+              Exam Mode{books.length > 1 ? ` · poora ${subjectName}` : ""}
+            </p>
             <p className="truncate text-xs text-muted-foreground">
               {items.length} chapters · {minutes} min revision
             </p>
