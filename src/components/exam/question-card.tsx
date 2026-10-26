@@ -22,11 +22,11 @@ const optionLabel = (exam: ExamQuestionView["exam"], i: number) =>
 function answerText(q: ExamQuestionView, answer: string | null): string {
   if (!answer) return "—";
   if (answer === "BONUS") return "Bonus (sabko marks mile)";
-  if (q.options.length && /^[A-D](,[A-D])*$/.test(answer))
-    return answer
-      .split(",")
-      .map((l) => `(${optionLabel(q.exam, "ABCD".indexOf(l))})`)
-      .join(", ");
+  if (q.options.length && /^[A-D](,[A-D])*$/.test(answer)) {
+    const labels = answer.split(",").map((l) => `(${optionLabel(q.exam, "ABCD".indexOf(l))})`);
+    // A single-correct question with two letters in the key: either was accepted.
+    return q.kind === "single" && labels.length > 1 ? `${labels.join(" ya ")} — dono sahi maane gaye` : labels.join(", ");
+  }
   return answer.replace(/^(-?[\d.]+)-(-?[\d.]+)$/, "$1 se $2 ke beech");
 }
 
