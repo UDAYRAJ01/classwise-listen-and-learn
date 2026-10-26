@@ -433,18 +433,47 @@ For each listed question, transcribe exactly the shared text it needs (Markdown 
     .eq("paper_id", paperId);
   if (old.error) throw old.error;
   const prior = new Map(old.data.map((r) => [r.number, r]));
+  // Every row carries the same columns (a batch with mixed columns writes NULL into the gaps).
+  const fresh = {
+    topic: null,
+    grade: null,
+    chapter_slug: null,
+    in_syllabus: true,
+    concept_id: null,
+    concept: null,
+    ncert_kind: null,
+    ncert_ref: null,
+    source_type: null,
+    solution: null,
+    solution_ok: false,
+  };
   const carried = rows.map((r) => {
     const o = prior.get(r.number);
-    if (!o || o.subject !== r.subject || o.body !== r.body || (o.passage ?? null) !== (r.passage ?? null)) return r;
+    if (!o || o.subject !== r.subject || o.body !== r.body || (o.passage ?? null) !== (r.passage ?? null))
+      return { ...r, ...fresh };
     const { number: _n, subject: _s, body: _b, passage: _p, answer, solution, solution_ok, ...mapping } = o;
     // A solution was checked against the old answer; keep it only if the answer is the same.
-    return { ...r, ...mapping, ...(answer === r.answer ? { solution, solution_ok } : {}) };
+    return {
+      ...r,
+      ...fresh,
+      ...mapping,
+      ...(answer === r.answer ? { solution, solution_ok } : {}),
+    };
   });
 
-  await admin.from("exam_questions").delete().eq("paper_id", paperId);
+  // Upsert by (paper, number) first and only then drop numbers the paper no longer has, so a
+  // failed write never leaves a paper without its questions.
   for (let i = 0; i < carried.length; i += 200) {
-    const r = await admin.from("exam_questions").insert(carried.slice(i, i + 200));
+    const r = await admin
+      .from("exam_questions")
+      .upsert(carried.slice(i, i + 200), { onConflict: "paper_id,number" });
     if (r.error) throw r.error;
+  }
+  const keepNumbers = new Set(carried.map((r) => r.number));
+  const stale = old.data.map((r) => r.number).filter((n) => !keepNumbers.has(n));
+  if (stale.length) {
+    const del = await admin.from("exam_questions").delete().eq("paper_id", paperId).in("number", stale);
+    if (del.error) throw del.error;
   }
   const withAnswer = rows.filter((r) => r.answer).length;
   await admin
