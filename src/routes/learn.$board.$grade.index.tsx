@@ -121,14 +121,7 @@ function ClassShelfPage() {
         </div>
 
         <ul className={shelfGridClass}>
-          {isPending && !books
-            ? Array.from({ length: 9 }, (_, i) => (
-                <li key={i} aria-hidden>
-                  <span className="block aspect-[5/7] animate-pulse rounded-md bg-muted" />
-                  <span className="mt-2 block h-3 w-3/4 animate-pulse rounded bg-muted" />
-                </li>
-              ))
-            : items.map((it, i) => (
+          {items.map((it, i) => (
                 <li key={`${it.subject.slug}-${it.index}`}>
                   <BookTile
                     board={board}

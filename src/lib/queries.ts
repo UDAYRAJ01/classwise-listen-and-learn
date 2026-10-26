@@ -1,4 +1,3 @@
-import type { ShelfBook } from "@/lib/content.functions";
 import { queryOptions } from "@tanstack/react-query";
 
 import type { BoardId, Lang } from "./catalog";
@@ -8,6 +7,7 @@ import {
   fetchNote,
   fetchNoteLanguages,
   fetchSyllabus,
+  type ShelfBook,
 } from "./content.functions";
 
 export const syllabusQuery = (board: BoardId, grade: number, subject: string) =>
