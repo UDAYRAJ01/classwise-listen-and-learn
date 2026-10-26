@@ -15,7 +15,7 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSy
 import { supabaseAdmin as admin } from "@/integrations/supabase/client.server";
 
 import { args, askJson, normalizeAnswer, pool, StopRun } from "./lib";
-import { segmentSubjects } from "./segment";
+import { segmentSubjects, snapBlocks } from "./segment";
 
 interface PaperSpec {
   slug: string;
@@ -302,6 +302,14 @@ async function extractPaper(spec: PaperSpec) {
   // Subjects are printed in blocks; the block decides a question's subject, not its wording.
   const fixed = segmentSubjects(seq.map((q) => q.subject));
   seq.forEach((q, i) => (q.subject = fixed[i]!));
+  if (!restarts) {
+    // Straight numbering: one entry per printed number decides the exact block sizes.
+    const unique = [...new Map(seq.map((q) => [q.printedNumber, q])).values()];
+    const share = (s: string) => (spec.exam === "neet" ? (s === "biology" ? 1 / 2 : 1 / 4) : 1 / 3);
+    const snapped = snapBlocks(unique.map((q) => q.subject), share);
+    const byNo = new Map(unique.map((q, i) => [q.printedNumber, snapped[i]!]));
+    for (const q of seq) q.subject = byNo.get(q.printedNumber)!;
+  }
 
   const subjectOrder: string[] = [];
   const merged = new Map<string, Q>();

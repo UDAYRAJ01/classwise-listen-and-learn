@@ -50,3 +50,24 @@ export function segmentSubjects<S extends string>(labels: S[], minCount = 5): S[
   }
   return out;
 }
+
+/**
+ * Papers have a fixed number of questions per subject (JEE: a third each; NEET: Physics and
+ * Chemistry a quarter, Biology half). When the blocks found are within a few questions of
+ * that, the boundaries are set exactly — a mislabel right at a boundary cannot move it.
+ */
+export function snapBlocks<S extends string>(subjects: S[], expectedShare: (s: S) => number, slack = 3): S[] {
+  const n = subjects.length;
+  const blocks: { s: S; len: number }[] = [];
+  for (const s of subjects) {
+    const last = blocks.at(-1);
+    if (last && last.s === s) last.len++;
+    else blocks.push({ s, len: 1 });
+  }
+  if (new Set(blocks.map((b) => b.s)).size !== blocks.length) return subjects;
+  const expected = blocks.map((b) => expectedShare(b.s) * n);
+  if (expected.some((e) => !Number.isInteger(e))) return subjects;
+  if (expected.reduce((a, b) => a + b, 0) !== n) return subjects;
+  if (blocks.some((b, i) => Math.abs(b.len - expected[i]!) > slack)) return subjects;
+  return blocks.flatMap((b, i) => Array.from({ length: expected[i]! }, () => b.s));
+}
