@@ -140,7 +140,7 @@ function AskPage() {
         ) : null
       }
     />
-    <div className="mx-auto flex max-w-3xl flex-col px-4 pb-4 pt-3 md:pt-6">
+    <div className="mx-auto flex min-h-[calc(100dvh-var(--nav-h)-4.5rem)] max-w-3xl flex-col px-4 pb-4 pt-3 md:min-h-0 md:pt-6">
       <div className="mb-4 flex items-center gap-2">
         <div className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5" role="group" aria-label="Board">
           {(["cbse", "icse"] as const).map((b) => (
@@ -217,7 +217,7 @@ function AskPage() {
       </div>
 
       <form
-        className="sticky bottom-[calc(var(--nav-h)+0.75rem)] mt-6 flex items-end gap-2 rounded-2xl border border-border bg-card p-2 shadow-sticker-lg"
+        className="sticky bottom-[calc(var(--nav-h)+0.75rem)] mt-auto flex items-end gap-2 rounded-2xl border border-border bg-card p-2 shadow-sticker-lg"
         onSubmit={(e) => {
           e.preventDefault();
           void ask(input);

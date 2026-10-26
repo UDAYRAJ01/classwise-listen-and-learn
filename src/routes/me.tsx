@@ -80,7 +80,7 @@ function MePage() {
               <ChevronRight className="h-4 w-4 text-muted-foreground" />
             </button>
           </li>
-          <Row icon={<Languages />} title="Notes ki bhasha">
+          <Row icon={<Languages />} title="Bhasha">
             <div role="radiogroup" aria-label="Notes ki bhasha" className="inline-flex gap-0.5 rounded-lg bg-muted p-0.5">
               {LANGS.map((l) => (
                 <button
@@ -164,7 +164,7 @@ function Row({ icon, title, children }: { icon: ReactNode; title: string; childr
   return (
     <li className="flex flex-wrap items-center gap-3 px-4 py-3.5">
       <RowIcon>{icon}</RowIcon>
-      <span className="min-w-0 flex-1 font-bold">{title}</span>
+      <span className="flex-1 whitespace-nowrap font-bold">{title}</span>
       {children}
     </li>
   );
