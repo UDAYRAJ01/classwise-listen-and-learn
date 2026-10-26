@@ -7,7 +7,11 @@
 export const OPTION_KINDS = new Set(["single", "multiple", "matrix"]);
 
 /** Normalises an answer to the stored form: "A".."D", "A,C", "BONUS", or a number / range "3.9-4.1". */
-export function normalizeAnswer(raw: string | null | undefined, kind: string): string | null {
+export function normalizeAnswer(
+  raw: string | null | undefined,
+  kind: string,
+  options: string[] = [],
+): string | null {
   if (!raw) return null;
   let s = raw
     .trim()
@@ -20,6 +24,7 @@ export function normalizeAnswer(raw: string | null | undefined, kind: string): s
   // "NA" / "(NA)" in a coaching key means the key gives no answer, not that marks were given.
   if (/^\(?N\.?\s?A\.?\)?$/.test(s)) return null;
   if (OPTION_KINDS.has(kind)) {
+    const printed = s;
     s = s.replace(/[()[\]]/g, " ").replace(/\bOR\b|\bAND\b|&|\//g, ",");
     const map: Record<string, string> = { "1": "A", "2": "B", "3": "C", "4": "D" };
     const letters = s
@@ -29,7 +34,13 @@ export function normalizeAnswer(raw: string | null | undefined, kind: string): s
       .flatMap((x) => (/^[A-D]{2,4}$/.test(x) ? x.split("") : [x]))
       .map((x) => map[x] ?? x)
       .filter((x) => /^[A-D]$/.test(x));
-    if (letters.length === 0) return null;
+    if (letters.length === 0) {
+      // Some keys print the option's value instead of its number: "(12)" for "(A) 12".
+      const bare = (x: string) => x.replace(/\$|\\[a-z]+|[{}()\s]/gi, "").toUpperCase();
+      const value = bare(printed);
+      const hits = options.flatMap((o, i) => (i < 4 && o.trim() && bare(o) === value ? ["ABCD"[i]!] : []));
+      return value && hits.length === 1 ? hits[0]! : null;
+    }
     return [...new Set(letters)].sort().join(",");
   }
   return s
