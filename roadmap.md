@@ -42,7 +42,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Dropped NCERT units (p-Block, Solid State, Communication Systems…) get their own page with all 352 asked questions
 - [x] Map every question to its NCERT chapter (3,912 in current NCERT; 730 on removed topics, 378 of them placed in their unit's chapter under "Purane syllabus ke sawal" and left out of weightage)
 - [x] Concepts per chapter + NCERT example/exercise claims checked against the book text (all 150 chapters)
-- [ ] Written index per chapter + expert review against the NCERT chapter — running per subject/group: `bun scripts/exam/analyze.ts --stage=index --only=<subject> --group=<jee|neet>` (skips finished chapters)
+- [x] Written index per chapter + expert review against the NCERT chapter (all 150 chapters: JEE 71, NEET 79)
 - [x] Site search finds JEE / NEET pages ("jee physics", "neet pyq")
 - [x] Paper pictures no longer show the printed answer (199 question crops cut above "Answer: C" / "Ans. (4)")
 - [x] Browser check of the full flow with real data (chapter page, revision, asked questions, solution + key match, paper figure); solutions now name options as printed ((1)–(4) for Main/NEET)
@@ -57,7 +57,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 
 ## Ready next
-- JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2)
+- JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2). First teach the concepts stage to file new questions under a chapter's existing concepts, so new papers don't force a rewrite of its written index
 - JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
