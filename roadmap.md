@@ -30,13 +30,16 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] AI tutor: "Meri class" picker; searches that class's books first and answers at that level
 
 ## In progress (request of 26 Oct: JEE / NEET section for Class 11–12)
-- [ ] Collect real past papers 2016–2025 (JEE Main, JEE Advanced, NEET) + official answer keys
-- [ ] Turn every paper into questions (text + options + official answer), map each to its NCERT Class 11/12 chapter + concept; mark questions from topics no longer in the syllabus
-- [ ] NCERT location index: every section / example / exercise of Class 11–12 Physics, Chemistry, Maths, Biology with its PDF page
-- [ ] Per chapter exam index (JEE, NEET): concepts ranked by how often they came, easy explanation, memory system, NCERT location, why it repeats, how it can come next
-- [ ] Per question: solution, easy trick, "is sawal mein kya tha" analysis, where in NCERT it was made from; solution must match the official answer
-- [ ] Pages: JEE / NEET home → subject (chapters by weightage) → chapter index (concepts + asked questions + one-screen revision sheet); spaced revision ("Revise kiya" → next date) in the notebook
-- [ ] Link from Class 11/12 chapter pages to the JEE/NEET index; menu link
+- [x] Real past papers 2017–2026: JEE Advanced both papers every year (official); NEET every year (one code); JEE Main 2 shifts per year (2017–2026); answers labelled official / coaching / none
+- [x] Paper reader: every question with text, options, answer, page and figure position; subject fixed from the paper's subject blocks; answer forms like "AC", "A or B", ranges
+- [x] NCERT location index: sections, examples, exercises, figures, tables of Class 11–12 PCMB with printed page (5,893 places)
+- [x] Pages: /exam → /exam/jee|neet (chapters by weightage, due revisions) → chapter index (concepts, asked questions, one-screen revision, NCERT links, real paper image); "Revise kiya" spaced revision synced in the notebook; menu + home + chapter-page links
+- [x] On-demand solution + trick + "is sawal mein kya tha" + trap, checked against the key (or solved twice when no key)
+- [ ] Re-read all papers with the new subject-block rule + read the 4 new papers (NEET 2024, JEE Main Jan 2023, Jan + Apr 2026) — running: `bun scripts/exam/extract.ts --redo --workers=6`
+- [ ] Map every question to its NCERT chapter: `bun scripts/exam/analyze.ts --stage=classify`
+- [ ] Concepts per chapter + NCERT example/exercise claims checked against the book text: `--stage=concepts`
+- [ ] Written index per chapter + expert review against the NCERT chapter: `--stage=index`
+- [ ] Browser check of the full flow with real data (chapter page, solution button, paper image, revision)
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [ ] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text — resumed 26 Oct; Sanskrit finished. Hindi running: `bun scripts/verify-notes.ts --board=cbse --grades=10-12 --subject=hindi --rewrite-before=2026-10-25T14:00:00Z`
@@ -48,5 +51,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
 
 ## Ready next
+- JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2)
+- JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
+- Pre-make solutions for the most-asked questions so the first click is instant
 - Official covers for Class 1–8 NCERT books
 - Pre-make didi-voice audio for all notes with `scripts/audio-batch.ts` (only checked notes; ~1,200 chapters, many hours + AI credits) — not started; user paused work on 25 Oct
