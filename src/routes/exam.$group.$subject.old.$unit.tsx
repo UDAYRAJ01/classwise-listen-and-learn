@@ -5,7 +5,6 @@ import { Info, Printer } from "lucide-react";
 import { barIconClass, ScreenHeader } from "@/components/app/screen-header";
 import { QuestionCard } from "@/components/exam/question-card";
 import { ErrorCard } from "@/components/state-cards";
-import { Button } from "@/components/ui/button";
 import {
   EXAM_GROUPS,
   EXAM_NAMES,

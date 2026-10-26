@@ -127,19 +127,7 @@ function ChapterIndexPage() {
         </div>
       </header>
 
-      <section
-        className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-card p-3 sm:p-4"
-        aria-label="Revision"
-      >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary text-primary">
-          <Repeat className="h-5 w-5" />
-        </span>
-        <p className="min-w-0 flex-1 text-sm">
-          <span className="block font-display font-bold">Revision</span>
-          <span className="block text-xs text-muted-foreground">1, 3, 7, 15, 30 din baad yaad dilayenge</span>
-        </p>
-        <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} />
-      </section>
+      <RevisionButton revKey={revisionKey(group, subject, view.grade, view.slug)} className="mt-5" />
 
       {view.questions.length === 0 ? (
         <p className="mt-6 rounded-2xl border border-border bg-card px-4 py-3">
