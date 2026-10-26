@@ -196,6 +196,9 @@ export function fixSmallCaps(s: string): string {
 
 const isTitle = (s: string) =>
   !/^(E?XAMPLE|FIG(URE)?|TABLE)\b/i.test(s) &&
+  s.split(/\s+/).length <= 10 &&
+  !/:$/.test(s) &&
+  (!/\?$/.test(s) || upperCase(s)) &&
   /^[A-Z(“"‘']/.test(s) && s.length >= 3 && s.length <= 100 && !/[=×÷]/.test(s) && !/\.\s*$/.test(s.replace(/\?$/, ""));
 
 /**
