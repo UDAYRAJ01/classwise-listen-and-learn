@@ -329,6 +329,56 @@ async function extractPaper(spec: PaperSpec) {
     }
   }
 
+  // Questions that lean on a shared stem, paragraph or column table printed before them
+  // ("The value of X is ___", "…considering List-I and List-II?") get that text added.
+  const needsStem = (q: Q) =>
+    !q.passage &&
+    ((["numerical", "integer"].includes(q.kind) && q.body.length < 70) ||
+      (/List-?\s?I\b|Column|correct combination/i.test(q.body) && !q.body.includes("|") && q.body.length < 200) ||
+      (q.body.length < 45 && /\s(is|are)\s*(_{3,}|\.)?\s*$/.test(q.body)));
+  const byPage = new Map<number, Q[]>();
+  for (const q of merged.values()) if (needsStem(q)) byPage.set(q.page, [...(byPage.get(q.page) ?? []), q]);
+  for (const [page, qs] of byPage) {
+    const cache = `${cacheDir}/stem-${page}-${qs.map((q) => `${q.subject[0]}${q.printedNumber}`).join("_")}.json`;
+    let out: { items: { n: number; stem: string | null }[] };
+    if (existsSync(cache)) out = JSON.parse(readFileSync(cache, "utf8"));
+    else {
+      const images = [page > 1 ? readFileSync(pages[page - 2]!) : null, readFileSync(pages[page - 1]!)].filter(
+        (x): x is Buffer => x !== null,
+      );
+      out = await askJson({
+        instructions: `You complete transcriptions of an Indian entrance-exam paper. Some questions depend on text printed BEFORE them: a "Question Stem" / paragraph shared by several questions, a matching table with columns / List-I and List-II, or a reaction scheme defining X, Y, Z. ${page > 1 ? "IMAGE 1 is the previous page and IMAGE 2 the page with the questions." : "The image is the page with the questions."}
+For each listed question, transcribe exactly the shared text it needs (Markdown + LaTeX in $...$, chemistry in \\ce{...}, tables as Markdown tables) as "stem". Do not copy the question itself, its options or any solution. If the question is complete without any earlier text, stem = null.`,
+        text: `Paper: ${spec.label}.\n\n${qs
+          .map((q, i) => `#${i + 1} (${q.subject}, Q.${q.printedNumber}): ${q.body}`)
+          .join("\n")}\n\nExtracted text of the page${page > 1 ? "s" : ""}:\n${page > 1 ? pageText(pdf, page - 1) : ""}\n${pageText(pdf, page)}`,
+        images,
+        schema: {
+          type: "object",
+          additionalProperties: false,
+          required: ["items"],
+          properties: {
+            items: {
+              type: "array",
+              items: {
+                type: "object",
+                additionalProperties: false,
+                required: ["n", "stem"],
+                properties: { n: { type: "integer" }, stem: { type: ["string", "null"] } },
+              },
+            },
+          },
+        },
+        effort: "low",
+      });
+      writeFileSync(cache, JSON.stringify(out));
+    }
+    for (const it of out.items) {
+      const q = qs[it.n - 1];
+      if (q && it.stem?.trim()) q.passage = it.stem.trim();
+    }
+  }
+
   const rows = [...merged.values()].map((q) => {
     const number = restarts
       ? (subjectOrder.indexOf(q.subject) + 1) * 100 + q.printedNumber
@@ -354,9 +404,27 @@ async function extractPaper(spec: PaperSpec) {
     };
   });
 
+  // Re-reading a paper keeps the chapter / concept mapping and checked solutions of every
+  // question whose text did not change, so a redo never pays for that work again.
+  const old = await admin
+    .from("exam_questions")
+    .select(
+      "number, subject, body, passage, answer, topic, grade, chapter_slug, in_syllabus, concept_id, concept, ncert_kind, ncert_ref, source_type, solution, solution_ok",
+    )
+    .eq("paper_id", paperId);
+  if (old.error) throw old.error;
+  const prior = new Map(old.data.map((r) => [r.number, r]));
+  const carried = rows.map((r) => {
+    const o = prior.get(r.number);
+    if (!o || o.subject !== r.subject || o.body !== r.body || (o.passage ?? null) !== (r.passage ?? null)) return r;
+    const { number: _n, subject: _s, body: _b, passage: _p, answer, solution, solution_ok, ...mapping } = o;
+    // A solution was checked against the old answer; keep it only if the answer is the same.
+    return { ...r, ...mapping, ...(answer === r.answer ? { solution, solution_ok } : {}) };
+  });
+
   await admin.from("exam_questions").delete().eq("paper_id", paperId);
-  for (let i = 0; i < rows.length; i += 200) {
-    const r = await admin.from("exam_questions").insert(rows.slice(i, i + 200));
+  for (let i = 0; i < carried.length; i += 200) {
+    const r = await admin.from("exam_questions").insert(carried.slice(i, i + 200));
     if (r.error) throw r.error;
   }
   const withAnswer = rows.filter((r) => r.answer).length;
