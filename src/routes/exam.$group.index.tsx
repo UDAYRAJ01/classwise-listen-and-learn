@@ -3,7 +3,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, CalendarClock, Info } from "lucide-react";
 import { useMemo } from "react";
 
-import { Crumbs } from "@/components/crumbs";
+import { ChipRow, chipClass, ScreenHeader } from "@/components/app/screen-header";
 import { revisionLine } from "@/components/exam/revision-button";
 import { ErrorCard } from "@/components/state-cards";
 import { SubjectIcon } from "@/components/subject-icon";
@@ -82,30 +82,38 @@ function GroupPage() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
-      <Crumbs
-        items={[
-          {
-            label: "JEE / NEET",
-            link: (
-              <Link to="/exam" className="hover:text-foreground">
-                JEE / NEET
-              </Link>
-            ),
-          },
-          { label: meta.short },
-        ]}
-      />
-      <header className="mt-6">
-        <h1 className="font-display text-3xl font-extrabold sm:text-4xl">{meta.name} — chapter index</h1>
-        <p className="mt-2 max-w-3xl text-muted-foreground">
-          {data.papers.reduce((n, p) => n + p.questions, 0)} asli sawal, {data.papers.length} paper. Chapters us order mein jitni baar woh aaye — upar wale
-          pehle pakko.
-        </p>
-      </header>
-
+    <>
+      <ScreenHeader
+        back={<Link to="/exam" />}
+        title={`${meta.short} chapter index`}
+        subtitle={`${data.papers.reduce((n, p) => n + p.questions, 0)} asli sawal · ${data.papers.length} paper · zyada aane wale upar`}
+      >
+        <ChipRow label="Subject">
+          {meta.subjects.map((s) => {
+            const info = getSubject("cbse", 11, s);
+            const total = data.subjects.find((x) => x.subject === s)?.total ?? 0;
+            return (
+              <li key={s}>
+                <Link
+                  to="/exam/$group"
+                  params={{ group }}
+                  search={{ subject: s }}
+                  replace
+                  resetScroll={false}
+                  data-active={s === subject}
+                  className={chipClass}
+                >
+                  {info && <SubjectIcon name={info.icon} className="h-4 w-4" />}
+                  {SUBJECT_NAMES[s]} <span className="text-xs opacity-70">{total}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ChipRow>
+      </ScreenHeader>
+      <div className="mx-auto max-w-5xl px-4 pb-10 pt-4">
       {due.length > 0 && (
-        <section className="sticker mt-6 rounded-2xl bg-sticky p-4 text-sticky-foreground" aria-label="Aaj ka revision">
+        <section className="mb-4 rounded-2xl bg-sticky p-4 text-sticky-foreground" aria-label="Aaj ka revision">
           <p className="flex items-center gap-2 font-bold">
             <CalendarClock className="h-5 w-5" /> Aaj revise karo ({due.length})
           </p>
@@ -124,41 +132,13 @@ function GroupPage() {
         </section>
       )}
 
-      <nav className="no-scrollbar mt-8 flex gap-2 overflow-x-auto" aria-label="Subject">
-        {meta.subjects.map((s) => {
-          const info = getSubject("cbse", 11, s);
-          const tone = info ? TONE_CLASSES[info.tone] : null;
-          const total = data.subjects.find((x) => x.subject === s)?.total ?? 0;
-          return (
-            <Link
-              key={s}
-              to="/exam/$group"
-              params={{ group }}
-              search={{ subject: s }}
-              replace
-              resetScroll={false}
-              className={cn(
-                "flex shrink-0 items-center gap-2 rounded-xl border px-4 py-2 font-semibold",
-                s === subject ? "border-ink bg-ink text-paper" : "border-border bg-card hover:bg-muted",
-              )}
-            >
-              {info && (
-                <span className={cn("grid h-6 w-6 place-items-center rounded-md text-paper", tone?.solid)}>
-                  <SubjectIcon name={info.icon} className="h-3.5 w-3.5" />
-                </span>
-              )}
-              {SUBJECT_NAMES[s]} <span className="text-xs opacity-70">{total}</span>
-            </Link>
-          );
-        })}
-      </nav>
 
       {current.chapters.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-border bg-card p-6 text-muted-foreground">
           Is subject ke sawal abhi chapter-wise jode ja rahe hain. Thodi der baad dekho.
         </div>
       ) : (
-        <ol className="mt-6 space-y-2">
+        <ol className="space-y-2">
           {current.chapters.map((c, i) => (
             <ChapterRow
               key={`${c.grade}-${c.slug}`}
@@ -179,9 +159,8 @@ function GroupPage() {
           <h2 id="old-units" className="font-display text-xl font-extrabold">
             NCERT se hataye gaye units
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Yeh units nayi NCERT book mein nahi hain, par purane papers mein aaye the. Apne saal ke syllabus mein ho to hi
-            padho.
+          <p className="mt-1 text-xs text-muted-foreground">
+            Nayi NCERT mein nahi, par purane papers mein aaye. Syllabus mein ho to hi padho.
           </p>
           <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {current.oldUnits.map((u) => (
@@ -208,12 +187,12 @@ function GroupPage() {
       {current.outOfSyllabus > 0 && (
         <p className="mt-6 flex items-start gap-2 text-sm text-muted-foreground">
           <Info className="mt-0.5 h-4 w-4 shrink-0" />
-          {current.outOfSyllabus} purane sawal un topics se the jo ab NCERT book mein nahi hain (book chhoti ki gayi hai) —
-          unhe chapter ginti mein nahi joda. Jinka chapter ab bhi hai, wo us chapter ke page par "Purane syllabus ke sawal"
-          mein milenge; baaki upar ke hataye gaye units mein.
+          {current.outOfSyllabus} purane sawal hataye gaye topics ke the — ginti mein nahi jode. Wo chapter page par
+          "Purane syllabus ke sawal" ya upar ke units mein hain.
         </p>
       )}
     </div>
+    </>
   );
 }
 

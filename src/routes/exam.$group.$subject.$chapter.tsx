@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { BookOpen, ChevronDown, Lightbulb, NotebookText, Printer, Repeat, Sparkles, TriangleAlert } from "lucide-react";
+import { BookOpen, ChevronDown, Lightbulb, NotebookText, Printer, Sparkles, TriangleAlert } from "lucide-react";
 import { useState } from "react";
 
 import { barIconClass, ScreenHeader } from "@/components/app/screen-header";
