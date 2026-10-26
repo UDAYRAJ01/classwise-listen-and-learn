@@ -58,5 +58,4 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
-- Official covers for Class 1–8 NCERT books
 - Pre-make didi-voice audio for all notes with `scripts/audio-batch.ts` (only checked notes; ~1,200 chapters, many hours + AI credits) — not started; user paused work on 25 Oct
