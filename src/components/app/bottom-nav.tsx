@@ -104,15 +104,23 @@ function useTyping(): boolean {
       return !["checkbox", "radio", "button", "submit", "range", "file", "color"].includes(type);
     };
     const small = () => window.matchMedia("(max-width: 767.98px)").matches;
+    // Coming back is delayed: a tap on "send" blurs the field first, and the bar
+    // jumping in at that moment would move the button away from the finger.
+    let back: ReturnType<typeof setTimeout> | undefined;
     const onIn = (e: FocusEvent) => {
-      if (small() && isField(e.target)) setTyping(true);
+      if (!small() || !isField(e.target)) return;
+      clearTimeout(back);
+      setTyping(true);
     };
     const onOut = (e: FocusEvent) => {
-      if (isField(e.target) && !isField(e.relatedTarget)) setTyping(false);
+      if (!isField(e.target) || isField(e.relatedTarget)) return;
+      clearTimeout(back);
+      back = setTimeout(() => setTyping(false), 250);
     };
     document.addEventListener("focusin", onIn);
     document.addEventListener("focusout", onOut);
     return () => {
+      clearTimeout(back);
       document.removeEventListener("focusin", onIn);
       document.removeEventListener("focusout", onOut);
     };

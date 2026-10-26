@@ -265,6 +265,8 @@ function AskPage() {
               type="submit"
               disabled={!input.trim()}
               aria-label="Bhejo"
+              // Keep the keyboard open (chat apps do this) and the layout still while tapping.
+              onMouseDown={(e) => e.preventDefault()}
               className="h-11 w-11 rounded-xl p-0"
             >
               <Send className="h-4 w-4" />
