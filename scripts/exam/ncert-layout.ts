@@ -167,6 +167,25 @@ const tidy = (s: string) =>
 
 const upperCase = (s: string) => s === s.toUpperCase() && /[A-Z]{3}/.test(s);
 
+const isLooseTitle = (s: string) =>
+  !/^E?XAMPLE\b/i.test(s) && /^[A-Za-z(“"‘']/.test(s) && s.length >= 3 && s.length <= 120 && !/[=×÷]/.test(s);
+
+/** "propertieS of matter anD their meaSUrement" → "Properties of Matter and Their Measurement". */
+export function fixSmallCaps(s: string): string {
+  if (!/[a-z][A-Z]|^[a-z]/.test(s)) return s;
+  const small = new Set(["of", "and", "the", "in", "on", "for", "to", "a", "an", "its", "with", "by"]);
+  return s
+    .split(" ")
+    .map((w, i) => {
+      if (/^[A-Z0-9]{2,}$/.test(w) && !/[a-z]/.test(w)) return w; // real acronym
+      const lower = w.toLowerCase();
+      if (i > 0 && small.has(lower)) return lower;
+      return lower.replace(/^([(“"‘']?)(\p{L})/u, (_m, p: string, c: string) => p + c.toUpperCase());
+    })
+    .join(" ")
+    .replace(/\(si\)/i, "(SI)");
+}
+
 const isTitle = (s: string) =>
   !/^E?XAMPLE\b/i.test(s) &&
   /^[A-Z(“"‘']/.test(s) && s.length >= 3 && s.length <= 100 && !/[=×÷]/.test(s) && !/\.\s*$/.test(s.replace(/\?$/, ""));
@@ -327,7 +346,9 @@ function locateWith(lines: Line[], useFonts: boolean): Located[] {
         const next = lines[i + 1];
         if (next && next.page === l.page && Math.abs(next.y - l.y) < 40) title = next.text;
       }
-      if (!isTitle(title)) continue;
+      // Small-caps headings come out as "importance of chemiStry"; bold already proves a heading.
+      if (hasBold || large ? !isLooseTitle(title) : !isTitle(title)) continue;
+      title = fixSmallCaps(title);
       // A long heading wraps onto the next line: join it when the wrap is obvious
       // (all-capitals heading, or a line ending in a joining word like "and" / "of").
       const next = hasBold ? undefined : lines[i + 1];
