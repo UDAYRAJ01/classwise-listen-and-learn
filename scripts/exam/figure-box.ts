@@ -40,3 +40,13 @@ export function pageLines(pdf: string, page: number): TextLine[] {
   }
   return lines;
 }
+
+export interface PdfSpec {
+  slug: string;
+  file?: string;
+  pageRange?: [number, number];
+}
+
+/** The PDF a paper's page numbers refer to (the cut-out part when the file holds more). */
+export const paperPdf = (spec: PdfSpec) =>
+  spec.pageRange ? `/tmp/exam/pdf/${spec.slug}-part.pdf` : (spec.file ?? `/tmp/exam/pdf/${spec.slug}.pdf`);
