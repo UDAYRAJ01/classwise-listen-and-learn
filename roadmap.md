@@ -13,6 +13,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Exam Mode, mistake reports + owner page, streaks
 - [x] Optional student login that syncs the notebook across devices
 - [x] CBSE Class 9–12 chapter lists rebuilt from the official NCERT chapter PDFs (+ textbook links, covers)
+- [x] Official NCERT covers for Class 1–8 books (all 40)
 - [x] AI tutor "Guru se poochho" that searches the stored NCERT books
 - [x] Professional look
 - [x] Full app check: every page opens without errors on phone and laptop
