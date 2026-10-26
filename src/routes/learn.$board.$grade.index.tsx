@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowRight, Languages } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
+import { useEffect, useRef } from "react";
 
+import { BookTile, shelfGridClass, shelfItems } from "@/components/app/book-cover";
+import { ChipRow, chipClass, ScreenHeader } from "@/components/app/screen-header";
 import { BoardSwitch } from "@/components/board-switch";
-import { Crumbs } from "@/components/crumbs";
-import { SubjectProgressBar } from "@/components/progress-bits";
-import { SubjectIcon } from "@/components/subject-icon";
+import { SearchButton } from "@/components/search-dialog";
 import {
   BOARDS,
   GRADES,
@@ -13,26 +14,27 @@ import {
   gradeLabel,
   isBoard,
   parseGrade,
-  TONE_CLASSES,
   type BoardId,
 } from "@/lib/catalog";
-import { useNotebook } from "@/lib/notebook-store";
-import { subjectProgress, touchedInSubject } from "@/lib/progress";
-import { classChaptersQuery } from "@/lib/queries";
-import { cn } from "@/lib/utils";
+import { notebook, useNotebook } from "@/lib/notebook-store";
+import { classBooksQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/learn/$board/$grade/")({
-  loader: ({ params }) => {
+  loader: async ({ params, context }) => {
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
+    // Covers are a bonus: the shelf still works (subject tiles) if this fails.
+    await context.queryClient
+      .ensureQueryData(classBooksQuery(params.board, grade))
+      .catch(() => null);
     return { board: params.board as BoardId, grade };
   },
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [{ title: "Class not found — PadhoSuno" }] };
     const b = BOARDS[loaderData.board];
     const label = gradeLabel(loaderData.board, loaderData.grade);
-    const title = `${label} ${b.short} Notes — Sab Subjects | PadhoSuno`;
-    const description = `${b.name} ${label} ke sabhi subjects ke short notes, memory tricks, important questions aur audio. Hindi, English aur Hinglish mein.`;
+    const title = `${label} ${b.short} Books & Notes — Sab Subjects | PadhoSuno`;
+    const description = `${b.name} ${label} ki saari books: har chapter ke short notes, memory tricks, important questions aur audio. Hindi, English aur Hinglish mein.`;
     return {
       meta: [
         { title },
@@ -44,126 +46,106 @@ export const Route = createFileRoute("/learn/$board/$grade/")({
       ],
     };
   },
-  component: SubjectsPage,
+  component: ClassShelfPage,
 });
 
-function SubjectsPage() {
+function ClassShelfPage() {
   const { board, grade } = Route.useLoaderData();
-  const subjects = getSubjects(board, grade);
+  const { data: books, isPending } = useQuery(classBooksQuery(board, grade));
+  const { prefs } = useNotebook();
+  const items = shelfItems(getSubjects(board, grade), books);
   const label = gradeLabel(board, grade);
-  const nb = useNotebook();
-  // Totals are a bonus: the cards work without them (e.g. offline).
-  const { data: chapters } = useQuery(classChaptersQuery(board, grade));
+  const mine = prefs.board === board && prefs.grade === grade;
+  const chips = useRef<HTMLDivElement>(null);
+
+  // Keep the chosen class chip in view when the row is scrolled sideways.
+  useEffect(() => {
+    chips.current
+      ?.querySelector<HTMLElement>("[data-active=true]")
+      ?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [grade]);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <Crumbs items={[{ label: BOARDS[board].name }, { label }]} />
-
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <p className="font-hand text-xl text-accent">{BOARDS[board].books}</p>
-          <h1 className="text-5xl font-extrabold sm:text-6xl">{label}</h1>
-          <p className="mt-2 text-lg text-muted-foreground">
-            Subject chuno — har chapter ke notes, tricks aur audio milenge.
-          </p>
+    <>
+      <ScreenHeader
+        title="Books"
+        subtitle={BOARDS[board].name}
+        actions={
+          <>
+            <BoardSwitch value={board} grade={grade} compact />
+            <span className="md:hidden">
+              <SearchButton compact />
+            </span>
+          </>
+        }
+      >
+        <div ref={chips}>
+          <ChipRow label="Class">
+            {GRADES.map((g) => (
+              <li key={g}>
+                <Link
+                  to="/learn/$board/$grade"
+                  params={{ board, grade: String(g) }}
+                  data-active={g === grade}
+                  aria-current={g === grade ? "page" : undefined}
+                  className={chipClass}
+                  replace
+                >
+                  {board === "icse" && g >= 11 ? `ISC ${g}` : `Class ${g}`}
+                </Link>
+              </li>
+            ))}
+          </ChipRow>
         </div>
-        <BoardSwitch value={board} grade={grade} />
-      </div>
+      </ScreenHeader>
 
-      <nav aria-label="Class" className="no-scrollbar -mx-4 mt-8 overflow-x-auto px-4">
-        <ul className="flex gap-2 pb-2">
-          {GRADES.map((g) => (
-            <li key={g}>
-              <Link
-                to="/learn/$board/$grade"
-                params={{ board, grade: String(g) }}
-                data-active={g === grade}
-                className="grid h-11 min-w-11 place-items-center rounded-xl border border-border px-3 font-display text-lg font-bold hover:bg-muted data-[active=true]:bg-ink data-[active=true]:text-paper"
-              >
-                {g}
-              </Link>
-            </li>
-          ))}
+      <div className="mx-auto max-w-6xl px-4 pt-4 md:pt-4">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="font-display text-base font-extrabold md:text-xl">
+            {label}
+            <span className="font-semibold text-muted-foreground">
+              {" "}
+              · {items.length} {items.length === 1 ? "book" : "books"}
+            </span>
+          </h2>
+          {mine ? (
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-tone-leaf">
+              <CheckCircle2 className="h-4 w-4" /> Meri class
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => notebook.setPrefs({ board, grade })}
+              className="rounded-full px-2 py-1 text-xs font-bold text-primary hover:bg-muted"
+            >
+              Meri class banao
+            </button>
+          )}
+        </div>
+
+        <ul className={shelfGridClass}>
+          {isPending && !books
+            ? Array.from({ length: 9 }, (_, i) => (
+                <li key={i} aria-hidden>
+                  <span className="block aspect-[5/7] animate-pulse rounded-md bg-muted" />
+                  <span className="mt-2 block h-3 w-3/4 animate-pulse rounded bg-muted" />
+                </li>
+              ))
+            : items.map((it, i) => (
+                <li key={`${it.subject.slug}-${it.index}`}>
+                  <BookTile
+                    board={board}
+                    grade={grade}
+                    subject={it.subject}
+                    book={it.book}
+                    bookIndex={it.index}
+                    multi={it.multi}
+                    eager={i < 6}
+                  />
+                </li>
+              ))}
         </ul>
-      </nav>
-
-      <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {subjects.map((s) => {
-          const tone = TONE_CLASSES[s.tone];
-          const where = { board, grade, subject: s.slug };
-          const slugs = chapters?.[s.slug];
-          const prog = slugs ? subjectProgress(nb, where, slugs) : null;
-          const touched = touchedInSubject(nb, where);
-          const readN = prog ? prog.done + prog.read : touched.done + touched.read;
-          const anyActivity = readN > 0 || (prog ? prog.started : touched.started) > 0;
-          return (
-            <li key={s.slug}>
-              <Link
-                to="/learn/$board/$grade/$subject"
-                params={{ board, grade: String(grade), subject: s.slug }}
-                className="sticker press group flex h-full flex-col gap-4 rounded-2xl bg-card p-5"
-              >
-                <span className="flex items-center gap-4">
-                  <span
-                    className={cn(
-                      "grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-border",
-                      tone.solid,
-                    )}
-                  >
-                    <SubjectIcon name={s.icon} className="h-7 w-7 text-paper" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block font-display text-xl font-bold leading-tight">
-                      {s.name}
-                    </span>
-                    <span className="block text-muted-foreground">{s.hi}</span>
-                  </span>
-                  <ArrowRight className="h-5 w-5 shrink-0 transition-transform group-hover:translate-x-1" />
-                </span>
-                {prog && prog.total > 0 ? (
-                  <span className="block">
-                    <span className="flex items-baseline justify-between text-xs font-bold text-muted-foreground">
-                      <span>
-                        {anyActivity ? (
-                          <>
-                            <span className="text-foreground">{readN}</span>/{prog.total} padhe
-                          </>
-                        ) : (
-                          `${prog.total} chapters`
-                        )}
-                      </span>
-                      {anyActivity && (
-                        <span>{prog.left === 0 ? "Sab ho gaye ✓" : `${prog.left} baaki`}</span>
-                      )}
-                    </span>
-                    <SubjectProgressBar
-                      className="mt-1.5 h-2"
-                      total={prog.total}
-                      done={prog.done}
-                      read={prog.read}
-                      started={prog.started}
-                    />
-                  </span>
-                ) : (
-                  anyActivity && (
-                    <span className="text-xs font-bold text-tone-leaf">{readN} chapters padhe</span>
-                  )
-                )}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="mt-12 flex items-start gap-3 rounded-2xl border border-dashed border-border p-5">
-        <Languages className="mt-0.5 h-5 w-5 shrink-0 text-accent" />
-        <p className="text-muted-foreground">
-          Notes <strong className="text-foreground">Hinglish</strong>,{" "}
-          <strong className="text-foreground">हिंदी</strong> ya{" "}
-          <strong className="text-foreground">English</strong> mein padh aur sun sakte ho. Chapter
-          kholne ke baad upar se bhasha badlo.
-        </p>
       </div>
-    </div>
+    </>
   );
 }
