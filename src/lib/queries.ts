@@ -1,3 +1,4 @@
+import type { ShelfBook } from "@/lib/content.functions";
 import { queryOptions } from "@tanstack/react-query";
 
 import type { BoardId, Lang } from "./catalog";
@@ -28,7 +29,9 @@ export const classChaptersQuery = (board: BoardId, grade: number) =>
 export const classBooksQuery = (board: BoardId, grade: number) =>
   queryOptions({
     queryKey: ["class-books", board, grade],
-    queryFn: () => fetchClassBooks({ data: { board, grade } }),
+    // Covers are a bonus: on failure the shelf falls back to one tile per subject.
+    queryFn: (): Promise<Record<string, ShelfBook[]>> =>
+      fetchClassBooks({ data: { board, grade } }).catch(() => ({})),
     staleTime: 1000 * 60 * 60,
   });
 

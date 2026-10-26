@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -23,10 +23,7 @@ export const Route = createFileRoute("/learn/$board/$grade/")({
   loader: async ({ params, context }) => {
     const grade = parseGrade(params.grade);
     if (!isBoard(params.board) || grade === null) throw notFound();
-    // Covers are a bonus: the shelf still works (subject tiles) if this fails.
-    await context.queryClient
-      .ensureQueryData(classBooksQuery(params.board, grade))
-      .catch(() => null);
+    await context.queryClient.ensureQueryData(classBooksQuery(params.board, grade));
     return { board: params.board as BoardId, grade };
   },
   head: ({ loaderData }) => {
@@ -51,7 +48,7 @@ export const Route = createFileRoute("/learn/$board/$grade/")({
 
 function ClassShelfPage() {
   const { board, grade } = Route.useLoaderData();
-  const { data: books, isPending } = useQuery(classBooksQuery(board, grade));
+  const { data: books } = useSuspenseQuery(classBooksQuery(board, grade));
   const { prefs } = useNotebook();
   const items = shelfItems(getSubjects(board, grade), books);
   const label = gradeLabel(board, grade);
