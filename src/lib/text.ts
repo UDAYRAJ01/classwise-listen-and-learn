@@ -67,7 +67,8 @@ const SMALL_WORDS = new Set(["a", "an", "and", "as", "at", "by", "for", "from", 
  * and non-Latin scripts are left as they are.
  */
 export function tidyTitle(input: string): string {
-  const title = input.replace(/\s+/g, " ").trim();
+  // "Biotechnology : Principles" (a PDF gap) → "Biotechnology: Principles"; Hindi "कबीर : साखी" keeps its style.
+  const title = input.replace(/\s+/g, " ").replace(/([A-Za-z)])\s+([:;,])/g, "$1$2").trim();
   if (!/[A-Za-z]/.test(title)) return title;
   if (title !== title.toUpperCase() && title !== title.toLowerCase()) return title;
   let first = true;

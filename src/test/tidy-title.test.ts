@@ -33,6 +33,11 @@ describe("NCERT section headings", () => {
     expect(tidyHeading("S TRUCTURE OF P ROTEINS")).toBe("Structure of Proteins");
   });
 
+  it("drops the PDF gap before a colon in English titles only", () => {
+    expect(tidyTitle("Biotechnology : Principles and Processes")).toBe("Biotechnology: Principles and Processes");
+    expect(tidyTitle("कबीर : साखी")).toBe("कबीर : साखी");
+  });
+
   it("keeps possessives apart from the next word", () => {
     expect(tidyHeading("NEWTON’S FIRST LAW OF MOTION")).toBe("Newton’s First Law of Motion");
   });
