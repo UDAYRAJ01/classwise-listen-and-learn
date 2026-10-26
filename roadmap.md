@@ -55,7 +55,6 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 
 ## Ready next
 - JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2)
-
 - JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
