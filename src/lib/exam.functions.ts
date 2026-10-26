@@ -134,7 +134,11 @@ export const fetchExamOverview = createServerFn({ method: "GET" })
       sb.from("exam_concept_stats").select("*").eq("exam_group", data.group),
       sb.from("exam_subject_stats").select("*").eq("exam_group", data.group),
       sb.from("exam_coverage").select("*").eq("exam_group", data.group).order("year", { ascending: false }),
-      sb.from("exam_chapters").select("grade, subject, chapter_slug, content").eq("exam_group", data.group),
+      // Only whether an index is written: the full content is far too big to load for every chapter.
+      sb
+        .from("exam_chapters")
+        .select("grade, subject, chapter_slug, firstConcept:content->concepts->0->>id")
+        .eq("exam_group", data.group),
       sb.from("exam_old_unit_stats").select("*").eq("exam_group", data.group),
     ]);
     for (const r of [stats, concepts, subjects, papers, indexes, oldUnits]) {
@@ -142,11 +146,12 @@ export const fetchExamOverview = createServerFn({ method: "GET" })
     }
     const written = new Set(
       (indexes.data ?? [])
-        .filter((r) => (r.content as { concepts?: unknown } | null)?.concepts)
+        .filter((r) => Boolean(r.firstConcept))
         .map((r) => `${r.subject}:${r.grade}:${r.chapter_slug}`),
     );
     const titles = new Map<ExamSubject, Map<string, { title: string; order: number }>>();
-    for (const s of meta.subjects) titles.set(s, await chapterTitles(sb, s));
+    const titleLists = await Promise.all(meta.subjects.map((s) => chapterTitles(sb, s)));
+    meta.subjects.forEach((s, i) => titles.set(s, titleLists[i]!));
 
     const out: ExamOverview = {
       group: data.group,
