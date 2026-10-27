@@ -59,6 +59,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
 
 ## Ready next (phone app polish)
+- [ ] Request 27 Oct: complete analysis across all ten government families; parallel official-paper sourcing, full-paper review, compact guides and checked solutions. Missing originals/keys remain explicit blockers, never invented coverage.
 - [x] Government exams: ten-category hub + separate original-paper archive/question storage, honest 2017–2026 coverage, stage/section isolation, reviewed-question topic index; JEE/NEET unchanged
 - [x] UPSC first: 20 official Prelims PDFs located for 2017–2026 (GS I + CSAT), linked with accurate "PDF mila / checked / baaki" states
 - [x] UPSC 2018 GS I: all 100 original questions transcribed/reviewed, completeness validated, seven-topic sample shown; Economy guide/trick independently reviewed and saved; desktop/phone readback verified
