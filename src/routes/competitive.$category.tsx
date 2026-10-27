@@ -40,7 +40,7 @@ function CategoryContent({ category }: { category: (typeof GOVERNMENT_CATEGORIES
   }
   const ready = papers.filter(usablePaper);
   return <><ScreenHeader title={meta?.name} subtitle={meta?.exams} back={<Link to="/competitive" />} />
-    <main className="mx-auto max-w-4xl space-y-6 px-4 py-5">
+    <div className="mx-auto max-w-4xl space-y-6 px-4 py-5">
       {data.papers.length > 0 && <div className="flex flex-wrap gap-2">
         {[...new Set(data.papers.map((p) => p.stage))].map((s) => <Button key={s} size="sm" variant={stage === s ? "default" : "outline"} onClick={() => setStage(s)}>{s === "prelims" ? "Prelims" : "Mains"}</Button>)}
         {[...new Set(data.papers.filter((p) => p.stage === stage).map((p) => p.section))].map((s) => <Button key={s} size="sm" variant={section === s ? "default" : "outline"} onClick={() => setSection(s)}>{s === "gs" ? "GS I" : s.toUpperCase()}</Button>)}
@@ -71,5 +71,5 @@ function CategoryContent({ category }: { category: (typeof GOVERNMENT_CATEGORIES
         <ul className="divide-y divide-border">{papers.map((p) => <li key={p.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span>{p.label}<span className="block text-xs text-muted-foreground">{p.source_kind === "official" ? "Official paper" : p.source_kind} · {p.key_source === "none" ? "Key abhi nahi" : p.key_source}</span></span><a href={p.source_url} target="_blank" rel="noreferrer" aria-label={`${p.label} PDF`} className="p-2 text-primary"><ExternalLink className="h-4 w-4" /></a></li>)}</ul>
         {meta?.archive && <a href={meta.archive} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm text-primary">Official archive <ExternalLink className="h-4 w-4" /></a>}
       </section>
-    </main></>;
+    </div></>;
 }
