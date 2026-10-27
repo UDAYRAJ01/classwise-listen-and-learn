@@ -363,12 +363,51 @@ export type Database = {
           },
         ]
       }
+      gov_exam_solutions: {
+        Row: {
+          answer: string
+          content: Json
+          created_at: string
+          evidence_hash: string
+          question_id: string
+          reviewed: boolean
+          verification: string
+        }
+        Insert: {
+          answer: string
+          content: Json
+          created_at?: string
+          evidence_hash: string
+          question_id: string
+          reviewed?: boolean
+          verification: string
+        }
+        Update: {
+          answer?: string
+          content?: Json
+          created_at?: string
+          evidence_hash?: string
+          question_id?: string
+          reviewed?: boolean
+          verification?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gov_exam_solutions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: true
+            referencedRelation: "gov_exam_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gov_exam_topics: {
         Row: {
           content: Json
           evidence_hash: string
           exam: string
           id: string
+          jurisdiction: string
           reviewed: boolean
           section: string
           stage: string
@@ -379,6 +418,7 @@ export type Database = {
           evidence_hash: string
           exam: string
           id?: string
+          jurisdiction?: string
           reviewed?: boolean
           section: string
           stage: string
@@ -389,6 +429,7 @@ export type Database = {
           evidence_hash?: string
           exam?: string
           id?: string
+          jurisdiction?: string
           reviewed?: boolean
           section?: string
           stage?: string

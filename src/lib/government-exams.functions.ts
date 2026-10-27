@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { isGovernmentCategory, usablePaper, type GovernmentPaper, type GovernmentQuestion, type TopicGuide } from "./government-exams";
+import { isGovernmentCategory, usablePaper, type GovernmentPaper, type GovernmentQuestion, type TopicGuide, type GovernmentSolution } from "./government-exams";
 
 export const fetchGovernmentExams = createServerFn({ method: "GET" })
   .inputValidator((input: { category: unknown }) => {
@@ -32,7 +32,13 @@ export const fetchGovernmentExams = createServerFn({ method: "GET" })
       }
     }
     const exams = [...new Set(papers.map((p) => p.exam))];
-    const guides = exams.length ? await sb.from("gov_exam_topics").select("exam,stage,section,topic,content").in("exam", exams) : { data: [], error: null };
+    const guides = exams.length ? await sb.from("gov_exam_topics").select("exam,jurisdiction,stage,section,topic,content").in("exam", exams) : { data: [], error: null };
     if (guides.error) throw new Error("Topic notes load nahi hue");
-    return { papers, questions, guides: (guides.data ?? []) as { exam: string; stage: string; section: string; topic: string; content: TopicGuide }[] };
+    const solutions: GovernmentSolution[] = [];
+    for (let from = 0; from < questions.length; from += 200) {
+      const r = await sb.from("gov_exam_solutions").select("question_id,answer,verification,content").in("question_id", questions.slice(from,from+200).map(q=>q.id));
+      if (r.error) throw new Error("Solutions load nahi hue");
+      solutions.push(...(r.data ?? []) as GovernmentSolution[]);
+    }
+    return { papers, questions, solutions, guides: (guides.data ?? []) as { exam: string; jurisdiction: string; stage: string; section: string; topic: string; content: TopicGuide }[] };
   });

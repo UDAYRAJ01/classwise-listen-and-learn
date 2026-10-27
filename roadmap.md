@@ -59,6 +59,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
 
 ## Ready next (phone app polish)
+- [ ] Request 27 Oct: complete analysis across all ten government families. UPSC remaining Prelims transcription, guides and independent solutions running; official CDS II 2017 Maths (100 questions confirmed on cover) transcription running. Complete ten-year coverage/official keys remain unfinished.
+- [ ] Source blockers: SSC/CHSL/RRB originals are candidate-login/time-limited; SBI/IBPS public originals not found (memory papers excluded); CTET official PDF host could not resolve; state Police/Subordinate/Judiciary original PDFs not verified; Rajasthan PSC archive found but direct PDF not verified. Do not import notices/archive HTML as papers or claim these sections complete.
 - [x] Government exams: ten-category hub + separate original-paper archive/question storage, honest 2017–2026 coverage, stage/section isolation, reviewed-question topic index; JEE/NEET unchanged
 - [x] UPSC first: 20 official Prelims PDFs located for 2017–2026 (GS I + CSAT), linked with accurate "PDF mila / checked / baaki" states
 - [x] UPSC 2018 GS I: all 100 original questions transcribed/reviewed, completeness validated, seven-topic sample shown; Economy guide/trick independently reviewed and saved; desktop/phone readback verified

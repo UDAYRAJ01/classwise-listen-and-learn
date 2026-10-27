@@ -5,7 +5,7 @@ import { ExternalLink, FileText } from "lucide-react";
 import { ScreenHeader } from "@/components/app/screen-header";
 import { Button } from "@/components/ui/button";
 import { MathMarkdown } from "@/components/math-markdown";
-import { GOVERNMENT_CATEGORIES, PAPER_YEARS, isGovernmentCategory, topicKey, usablePaper, type GovernmentQuestion } from "@/lib/government-exams";
+import { GOVERNMENT_CATEGORIES, PAPER_YEARS, isGovernmentCategory, paperSelection, topicKey, usablePaper, type GovernmentQuestion } from "@/lib/government-exams";
 import { governmentExamQuery } from "@/lib/government-exams.queries";
 export const Route = createFileRoute("/competitive/$category")({
   loader: ({ params, context }) => {
@@ -28,8 +28,10 @@ function CategoryScreen() {
 function CategoryContent({ category }: { category: (typeof GOVERNMENT_CATEGORIES)[number]["id"] }) {
   const { data } = useSuspenseQuery(governmentExamQuery(category));
   const meta = GOVERNMENT_CATEGORIES.find((c) => c.id === category);
-  const [stage, setStage] = useState("prelims"), [section, setSection] = useState("gs");
-  const papers = data.papers.filter((p) => p.stage === stage && p.section === section);
+  const [selection, setSelection] = useState({exam:"",stage:"prelims",section:"gs"});
+  const {exam,stage,section} = paperSelection(data.papers,selection.exam,selection.stage,selection.section);
+  const examPapers = data.papers.filter(p=>p.exam===exam);
+  const papers = examPapers.filter((p) => p.stage === stage && p.section === section);
   const byId = new Map(papers.map((p) => [p.id, p]));
   const questions = data.questions.filter((q) => byId.has(q.paper_id));
   const groups = new Map<string, { topic: string; questions: GovernmentQuestion[]; years: Set<number>; exam: string; jurisdiction: string }>();
@@ -42,8 +44,9 @@ function CategoryContent({ category }: { category: (typeof GOVERNMENT_CATEGORIES
   return <><ScreenHeader title={meta?.name} subtitle={meta?.exams} back={<Link to="/competitive" />} />
     <div className="mx-auto max-w-4xl space-y-6 px-4 py-5">
       {data.papers.length > 0 && <div className="flex flex-wrap gap-2">
-        {[...new Set(data.papers.map((p) => p.stage))].map((s) => <Button key={s} size="sm" variant={stage === s ? "default" : "outline"} onClick={() => setStage(s)}>{s === "prelims" ? "Prelims" : "Mains"}</Button>)}
-        {[...new Set(data.papers.filter((p) => p.stage === stage).map((p) => p.section))].map((s) => <Button key={s} size="sm" variant={section === s ? "default" : "outline"} onClick={() => setSection(s)}>{s === "gs" ? "GS I" : s.toUpperCase()}</Button>)}
+        {[...new Set(data.papers.map(p=>p.exam))].map(e=><Button key={e} size="sm" variant={exam===e?"default":"outline"} onClick={()=>setSelection({exam:e,stage:"",section:""})}>{e.replaceAll("-"," ").toUpperCase()}</Button>)}
+        {[...new Set(examPapers.map((p) => p.stage))].map((s) => <Button key={s} size="sm" variant={stage === s ? "default" : "outline"} onClick={() => setSelection({exam,stage:s,section:""})}>{s.toUpperCase()}</Button>)}
+        {[...new Set(examPapers.filter((p) => p.stage === stage).map((p) => p.section))].map((s) => <Button key={s} size="sm" variant={section === s ? "default" : "outline"} onClick={() => setSelection({exam,stage,section:s})}>{s === "gs" ? "GS I" : s.replaceAll("-"," ").toUpperCase()}</Button>)}
       </div>}
       <section>
         <h2 className="font-display text-lg font-bold">Paper coverage</h2>
@@ -56,17 +59,18 @@ function CategoryContent({ category }: { category: (typeof GOVERNMENT_CATEGORIES
       </section>
       {questions.length > 0 ? <section><h2 className="mb-3 font-display text-lg font-bold">Topic index · Is checked sample mein</h2>
         {[...groups.entries()].sort((a, b) => b[1].questions.length - a[1].questions.length).map(([key, g]) => {
-          const guide = data.guides.find((n) => n.exam === g.exam && n.stage === stage && n.section === section && n.topic === g.topic);
+          const guide = data.guides.find((n) => n.exam === g.exam && n.jurisdiction === g.jurisdiction && n.stage === stage && n.section === section && n.topic === g.topic);
           return <details key={key} className="border-b border-border py-3"><summary className="cursor-pointer font-bold">{g.topic}<span className="ml-2 text-xs font-normal text-muted-foreground">{g.questions.length} sawal · {g.years.size} saal</span></summary>
             {guide && <div className="space-y-2 py-3 text-sm"><MathMarkdown>{guide.content.easy}</MathMarkdown><p><strong>Trick:</strong> {guide.content.trick}</p><p><strong>Trap:</strong> {guide.content.trap}</p><p><strong>Revision:</strong> {guide.content.revision}</p><p className="text-xs text-muted-foreground">Possible pattern — prediction nahi: {guide.content.patterns.join(" · ")}</p></div>}
-            <div className="space-y-3 py-3">{g.questions.map((q) => { const p = byId.get(q.paper_id); return <article key={q.id} className="rounded-lg border border-border bg-card p-3">
+            <div className="space-y-3 py-3">{g.questions.map((q) => { const p = byId.get(q.paper_id), solution=data.solutions.find(s=>s.question_id===q.id); return <article key={q.id} className="rounded-lg border border-border bg-card p-3">
               <p className="mb-2 text-xs font-semibold text-muted-foreground">{p?.label} · Q{q.number} · {q.concept}</p><MathMarkdown>{q.body}</MathMarkdown>
               {Array.isArray(q.options) && <ol className="mt-2 space-y-1 text-sm">{q.options.map((o, i) => <li key={i}><MathMarkdown>{`(${String.fromCharCode(97 + i)}) ${String(o)}`}</MathMarkdown></li>)}</ol>}
               <a href={`${p?.source_url}#page=${q.page}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-primary"><FileText className="h-3 w-3" /> Asli paper · PDF page {q.page}</a>
-              <p className="mt-2 text-xs text-muted-foreground">Checked solution aur book reference abhi baaki.</p>
+              {solution ? <details className="mt-3 border-t border-border pt-2"><summary className="cursor-pointer text-sm font-semibold text-primary">Answer aur solution</summary><div className="space-y-2 pt-3 text-sm"><strong>Answer: ({String.fromCharCode(97+Number(solution.answer))})</strong><p className="text-xs text-muted-foreground">Alag-alag solve karke check kiya · official key nahi</p><MathMarkdown>{solution.content.explanation}</MathMarkdown>{solution.content.methods.map((m,i)=><MathMarkdown key={i}>{`${i+1}. ${m}`}</MathMarkdown>)}<MathMarkdown>{`Trick: ${solution.content.trick}`}</MathMarkdown><MathMarkdown>{`Trap: ${solution.content.trap}`}</MathMarkdown></div></details> : <p className="mt-2 text-xs text-muted-foreground">Solution checking baaki.</p>}
             </article>; })}</div>
           </details>;
-        })}</section> : <p className="text-sm text-muted-foreground">{category === "upsc" ? "Papers ki checking baaki hai." : `Batch ${meta?.order} · UPSC ke baad ek-ek karke.`}</p>}
+        })}
+      </section> : <p className="text-sm text-muted-foreground">{papers.length ? "Asli papers ki checking chal rahi hai; poori checking ke baad topic index dikhega." : ["ssc","railway","banking"].includes(category) ? "Public asli papers abhi nahi mile; memory-based sawal analysis mein nahi gine jayenge." : "Asli paper sources ki tasdeek baaki hai."}</p>}
       <section><h2 className="mb-2 font-display text-lg font-bold">Asli paper PDFs</h2>
         <ul className="divide-y divide-border">{papers.map((p) => <li key={p.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span>{p.label}<span className="block text-xs text-muted-foreground">{p.source_kind === "official" ? "Official paper" : p.source_kind} · {p.key_source === "none" ? "Key abhi nahi" : p.key_source}</span></span><a href={p.source_url} target="_blank" rel="noreferrer" aria-label={`${p.label} PDF`} className="p-2 text-primary"><ExternalLink className="h-4 w-4" /></a></li>)}</ul>
         {meta?.archive && <a href={meta.archive} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-2 text-sm text-primary">Official archive <ExternalLink className="h-4 w-4" /></a>}
