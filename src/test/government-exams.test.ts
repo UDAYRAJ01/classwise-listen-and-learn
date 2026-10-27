@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GOVERNMENT_CATEGORIES, PAPER_YEARS, isGovernmentCategory, topicKey, usablePaper } from "@/lib/government-exams";
+import { GOVERNMENT_CATEGORIES, PAPER_YEARS, isGovernmentCategory, paperSelection, topicKey, usablePaper, type GovernmentPaper } from "@/lib/government-exams";
 describe("government exam scope and evidence", () => {
   it("includes the ten requested families", () => {
     expect(GOVERNMENT_CATEGORIES.map((c) => c.id)).toEqual(["upsc","ssc","railway","banking","defence","police","teaching","state-psc","state-subordinate","judiciary"]);
@@ -15,5 +15,10 @@ describe("government exam scope and evidence", () => {
   it("never mixes stages, state jurisdictions or exams", () => {
     const p={exam:"upsc-cse",jurisdiction:"national",stage:"prelims",section:"gs"};
     for(const other of [{...p,stage:"mains"},{...p,jurisdiction:"UP"},{...p,exam:"ssc-cgl"},{...p,section:"csat"}]) expect(topicKey(other,"Polity")).not.toBe(topicKey(p,"Polity"));
+  });
+  it("selects an available stage and section when switching exam families",()=>{
+    const rows=[{exam:"cds",stage:"written",section:"maths"},{exam:"ctet",stage:"paper-i",section:"all"}] as GovernmentPaper[];
+    expect(paperSelection(rows,"cds","prelims","gs")).toEqual({exam:"cds",stage:"written",section:"maths"});
+    expect(paperSelection(rows,"ctet","written","maths")).toEqual({exam:"ctet",stage:"paper-i",section:"all"});
   });
 });

@@ -34,3 +34,12 @@ export function topicKey(p: Pick<GovernmentPaper, "exam" | "jurisdiction" | "sta
   return JSON.stringify([p.exam, p.jurisdiction, p.stage, p.section, topic]);
 }
 export interface TopicGuide { easy: string; trick: string; trap: string; revision: string; patterns: string[] }
+export interface GovernmentSolution { question_id: string; answer: string; verification: string; content: { explanation: string; methods: string[]; trick: string; trap: string } }
+export function paperSelection(papers: GovernmentPaper[], exam: string, stage: string, section: string) {
+  const selectedExam = papers.some(p => p.exam === exam) ? exam : papers[0]?.exam ?? "";
+  const rows = papers.filter(p => p.exam === selectedExam);
+  const selectedStage = rows.some(p => p.stage === stage) ? stage : rows[0]?.stage ?? "";
+  const stages = rows.filter(p => p.stage === selectedStage);
+  const selectedSection = stages.some(p => p.section === section) ? section : stages[0]?.section ?? "";
+  return { exam: selectedExam, stage: selectedStage, section: selectedSection };
+}
