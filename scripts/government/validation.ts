@@ -1,4 +1,7 @@
 export interface ExtractedQuestion { number: number; page: number; body: string; options: string[]; kind: "single" | "multiple" | "numeric" | "descriptive"; section: string; topic: string; concept: string }
+export function solutionAgreement(a: {answer:string;confident:boolean}, b: {answer:string;confident:boolean}, reviewed: {answer:string;confident:boolean}) {
+  return a.confident && b.confident && reviewed.confident && /^[0-3]$/.test(a.answer) && a.answer===b.answer && a.answer===reviewed.answer;
+}
 export function validatePaperQuestions(input: ExtractedQuestion[], expected: number) {
   const out = new Map<number, ExtractedQuestion>();
   for (const q of input) {

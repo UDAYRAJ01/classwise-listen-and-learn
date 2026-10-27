@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { supabaseAdmin as admin } from "@/integrations/supabase/client.server";
 import { askJson, args, pool } from "../exam/lib";
 import { usablePaper } from "@/lib/government-exams";
+import { solutionAgreement } from "./validation";
 const schema = { type: "object", additionalProperties: false, properties: {
   answer: { type: "string" }, explanation: { type: "string" }, methods: { type: "array", items: { type: "string" } },
   trick: { type: "string" }, trap: { type: "string" }, confident: { type: "boolean" },
@@ -28,7 +29,7 @@ await pool(questions.slice(0, Number(args.get("limit") ?? questions.length)), Nu
   const b = await askJson<Solution>({instructions:instructions+" Independently audit all statements before choosing. No prior candidate is available.", text, schema, effort:"high"});
   if (!a.confident || !b.confident || a.answer !== b.answer || !/^[0-3]$/.test(a.answer)) { console.log("UNRESOLVED",q.id); return; }
   const checked = await askJson<Solution>({instructions:instructions+" Review both solutions for factual errors, misleading shortcuts and answer validity. Set confident=false for any remaining uncertainty. Return the corrected explanation; do not change answer to reconcile a disagreement.",text:text+"\nCandidates:"+JSON.stringify([a,b]),schema,effort:"high"});
-  if (!checked.confident || checked.answer !== a.answer) return;
+  if (!solutionAgreement(a,b,checked)) return;
   const r = await admin.from("gov_exam_solutions").upsert({question_id:q.id,answer:checked.answer,content:JSON.parse(JSON.stringify(checked)),verification:"independent_agreement",reviewed:true,evidence_hash});
   if (r.error) throw r.error; console.log("SOLUTION",q.id);
 });
