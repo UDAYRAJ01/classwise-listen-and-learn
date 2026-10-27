@@ -22,7 +22,7 @@ export interface GovernmentPaper {
   expected_questions: number | null;
 }
 export interface GovernmentQuestion {
-  id: string; paper_id: string; number: number; page: number; body: string; options: unknown;
+  id: string; paper_id: string; number: number; page: number; body: string; options: string[];
   kind: string; section: string; topic: string; concept: string;
 }
 /** Coverage is measured only from reviewed originals, never model/memory-based papers. */

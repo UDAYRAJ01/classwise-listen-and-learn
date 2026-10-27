@@ -27,7 +27,7 @@ export const fetchGovernmentExams = createServerFn({ method: "GET" })
       for (let from = 0; ; from += 1000) {
         const r = await sb.from("gov_exam_questions").select("id,paper_id,number,page,body,options,kind,section,topic,concept").in("paper_id", readyIds).order("id").range(from, from + 999);
         if (r.error) throw new Error("Sawal load nahi hue");
-        questions.push(...(r.data ?? []) as GovernmentQuestion[]);
+        questions.push(...(r.data ?? []).map((q) => ({ ...q, options: Array.isArray(q.options) ? q.options.filter((o): o is string => typeof o === "string") : [] })) as GovernmentQuestion[]);
         if ((r.data ?? []).length < 1000) break;
       }
     }
