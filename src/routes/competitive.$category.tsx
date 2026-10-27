@@ -5,7 +5,7 @@ import { ExternalLink, FileText } from "lucide-react";
 import { ScreenHeader } from "@/components/app/screen-header";
 import { Button } from "@/components/ui/button";
 import { MathMarkdown } from "@/components/math-markdown";
-import { GOVERNMENT_CATEGORIES, PAPER_YEARS, isGovernmentCategory, paperSelection, topicKey, usablePaper, type GovernmentQuestion } from "@/lib/government-exams";
+import { GOVERNMENT_CATEGORIES, PAPER_YEARS, governmentOptionText, isGovernmentCategory, paperSelection, topicKey, usablePaper, type GovernmentQuestion } from "@/lib/government-exams";
 import { governmentExamQuery } from "@/lib/government-exams.queries";
 export const Route = createFileRoute("/competitive/$category")({
   loader: ({ params, context }) => {
@@ -64,7 +64,7 @@ function CategoryContent({ category }: { category: (typeof GOVERNMENT_CATEGORIES
             {guide && <div className="space-y-2 py-3 text-sm"><MathMarkdown>{guide.content.easy}</MathMarkdown><p><strong>Trick:</strong> {guide.content.trick}</p><p><strong>Trap:</strong> {guide.content.trap}</p><p><strong>Revision:</strong> {guide.content.revision}</p><p className="text-xs text-muted-foreground">Possible pattern — prediction nahi: {guide.content.patterns.join(" · ")}</p></div>}
             <div className="space-y-3 py-3">{g.questions.map((q) => { const p = byId.get(q.paper_id), solution=data.solutions.find(s=>s.question_id===q.id); return <article key={q.id} className="rounded-lg border border-border bg-card p-3">
               <p className="mb-2 text-xs font-semibold text-muted-foreground">{p?.label} · Q{q.number} · {q.concept}</p><MathMarkdown>{q.body}</MathMarkdown>
-              {Array.isArray(q.options) && <ol className="mt-2 space-y-1 text-sm">{q.options.map((o, i) => <li key={i}><MathMarkdown>{`(${String.fromCharCode(97 + i)}) ${String(o)}`}</MathMarkdown></li>)}</ol>}
+              {Array.isArray(q.options) && <ol className="mt-2 space-y-1 text-sm">{q.options.map((o, i) => <li key={i}><MathMarkdown>{governmentOptionText(o, i)}</MathMarkdown></li>)}</ol>}
               <a href={`${p?.source_url}#page=${q.page}`} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-xs text-primary"><FileText className="h-3 w-3" /> Asli paper · PDF page {q.page}</a>
               {solution ? <details className="mt-3 border-t border-border pt-2"><summary className="cursor-pointer text-sm font-semibold text-primary">Answer aur solution</summary><div className="space-y-2 pt-3 text-sm"><strong>Answer: ({String.fromCharCode(97+Number(solution.answer))})</strong><p className="text-xs text-muted-foreground">Alag-alag solve karke check kiya · official key nahi</p><MathMarkdown>{solution.content.explanation}</MathMarkdown>{solution.content.methods.map((m,i)=><MathMarkdown key={i}>{`${i+1}. ${m}`}</MathMarkdown>)}<MathMarkdown>{`Trick: ${solution.content.trick}`}</MathMarkdown><MathMarkdown>{`Trap: ${solution.content.trap}`}</MathMarkdown></div></details> : <p className="mt-2 text-xs text-muted-foreground">Solution checking baaki.</p>}
             </article>; })}</div>

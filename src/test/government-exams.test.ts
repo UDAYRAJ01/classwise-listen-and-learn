@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { GOVERNMENT_CATEGORIES, PAPER_YEARS, isGovernmentCategory, paperSelection, topicKey, usablePaper, type GovernmentPaper } from "@/lib/government-exams";
+import { GOVERNMENT_CATEGORIES, PAPER_YEARS, governmentOptionText, isGovernmentCategory, paperSelection, topicKey, usablePaper, type GovernmentPaper } from "@/lib/government-exams";
 describe("government exam scope and evidence", () => {
+  it("preserves original option identity without duplicating labels", () => {
+    expect(governmentOptionText("(a) 125", 0)).toBe("(a) 125");
+    expect(governmentOptionText("1. 125", 0)).toBe("1. 125");
+    expect(governmentOptionText("125", 1)).toBe("(b) 125");
+  });
   it("includes the ten requested families", () => {
     expect(GOVERNMENT_CATEGORIES.map((c) => c.id)).toEqual(["upsc","ssc","railway","banking","defence","police","teaching","state-psc","state-subordinate","judiciary"]);
     expect(isGovernmentCategory("jee")).toBe(false);
