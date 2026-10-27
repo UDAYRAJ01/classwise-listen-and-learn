@@ -7,7 +7,7 @@ import { askJson, pool, args } from "../exam/lib";
 import { validatePaperQuestions, type ExtractedQuestion } from "./validation";
 
 interface Spec { slug: string; category: string; exam: string; jurisdiction: string; stage: string; section: string; year: number; label: string; source_url: string; source_kind: string; key_source: string; expected_questions: number }
-const specs: Spec[] = JSON.parse(readFileSync(new URL("./papers.json", import.meta.url), "utf8"));
+const specs: Spec[] = JSON.parse(readFileSync(args.get("manifest") ?? new URL("./papers.json", import.meta.url), "utf8"));
 const ROOT = "/tmp/government", ONLY = args.get("only"), WORKERS = Number(args.get("workers") ?? 3);
 const itemSchema = { type: "object", additionalProperties: false, properties: {
   number: { type: "integer" }, page: { type: "integer" }, body: { type: "string" }, options: { type: "array", items: { type: "string" } },
@@ -38,12 +38,17 @@ async function ingest(p: Spec) {
     if (existsSync(cache)) { all.push(...JSON.parse(readFileSync(cache, "utf8"))); return; }
     const image = `${dir}/${page}.png`;
     if (!existsSync(image)) execFileSync("pdftoppm", ["-f", String(page), "-l", String(page), "-scale-to", "1800", "-png", "-singlefile", pdf, `${dir}/${page}`]);
-    const bytes = new Uint8Array(readFileSync(image));
-    const instructions = `Transcribe ONLY English questions from this official ${p.label} page ${page}. Hindi duplicates and instruction pages must produce an empty questions array. Preserve EVERY statement, table, passage, option and number; do not solve or invent. Include question numbers printed on the page, not your own numbering. No answer hints. kind single unless paper specifies otherwise. section must be '${p.section}'. Classify topic using a stable compact topic name: Polity, History, Geography, Economy, Environment, Science & Technology, Current Affairs, Reading Comprehension, Quantitative Aptitude, Reasoning. concept specific but compact. Output page=${page}. If question continues onto another page retain exact visible text and mark [CONTINUED]; never invent missing text.`;
-    const first = await askJson<{ questions: ExtractedQuestion[] }>({ instructions, text: `Read PDF page ${page}.`, images: [bytes], schema, effort: "low" });
+    const images = [new Uint8Array(readFileSync(image))];
+    for (const neighbor of [page-1,page+1].filter(n=>n>=1&&n<=pages)) {
+      const path=`${dir}/context-${neighbor}.png`;
+      if(!existsSync(path)) execFileSync("pdftoppm",["-f",String(neighbor),"-l",String(neighbor),"-scale-to","1800","-png","-singlefile",pdf,`${dir}/context-${neighbor}`]);
+      images.push(new Uint8Array(readFileSync(path)));
+    }
+    const instructions = `Transcribe ONLY English questions whose printed question number STARTS on the FIRST image (official ${p.label} page ${page}). Remaining images show neighboring pages (${[page-1,page+1].filter(n=>n>=1&&n<=pages).join(",")}) ONLY to recover continuation or shared passages for first-image questions; never output questions starting on those images. Hindi duplicates and instruction pages produce an empty array. Preserve EVERY statement, table, passage, option and number; do not solve or invent. Include printed numbers. No answer hints. kind single unless specified otherwise. section must be '${p.section}'. Classify into compact stable subject-appropriate topics (e.g. Polity, History, Geography, Economy, Environment, Science & Technology, Current Affairs, Reading Comprehension, Arithmetic, Algebra, Geometry, Reasoning, Pedagogy, Law). concept specific but compact. Output page=${page}. If continuation is not fully visible mark [CONTINUED]; never invent missing text.`;
+    const first = await askJson<{ questions: ExtractedQuestion[] }>({ instructions, text: `Read PDF page ${page}, neighbors are context only.`, images, schema, effort: "low" });
     const checked = await askJson<{ questions: ExtractedQuestion[] }>({
       instructions: `${instructions} You are an independent transcription reviewer. Compare the candidate to the original image character by character. Correct omissions, wrong numbers, options, assertions and passage text. Add omitted English questions. Remove Hindi duplicates. Return the full corrected transcription, not a summary. Never approve a cut-off question by filling in guessed words.`,
-      text: `Candidate: ${JSON.stringify(first)}`, images: [bytes], schema, effort: "medium",
+      text: `Candidate: ${JSON.stringify(first)}`, images, schema, effort: "medium",
     });
     writeFileSync(cache, JSON.stringify(checked.questions)); all.push(...checked.questions);
     console.log(p.slug, `page ${page}/${pages}`, `${checked.questions.length} questions reviewed`);
