@@ -35,6 +35,10 @@ export function topicKey(p: Pick<GovernmentPaper, "exam" | "jurisdiction" | "sta
 }
 export interface TopicGuide { easy: string; trick: string; trap: string; revision: string; patterns: string[] }
 export interface GovernmentSolution { question_id: string; answer: string; verification: string; content: { explanation: string; methods: string[]; trick: string; trap: string } }
+/** Keep the printed label; add one only when the transcription has none. */
+export function governmentOptionText(option: string, index: number) {
+  return /^\s*(?:\([a-d1-4]\)|[a-d1-4][.)])\s+/i.test(option) ? option : `(${String.fromCharCode(97 + index)}) ${option}`;
+}
 export function paperSelection(papers: GovernmentPaper[], exam: string, stage: string, section: string) {
   const selectedExam = papers.some(p => p.exam === exam) ? exam : papers[0]?.exam ?? "";
   const rows = papers.filter(p => p.exam === selectedExam);
