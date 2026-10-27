@@ -20,6 +20,8 @@ import { Route as ApiExamSolutionRouteImport } from './routes/api/exam-solution'
 import { Route as ApiNotesRouteImport } from './routes/api/notes'
 import { Route as ApiSyllabusRouteImport } from './routes/api/syllabus'
 import { Route as ApiTutorRouteImport } from './routes/api/tutor'
+import { Route as CompetitiveIndexRouteImport } from './routes/competitive.index'
+import { Route as CompetitiveCategoryRouteImport } from './routes/competitive.$category'
 import { Route as ExamIndexRouteImport } from './routes/exam.index'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
 import { Route as ExamGroupIndexRouteImport } from './routes/exam.$group.index'
@@ -83,6 +85,16 @@ const ApiTutorRoute = ApiTutorRouteImport.update({
   path: '/api/tutor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompetitiveIndexRoute = CompetitiveIndexRouteImport.update({
+  id: '/competitive/',
+  path: '/competitive/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompetitiveCategoryRoute = CompetitiveCategoryRouteImport.update({
+  id: '/competitive/$category',
+  path: '/competitive/$category',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExamIndexRoute = ExamIndexRouteImport.update({
   id: '/exam/',
   path: '/exam/',
@@ -138,6 +150,8 @@ export interface FileRoutesByFullPath {
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/competitive/$category': typeof CompetitiveCategoryRoute
+  '/competitive/': typeof CompetitiveIndexRoute
   '/exam/': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/exam/$group/': typeof ExamGroupIndexRoute
@@ -158,6 +172,8 @@ export interface FileRoutesByTo {
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/competitive/$category': typeof CompetitiveCategoryRoute
+  '/competitive': typeof CompetitiveIndexRoute
   '/exam': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/exam/$group': typeof ExamGroupIndexRoute
@@ -180,6 +196,8 @@ export interface FileRoutesById {
   '/api/notes': typeof ApiNotesRoute
   '/api/syllabus': typeof ApiSyllabusRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/competitive/$category': typeof CompetitiveCategoryRoute
+  '/competitive/': typeof CompetitiveIndexRoute
   '/exam/': typeof ExamIndexRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/exam/$group/': typeof ExamGroupIndexRoute
@@ -202,6 +220,8 @@ export interface FileRouteTypes {
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/competitive/$category'
+    | '/competitive/'
     | '/exam/'
     | '/admin/reports'
     | '/exam/$group/'
@@ -222,6 +242,8 @@ export interface FileRouteTypes {
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/competitive/$category'
+    | '/competitive'
     | '/exam'
     | '/admin/reports'
     | '/exam/$group'
@@ -243,6 +265,8 @@ export interface FileRouteTypes {
     | '/api/notes'
     | '/api/syllabus'
     | '/api/tutor'
+    | '/competitive/$category'
+    | '/competitive/'
     | '/exam/'
     | '/_authenticated/admin/reports'
     | '/exam/$group/'
@@ -265,6 +289,8 @@ export interface RootRouteChildren {
   ApiNotesRoute: typeof ApiNotesRoute
   ApiSyllabusRoute: typeof ApiSyllabusRoute
   ApiTutorRoute: typeof ApiTutorRoute
+  CompetitiveCategoryRoute: typeof CompetitiveCategoryRoute
+  CompetitiveIndexRoute: typeof CompetitiveIndexRoute
   ExamIndexRoute: typeof ExamIndexRoute
   ExamGroupIndexRoute: typeof ExamGroupIndexRoute
   ExamGroupSubjectChapterRoute: typeof ExamGroupSubjectChapterRoute
@@ -353,6 +379,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTutorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/competitive/': {
+      id: '/competitive/'
+      path: '/competitive'
+      fullPath: '/competitive/'
+      preLoaderRoute: typeof CompetitiveIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/competitive/$category': {
+      id: '/competitive/$category'
+      path: '/competitive/$category'
+      fullPath: '/competitive/$category'
+      preLoaderRoute: typeof CompetitiveCategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exam/': {
       id: '/exam/'
       path: '/exam'
@@ -435,6 +475,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiNotesRoute: ApiNotesRoute,
   ApiSyllabusRoute: ApiSyllabusRoute,
   ApiTutorRoute: ApiTutorRoute,
+  CompetitiveCategoryRoute: CompetitiveCategoryRoute,
+  CompetitiveIndexRoute: CompetitiveIndexRoute,
   ExamIndexRoute: ExamIndexRoute,
   ExamGroupIndexRoute: ExamGroupIndexRoute,
   ExamGroupSubjectChapterRoute: ExamGroupSubjectChapterRoute,

@@ -59,7 +59,11 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
 
 ## Ready next (phone app polish)
-- [ ] Government exams: clarify individual exams/states, collect verified 2017–2026 papers and keys for UPSC, SSC, RRB, Banking, Defence, Police, Teaching, State PSC, State Subordinate and Judiciary; extend topic analysis and checked solutions without changing JEE/NEET
+- [x] Government exams: ten-category hub + separate original-paper archive/question storage, honest 2017–2026 coverage, stage/section isolation, reviewed-question topic index; JEE/NEET unchanged
+- [x] UPSC first: 20 official Prelims PDFs located for 2017–2026 (GS I + CSAT), linked with accurate "PDF mila / checked / baaki" states
+- [x] UPSC 2018 GS I: all 100 original questions transcribed/reviewed, completeness validated, seven-topic sample shown; Economy guide/trick independently reviewed and saved; desktop/phone readback verified
+- [ ] UPSC: remaining topic guides (resumable scripts/government/analyze.ts), final keys, verified solutions/book references, remaining 19 Prelims papers and Mains; missing key archives need verified evidence, never fabricated answers
+- [ ] Then one by one: SSC CGL/CHSL, RRB NTPC/Group D/ALP, SBI/IBPS PO-Clerk, NDA/CDS/AFCAT, state Police, CTET/state TET, State PSC, State Subordinate, Judiciary; actual paper/key inventory and state-specific stages still pending (memory/model papers never counted as real PYQs)
 - [ ] Notebook: per-book progress list (same covers as the shelf)
 - [ ] ICSE/ISC books keep subject-colour covers (publisher covers are not free to use) — swap in real images only if the owner supplies them
 

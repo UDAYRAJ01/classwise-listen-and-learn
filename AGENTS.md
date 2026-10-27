@@ -37,3 +37,4 @@ Subdirectories have their own `AGENTS.md` (e.g. `scripts/exam/` for the JEE/NEET
 - "Meri class" is a board+grade pair in notebook prefs (validated together, kept on merge), so it syncs; class shelves show one tile per textbook from cached `syllabi.books`, and a book page is the subject page with `?book=n`, so chapter links never change.
 - Install is manifest + PNG icons only (no service worker), so updates never stick behind a stale cache.
 - The voice batch is kept alive by `scripts/audio-watchdog.sh`; it skips finished tracks, so restarts never repeat paid work.
+- Government recruitment exams use a separate `gov_exam_*` domain and `/competitive` screens; never send them through the NCERT/JEE subject segmentation pipeline. Frequency comes only from reviewed questions in ready original papers, separated by exam, jurisdiction, stage and section; pipeline rules live in `scripts/government/AGENTS.md`.

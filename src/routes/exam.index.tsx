@@ -53,6 +53,9 @@ function ExamHome() {
     <>
       <ScreenHeader title="JEE / NEET" subtitle="Class 11–12 · pichhle 10 saal ke asli paper" />
       <div className="mx-auto max-w-5xl px-4 pb-10 pt-4 md:pt-6">
+      <Link to="/competitive" className="mb-5 flex items-center justify-between rounded-lg border border-border bg-card p-4 font-bold">
+        <span>Government Exams <span className="block text-xs font-normal text-muted-foreground">UPSC · SSC · Railway · Banking aur baaki</span></span><ArrowRight className="h-5 w-5" />
+      </Link>
       <div className="grid gap-3 md:grid-cols-2 md:gap-5">
         {overviews.map(([group, o]) => {
           const meta = EXAM_GROUPS[group];
