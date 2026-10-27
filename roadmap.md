@@ -59,6 +59,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
 
 ## Ready next (phone app polish)
+- [ ] Government exams: clarify individual exams/states, collect verified 2017–2026 papers and keys for UPSC, SSC, RRB, Banking, Defence, Police, Teaching, State PSC, State Subordinate and Judiciary; extend topic analysis and checked solutions without changing JEE/NEET
 - [ ] Notebook: per-book progress list (same covers as the shelf)
 - [ ] ICSE/ISC books keep subject-colour covers (publisher covers are not free to use) — swap in real images only if the owner supplies them
 
