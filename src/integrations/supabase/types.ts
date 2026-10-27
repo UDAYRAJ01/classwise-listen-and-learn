@@ -244,6 +244,158 @@ export type Database = {
         }
         Relationships: []
       }
+      gov_exam_papers: {
+        Row: {
+          category: string
+          checksum: string | null
+          created_at: string
+          exam: string
+          expected_questions: number | null
+          id: string
+          jurisdiction: string
+          key_source: string
+          key_url: string | null
+          label: string
+          section: string
+          slug: string
+          source_kind: string
+          source_url: string
+          stage: string
+          status: string
+          year: number
+        }
+        Insert: {
+          category: string
+          checksum?: string | null
+          created_at?: string
+          exam: string
+          expected_questions?: number | null
+          id?: string
+          jurisdiction?: string
+          key_source?: string
+          key_url?: string | null
+          label: string
+          section: string
+          slug: string
+          source_kind: string
+          source_url: string
+          stage: string
+          status?: string
+          year: number
+        }
+        Update: {
+          category?: string
+          checksum?: string | null
+          created_at?: string
+          exam?: string
+          expected_questions?: number | null
+          id?: string
+          jurisdiction?: string
+          key_source?: string
+          key_url?: string | null
+          label?: string
+          section?: string
+          slug?: string
+          source_kind?: string
+          source_url?: string
+          stage?: string
+          status?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      gov_exam_questions: {
+        Row: {
+          answer: string | null
+          body: string
+          concept: string
+          id: string
+          kind: string
+          number: number
+          options: Json
+          page: number
+          paper_id: string
+          reviewed: boolean
+          section: string
+          solution: Json | null
+          solution_ok: boolean
+          topic: string
+        }
+        Insert: {
+          answer?: string | null
+          body: string
+          concept: string
+          id?: string
+          kind?: string
+          number: number
+          options?: Json
+          page: number
+          paper_id: string
+          reviewed?: boolean
+          section: string
+          solution?: Json | null
+          solution_ok?: boolean
+          topic: string
+        }
+        Update: {
+          answer?: string | null
+          body?: string
+          concept?: string
+          id?: string
+          kind?: string
+          number?: number
+          options?: Json
+          page?: number
+          paper_id?: string
+          reviewed?: boolean
+          section?: string
+          solution?: Json | null
+          solution_ok?: boolean
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gov_exam_questions_paper_id_fkey"
+            columns: ["paper_id"]
+            isOneToOne: false
+            referencedRelation: "gov_exam_papers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gov_exam_topics: {
+        Row: {
+          content: Json
+          evidence_hash: string
+          exam: string
+          id: string
+          reviewed: boolean
+          section: string
+          stage: string
+          topic: string
+        }
+        Insert: {
+          content: Json
+          evidence_hash: string
+          exam: string
+          id?: string
+          reviewed?: boolean
+          section: string
+          stage: string
+          topic: string
+        }
+        Update: {
+          content?: Json
+          evidence_hash?: string
+          exam?: string
+          id?: string
+          reviewed?: boolean
+          section?: string
+          stage?: string
+          topic?: string
+        }
+        Relationships: []
+      }
       ncert_sections: {
         Row: {
           chapter_slug: string
