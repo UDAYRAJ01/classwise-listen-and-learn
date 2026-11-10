@@ -38,3 +38,4 @@ Subdirectories have their own `AGENTS.md` (e.g. `scripts/exam/` for the JEE/NEET
 - Install is manifest + PNG icons only (no service worker), so updates never stick behind a stale cache.
 - The voice batch is kept alive by `scripts/audio-watchdog.sh`; it skips finished tracks, so restarts never repeat paid work.
 - Government recruitment exams use a separate `gov_exam_*` domain and `/competitive` screens; never send them through the NCERT/JEE subject segmentation pipeline. Frequency comes only from reviewed questions in ready original papers, separated by exam, jurisdiction, stage and section; pipeline rules live in `scripts/government/AGENTS.md`.
+- External review agent: reads a code snapshot (`agent_code_files`, refresh with `scripts/agent/snapshot.ts`) and submits diffs to `agent_fixes` via key-protected `/api/public/agent`; fixes are applied only by the Lovable agent after review (`scripts/agent/inbox.ts`), never automatically.
