@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_code_files: {
+        Row: {
+          content: string
+          path: string
+          size: number
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          path: string
+          size?: number
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          path?: string
+          size?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      agent_fixes: {
+        Row: {
+          created_at: string
+          description: string
+          files: string[]
+          id: string
+          patch: string
+          review_note: string | null
+          reviewed_at: string | null
+          status: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          files?: string[]
+          id?: string
+          patch: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          status?: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          files?: string[]
+          id?: string
+          patch?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          status?: string
+          title?: string
+        }
+        Relationships: []
+      }
       chapter_sources: {
         Row: {
           board: string
