@@ -24,6 +24,7 @@ import { Route as CompetitiveIndexRouteImport } from './routes/competitive.index
 import { Route as CompetitiveCategoryRouteImport } from './routes/competitive.$category'
 import { Route as ExamIndexRouteImport } from './routes/exam.index'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin.reports'
+import { Route as ApiPublicAgentRouteImport } from './routes/api/public/agent'
 import { Route as ExamGroupIndexRouteImport } from './routes/exam.$group.index'
 import { Route as ExamGroupSubjectChapterRouteImport } from './routes/exam.$group.$subject.$chapter'
 import { Route as LearnBoardGradeIndexRouteImport } from './routes/learn.$board.$grade.index'
@@ -106,6 +107,11 @@ const AuthenticatedAdminReportsRoute =
     path: '/admin/reports',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicAgentRoute = ApiPublicAgentRouteImport.update({
+  id: '/api/public/agent',
+  path: '/api/public/agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ExamGroupIndexRoute = ExamGroupIndexRouteImport.update({
   id: '/exam/$group/',
   path: '/exam/$group/',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/competitive/': typeof CompetitiveIndexRoute
   '/exam/': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/api/public/agent': typeof ApiPublicAgentRoute
   '/exam/$group/': typeof ExamGroupIndexRoute
   '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
@@ -176,6 +183,7 @@ export interface FileRoutesByTo {
   '/competitive': typeof CompetitiveIndexRoute
   '/exam': typeof ExamIndexRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/api/public/agent': typeof ApiPublicAgentRoute
   '/exam/$group': typeof ExamGroupIndexRoute
   '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade': typeof LearnBoardGradeIndexRoute
@@ -200,6 +208,7 @@ export interface FileRoutesById {
   '/competitive/': typeof CompetitiveIndexRoute
   '/exam/': typeof ExamIndexRoute
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
+  '/api/public/agent': typeof ApiPublicAgentRoute
   '/exam/$group/': typeof ExamGroupIndexRoute
   '/exam/$group/$subject/$chapter': typeof ExamGroupSubjectChapterRoute
   '/learn/$board/$grade/': typeof LearnBoardGradeIndexRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/competitive/'
     | '/exam/'
     | '/admin/reports'
+    | '/api/public/agent'
     | '/exam/$group/'
     | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade/'
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/competitive'
     | '/exam'
     | '/admin/reports'
+    | '/api/public/agent'
     | '/exam/$group'
     | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade'
@@ -269,6 +280,7 @@ export interface FileRouteTypes {
     | '/competitive/'
     | '/exam/'
     | '/_authenticated/admin/reports'
+    | '/api/public/agent'
     | '/exam/$group/'
     | '/exam/$group/$subject/$chapter'
     | '/learn/$board/$grade/'
@@ -292,6 +304,7 @@ export interface RootRouteChildren {
   CompetitiveCategoryRoute: typeof CompetitiveCategoryRoute
   CompetitiveIndexRoute: typeof CompetitiveIndexRoute
   ExamIndexRoute: typeof ExamIndexRoute
+  ApiPublicAgentRoute: typeof ApiPublicAgentRoute
   ExamGroupIndexRoute: typeof ExamGroupIndexRoute
   ExamGroupSubjectChapterRoute: typeof ExamGroupSubjectChapterRoute
   LearnBoardGradeIndexRoute: typeof LearnBoardGradeIndexRoute
@@ -407,6 +420,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/agent': {
+      id: '/api/public/agent'
+      path: '/api/public/agent'
+      fullPath: '/api/public/agent'
+      preLoaderRoute: typeof ApiPublicAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/exam/$group/': {
       id: '/exam/$group/'
       path: '/exam/$group'
@@ -478,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompetitiveCategoryRoute: CompetitiveCategoryRoute,
   CompetitiveIndexRoute: CompetitiveIndexRoute,
   ExamIndexRoute: ExamIndexRoute,
+  ApiPublicAgentRoute: ApiPublicAgentRoute,
   ExamGroupIndexRoute: ExamGroupIndexRoute,
   ExamGroupSubjectChapterRoute: ExamGroupSubjectChapterRoute,
   LearnBoardGradeIndexRoute: LearnBoardGradeIndexRoute,
