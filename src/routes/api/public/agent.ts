@@ -71,7 +71,7 @@ export const Route = createFileRoute("/api/public/agent")({
         try { body = await request.json(); } catch { return json(400, { error: "Invalid JSON" }); }
         const parsed = FixInput.safeParse(body);
         if (!parsed.success) return json(400, { error: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ") });
-        const files = [...parsed.data.patch.matchAll(/^\+\+\+ b\/(.+)$/gm)].map((m) => m[1].trim());
+        const files = [...parsed.data.patch.matchAll(/^\+\+\+ b\/(.+)$/gm)].map((m) => (m[1] ?? "").trim()).filter(Boolean);
         if (!files.length) return json(400, { error: "Patch must be a unified diff with +++ b/<path> lines" });
         const admin = await db();
         const { count } = await admin.from("agent_fixes").select("id", { count: "exact", head: true }).eq("status", "pending");
