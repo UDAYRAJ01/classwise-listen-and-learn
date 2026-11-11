@@ -1,0 +1,42 @@
+# External agent contract
+
+Read root AGENTS.md first. Work in a branch and submit a PR; never force-push the synced branch, auto-merge, or access production secrets. No provider credentials are needed by this workflow. It makes no model calls and writes no Cloud data.
+
+## Tasks and outputs
+
+Use one issue per chapter/task. Put JSON in `agent-workspace/submissions/<task-name>.json`. Every JSON requires:
+
+- `task`: positive GitHub issue number
+- `kind`: `write`, `speak` or `check`
+- `board`: `cbse` or `icse`; `grade`: 1–12
+- `subject`, `chapter`: existing slugs, never invent/reorder chapter identities
+- `language`: `hinglish`, `hi` or `en`
+- `source`: `{ "reference": "official book link and printed pages", "sha256": "64 lowercase hex characters" }`; hash the exact source bytes supplied for the task, not a URL. Owner verifies this hash and provenance.
+
+### write
+
+Add `content` matching `NoteContent` in `src/lib/types.ts` and the strict `noteJsonSchema` in `src/lib/server/schemas.server.ts`. All fields including mcqs and mistakes are required. Include key points, terms, relevant formulas, memory tricks with explanation, answered questions, revision, tips and common mistakes. MCQs have four options, answer index 0–3; marks 1–6. Empty formulas/terms are allowed when irrelevant. Cite textbook evidence in the PR; do not invent source text or claim AI checks prove correctness.
+
+### check
+
+Add `noteSha256` (hash the exact writing JSON bytes), `verdict` (`pass` or `changes-needed`), and `checks`: `[{ "section": "keyPoints", "evidence": "Book page and quotation", "finding": "What was checked", "correction": "Correction, or empty when no change" }]`. Check facts, calculations, MCQ answers, tricks, omissions and source claims independently. A pass cannot include pending corrections. Report uncertainty; the pipeline validates structure, not factual accuracy or reviewer independence. Owner checks note/source hashes before approval.
+
+### speak
+
+Add `noteFile` referencing a writing JSON in `agent-workspace/submissions/`, `voice` (`didi` or `bhaiya`, app voice slot, not a guarantee of provider voice identity), and `tracks`: `[{ "index": 0, "textSha256": "hash of exact buildTracks text", "file": "agent-workspace/submissions/task-name/0.wav" }]`.
+
+Generate track text with the existing `buildTracks(note.content, note.language)` in `src/lib/tracks.ts`. Include every track in its original order, including section labels; never reword/add narration or change indices. Hash exact UTF-8 track text. WAV must be uncompressed PCM, 24,000 Hz, mono, 16-bit, nonempty, under 10 MB per file. Automated matching checks the declared text hash, not whether the spoken words are accurate; owner must listen before approval. Use only approved notes. JSON and audio must share chapter, language and source identity. Do not commit an entire book audio collection; use small chapter-scoped PRs.
+
+## Run locally
+
+```sh
+bun install --frozen-lockfile
+bun run agent:validate
+bun run test
+```
+
+Actions runs on pull requests with read-only permissions, no application secrets, no paid jobs and a 15-minute timeout. Do not change it to `pull_request_target` or expose secrets to agent code. GitHub repository protection, collaborator permissions, required checks and Git sync connection are configured by the repository owner; files alone do not enforce owner approval or establish a connection.
+
+## Approved import
+
+Merge stores drafts only. Ask Lovable to review and import an approved task. Note writes must use `note-pipeline.server.ts`, changed notes invalidate old audio, audio writes use the existing private bucket/cache identity, and imports require checking current chapter/source identity and owner approval. No automatic import is implemented here; never hand external agents a service-role key or widen anonymous policies.
