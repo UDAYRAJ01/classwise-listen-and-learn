@@ -1,0 +1,55 @@
+name: Agent — Notes / Audio / Jaanch
+description: Dusre AI agent ko ek chapter ka kaam dein.
+title: "[Agent] "
+body:
+  - type: dropdown
+    id: task
+    attributes:
+      label: Kaam
+      options:
+        - "write — Notes likho"
+        - "speak — Audio banao"
+        - "check — Textbook se jaanch karo"
+    validations:
+      required: true
+  - type: dropdown
+    id: board
+    attributes:
+      label: Board
+      options: [cbse, icse]
+    validations:
+      required: true
+  - type: input
+    id: chapter
+    attributes:
+      label: Class, subject aur chapter
+      placeholder: "10 / science / b1-c1-chemical-reactions-and-equations"
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options: [hinglish, hi, en]
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Textbook source aur approved note
+      description: Official link/page aur authorized source text ya file dein. Audio ke liye writing draft ka path dein. Student data ya secret keys na daalein.
+    validations:
+      required: true
+  - type: textarea
+    id: instructions
+    attributes:
+      label: Kya likhna ya sudharna hai?
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Review
+      options:
+        - label: Agent pull request bhejega; bina meri review ke app ka data nahi badlega.
+          required: true
