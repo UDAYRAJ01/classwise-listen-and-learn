@@ -59,6 +59,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Phone + laptop browser check of every screen (no errors, no sideways scroll; shelf hydration glitch fixed)
 
 ## Ready next (phone app polish)
+- [ ] GitHub agent workspace: task forms for writing, narration and checking; validated draft submissions and pull-request checks; no automatic production writes or paid generation.
 - [ ] Request 27 Oct 06:52 UTC: finish all government sections before reporting; avoid repeated partial updates. Workspace restart removed scratch caches/processes. Resumed UPSC manifest import (4 page workers), reviewed solutions (3 workers), CDS guides and audio watchdog. CDS II 2017 Maths is now ready (100 questions); full ten-year coverage, keys, references and other families remain unfinished. Recover validated source inventory via parallel research; never mark blocked sections complete.
 - [ ] Source blockers: full SSC/CHSL/RRB coverage remains missing; CHSL 9 July 2024 and NTPC 30 Jan 2021 candidate-sheet copies located, but repeated per-section numbering/private response metadata require careful adapted ingestion. SBI/IBPS/AFCAT public originals not verified (memory/model papers excluded). CTET Dec 2024 Set H official Drive ZIP downloaded: main English/Hindi PDF cover confirms 150 questions, five 30-question sections; language alternatives/repeated numbering require section-aware ingestion before counting. State Police/Subordinate/Judiciary PDFs remain unverified; RPSC archive redirects did not yield direct files. Do not import notices/archive HTML as papers or claim these sections complete.
 - [x] Government exams: ten-category hub + separate original-paper archive/question storage, honest 2017–2026 coverage, stage/section isolation, reviewed-question topic index; JEE/NEET unchanged
@@ -69,9 +70,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [ ] Notebook: per-book progress list (same covers as the shelf)
 - [ ] ICSE/ISC books keep subject-colour covers (publisher covers are not free to use) — swap in real images only if the owner supplies them
 
-## Running in background
-- Didi-voice audio for all checked Hinglish notes (`scripts/audio-batch.ts --loop`): 28 chapters / 777 parts on 26 Oct 20:23 UTC
-- User (26 Oct): never let the voice job stay stopped. `scripts/audio-watchdog.sh` (started with `setsid nohup`) restarts it within 30 s; if the workspace itself restarted, start the watchdog again at the beginning of every turn
+## Paid background work paused
+- User said "band karo": notes, audio, paper analysis and the watchdog stay stopped until an explicit resume request. GitHub agent drafts do not restart them.
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
