@@ -4,6 +4,13 @@ class 1 selek 12th tak ka sar books ncert cbse aur ICSE ki puri books ka shorts 
 
 This project was built with [Lovable](https://lovable.dev).
 
+## External agent — Notes, Audio, Jaanch
+
+GitHub Issues mein **Agent — Notes / Audio / Jaanch** form se chapter ka kaam dein.
+Agent drafts pull request mein bhejta hai; **Agent draft checks** format aur tests check karta hai.
+Owner review aur app-data import alag hain; koi paid batch automatically nahi chalta.
+Start here: [Agent workspace](agent-workspace/README.md) · [Submission contract](docs/AGENT_PIPELINE.md).
+
 ## Build with Lovable
 
 Continue developing this project in the [Lovable editor](https://lovable.dev/projects/e8888824-69fc-4d46-a048-00d5535423b9).
