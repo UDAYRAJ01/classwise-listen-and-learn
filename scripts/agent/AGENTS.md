@@ -3,3 +3,4 @@
 - Writing, narration and checking submissions remain drafts until owner review and a separate approved import, so a merge cannot silently replace cached notes or audio.
 - Narration declarations must match `buildTracks` order and exact text hashes; accept only 24 kHz mono 16-bit PCM WAV parts to preserve the existing app audio contract.
 - Re-run `snapshot.ts` after changing agent-facing code or docs; the external agent reads that copy, not the live repo, so a stale copy hides live endpoints.
+- Re-run `tasks.ts` after importing notes, changing syllabi or storing new textbook text; the queue is a snapshot of what is missing, not a live view, and it never reopens a claimed or applied row.
