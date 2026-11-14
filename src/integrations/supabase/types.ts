@@ -168,6 +168,7 @@ export type Database = {
         Row: {
           board: string
           body: string
+          body_chars: number
           chapter_slug: string
           created_at: string
           fts: unknown
@@ -178,6 +179,7 @@ export type Database = {
         Insert: {
           board: string
           body: string
+          body_chars?: number
           chapter_slug: string
           created_at?: string
           fts?: unknown
@@ -188,6 +190,7 @@ export type Database = {
         Update: {
           board?: string
           body?: string
+          body_chars?: number
           chapter_slug?: string
           created_at?: string
           fts?: unknown
