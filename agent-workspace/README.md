@@ -2,6 +2,8 @@
 
 Teen kaam: **write** (notes), **speak** (audio), **check** (textbook verification).
 
+**Muse pilot:** [Issue #1](https://github.com/UDAYRAJ01/classwise-listen-and-learn/issues/1) — CBSE Class 2 English, Mridang, My Bicycle (`en`), write + check. Read [material instructions](materials/pilot-my-bicycle/README.md) first; use `task: 1`. Package includes the current three-language missing inventory, exact NCERT text, source hash and three existing textbook-check-pass references (not human-approved). No audio or production import in this pilot.
+
 1. GitHub repository → Issues → New issue → **Agent — Notes / Audio / Jaanch**.
 2. Class, board, chapter, language aur official source dein. Agent ko repository read aur branch/PR access dein; owner account/token na dein.
 3. Agent `AGENTS.md` aur `docs/AGENT_PIPELINE.md` padhe, apni branch mein submissions banaye aur pull request bheje.
