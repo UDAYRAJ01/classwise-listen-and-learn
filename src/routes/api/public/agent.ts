@@ -140,13 +140,13 @@ export const Route = createFileRoute("/api/public/agent")({
           const subject = getSubject(row.board, row.grade, row.subject) ?? SUBJECTS[row.subject] ?? { slug: row.subject, name: row.subject, hi: "", icon: "", tone: "ink" };
           const { agentWriterInstructions } = await import("@/lib/server/prompts.server");
           const instructions = agentWriterInstructions({
-            board: row.board,
+            board: row.board as "cbse" | "icse",
             grade: row.grade,
             subject,
             chapterTitle: row.chapter_title,
             bookName: row.book_name,
             gist: null,
-            lang: row.language,
+            lang: row.language as "hinglish" | "hi" | "en",
             source: source.body,
           });
           const { data: candidates, error: sampleError } = await admin
@@ -158,17 +158,28 @@ export const Route = createFileRoute("/api/public/agent")({
           if (sampleError) return json(500, { error: sampleError.message });
           const { data: openReports } = await admin.from("note_reports").select("chapter_slug, language").eq("status", "open");
           const reported = new Set((openReports ?? []).map((r) => `${r.chapter_slug}|${r.language}`));
-          const scored = (candidates ?? [])
-            .map((note) => {
-              const check = Array.isArray(note.note_checks) ? note.note_checks[0] : undefined;
-              const clean = Boolean(check && Array.isArray(check.issues) && check.issues.length === 0 && check.checked_at > note.created_at);
-              if (!clean || reported.has(`${note.chapter_slug}|${note.language}`)) return null;
-              const score = (note.grade === row.grade ? 0 : 10) + (note.subject === row.subject ? 0 : 5) + (note.language === row.language ? 0 : 1);
-              return { score, sample: { chapter: note.chapter_slug, title: note.chapter_title, book: note.book_name, language: note.language, reviewStatus: "stored-textbook-check-pass-not-human-approved", checkedAt: check!.checked_at, content: note.content } };
-            })
-            .filter((s): s is { score: number; sample: Record<string, unknown> } => s !== null)
-            .sort((a, b) => a.score - b.score)
-            .slice(0, 3);
+          const scored: { score: number; sample: Record<string, unknown> }[] = [];
+          for (const note of candidates ?? []) {
+            const check = Array.isArray(note.note_checks) ? note.note_checks[0] : undefined;
+            if (!check || !Array.isArray(check.issues) || check.issues.length > 0) continue;
+            if (!check.checked_at || check.checked_at <= note.created_at) continue;
+            if (reported.has(`${note.chapter_slug}|${note.language}`)) continue;
+            const score = (note.grade === row.grade ? 0 : 10) + (note.subject === row.subject ? 0 : 5) + (note.language === row.language ? 0 : 1);
+            scored.push({
+              score,
+              sample: {
+                chapter: note.chapter_slug,
+                title: note.chapter_title,
+                book: note.book_name,
+                language: note.language,
+                reviewStatus: "stored-textbook-check-pass-not-human-approved",
+                checkedAt: check.checked_at,
+                content: note.content,
+              },
+            });
+          }
+          scored.sort((a, b) => a.score - b.score);
+          const samples = scored.slice(0, 3).map((s) => s.sample);
           return json(200, {
             task: row.id,
             status: row.status,
