@@ -154,6 +154,6 @@ for (const r of after) {
   if (status === "open" && !r.has_source) counts["open_without_text"] = (counts["open_without_text"] ?? 0) + 1;
 }
 console.log(
-  `queue: ${after.length} rows (new ${inserted - (inserted - drafts.length)}, reopened ${reopen.length}, applied ${applied.length}, dropped ${stale.length})`,
+  `queue: ${after.length} rows (wanted ${drafts.length}, reopened ${reopen.length}, applied ${applied.length}, dropped ${stale.length})`,
 );
 console.log(counts);
