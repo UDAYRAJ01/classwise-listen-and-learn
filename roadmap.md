@@ -73,6 +73,11 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 ## Paid background work paused
 - User said "band karo": notes, audio, paper analysis and the watchdog stay stopped until an explicit resume request. GitHub agent drafts do not restart them.
 
+## Muse pilot handoff
+- [ ] Create a GitHub pilot issue for a source-ready missing chapter-language.
+- [ ] Add current missing inventory, authorized NCERT chapter source and three checked reference notes under agent-workspace; verify hashes and validation.
+- [ ] Verify the issue and material are readable in GitHub; no paid generation or production imports.
+
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
 - [x] Second pass for Class 11–12 Hindi chapters converted late
