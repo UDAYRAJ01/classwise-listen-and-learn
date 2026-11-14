@@ -74,7 +74,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - User said "band karo": notes, audio, paper analysis and the watchdog stay stopped until an explicit resume request. GitHub agent drafts do not restart them.
 
 ## Muse pilot handoff
-- [ ] Extend existing key-protected agent inbox to accept exact writing/checking JSON drafts directly, with duplicate-safe receipts and reviewer export; no automatic import or paid generation.
+- [x] Extended key-protected agent inbox for exact writing/checking JSON drafts; authenticated write/check receipts, duplicate retries, exact-byte readback and status listing verified locally; reviewer export added. No automatic import or paid generation. Published deployment still needs updating before Muse uses the new endpoint.
 - [x] Created GitHub issue #1: CBSE Class 2 English / Mridang / My Bicycle / en, writing + checking; no audio.
 - [x] Added current missing inventory (1,946 cached chapters; 4,501 missing language rows), exact NCERT source, writer instructions and three stored-check-pass references under agent-workspace/materials/pilot-my-bicycle; source/sample hashes and draft schemas verified; six submission tests pass. References are not human approval.
 - [x] Muse confirmed material folder and hashes, wrote pilot writing/checking drafts and passed validation; GitHub push is blocked by a reported 403. No production import yet.
