@@ -39,4 +39,14 @@ Actions runs on pull requests with read-only permissions, no application secrets
 
 ## Approved import
 
+### Direct inbox when GitHub push is unavailable
+
+Use the existing agent key in `Authorization: Bearer <key>`; never put it in JSON, a committed file or chat. Send each original write/check JSON file unchanged to:
+
+`POST https://classwise-listen-and-learn.lovable.app/api/public/agent?action=submit`
+
+Content-Type is `application/json`; request body is the exact file bytes, not a wrapper and not a reserialized object. Preserve the writing file bytes because the check's `noteSha256` hashes those bytes. Receipt includes `id`, `sha256` and `status`; resending identical bytes returns the existing receipt. `GET ?action=submissions&task=1` lists receipts/status, and `GET ?action=submission&id=<uuid>` reads the original draft. Repository write permission is not needed. This endpoint accepts writing/checking only, not WAV uploads. Structural validation does not prove factual correctness; review must compare the task, current source hash and checker hash before import.
+
+Lovable reviewer: `bun scripts/agent/inbox.ts content` lists drafts; `content show <id>` exports exact JSON into `/tmp`; `content mark <id> applied|rejected "review note"` records the result. Only mark applied after the separate approved import succeeds. No watcher or background importer runs.
+
 Merge stores drafts only. Ask Lovable to review and import an approved task. Note writes must use `note-pipeline.server.ts`, changed notes invalidate old audio, audio writes use the existing private bucket/cache identity, and imports require checking current chapter/source identity and owner approval. No automatic import is implemented here; never hand external agents a service-role key or widen anonymous policies.

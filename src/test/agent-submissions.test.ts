@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { draftNoteSchema, submissionSchema, sha256, validateNarration, validateWav } from '../../scripts/agent/submission-schema';
 import { buildTracks } from '../lib/tracks';
+import { parseContentSubmission } from '../lib/agent-submissions';
 
 const content = {
   title: 'Electricity', oneLiner: 'I = Q/t', summary: 'Electric current is charge per second.',
@@ -16,6 +17,21 @@ const note = submissionSchema.parse({ ...identity, kind: 'write', content });
 const audio = { ...identity, kind: 'speak' as const, voice: 'didi' as const, noteFile: 'agent-workspace/submissions/note.json', tracks: buildTracks(content, 'hinglish').map(t => ({ index: t.index, textSha256: sha256(t.text), file: `agent-workspace/submissions/task/${t.index}.wav` })) };
 
 describe('external agent chapter tasks', () => {
+  it('accepts the existing writing draft directly without a patch or wrapper', () => {
+    expect(parseContentSubmission(JSON.stringify(note))).toEqual(note);
+  });
+  it('accepts checking directly and rejects a false pass with pending corrections', () => {
+    const check = { ...identity, kind: 'check', noteSha256: sha256(JSON.stringify(note)), verdict: 'pass', checks: [{ section: 'summary', evidence: 'p1', finding: 'Checked', correction: '' }] };
+    expect(parseContentSubmission(JSON.stringify(check)).kind).toBe('check');
+    expect(() => parseContentSubmission(JSON.stringify({ ...check, checks: [{ ...check.checks[0], correction: 'Fix this' }] }))).toThrow('pending corrections');
+  });
+  it('does not accept narration declarations without audio in the direct inbox', () => {
+    expect(() => parseContentSubmission(JSON.stringify(audio))).toThrow('write/check only');
+  });
+  it('rejects malformed and oversized inbox drafts', () => {
+    expect(() => parseContentSubmission('{')).toThrow();
+    expect(() => parseContentSubmission(' '.repeat(2_000_001))).toThrow('2 MB');
+  });
   it('accepts writing, speaking and checking tasks', () => {
     expect(submissionSchema.parse(note).kind).toBe('write');
     expect(submissionSchema.parse(audio).kind).toBe('speak');
