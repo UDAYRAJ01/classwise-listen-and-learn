@@ -1,0 +1,51 @@
+{
+  "task": 1,
+  "issue": "https://github.com/UDAYRAJ01/classwise-listen-and-learn/issues/1",
+  "exportedAt": "2026-11-14T23:08:29.134267+00:00",
+  "board": "cbse",
+  "grade": 2,
+  "subject": "english",
+  "chapter": "b1-c1-my-bicycle",
+  "language": "en",
+  "title": "My Bicycle",
+  "book": "Mridang",
+  "existingLanguages": [
+    "hinglish"
+  ],
+  "missingLanguages": [
+    "hi",
+    "en"
+  ],
+  "source": {
+    "file": "source.txt",
+    "reference": "https://ncert.nic.in/textbook/pdf/bemr101.pdf",
+    "sha256": "78ff04e313e2f60bf447b6b136710bbf1ef6c7c1a6f05c217eb11c9a098832cf",
+    "provenance": "Exact UTF-8 body exported from stored NCERT chapter source; extracted PDF text includes layout noise and page-break characters; no images. Consult official PDF for images and printed-page evidence."
+  },
+  "samples": [
+    {
+      "file": "samples/sample-1-hinglish.json",
+      "sha256": "a8734cbc4be927539352022fce9a1c0587359c1f2ebf6ef2e450b58e874326da",
+      "chapter": "b1-c1-my-bicycle",
+      "language": "hinglish",
+      "reviewStatus": "stored-textbook-check-pass-not-human-approved",
+      "checkedAt": "2026-10-25T12:32:03.22+00:00"
+    },
+    {
+      "file": "samples/sample-2-en.json",
+      "sha256": "555ab5a3e68f9cc70f700ee43b7f388276f5d87f89ecb6378b1598f9d83eca68",
+      "chapter": "b1-c1-two-little-hands",
+      "language": "en",
+      "reviewStatus": "stored-textbook-check-pass-not-human-approved",
+      "checkedAt": "2026-10-25T12:34:17.874+00:00"
+    },
+    {
+      "file": "samples/sample-3-hinglish.json",
+      "sha256": "34415ad78625c821032b006a0b0ca2d2709ba7b3b0b7664fc92f588b254300ea",
+      "chapter": "b1-c1-two-little-hands",
+      "language": "hinglish",
+      "reviewStatus": "stored-textbook-check-pass-not-human-approved",
+      "checkedAt": "2026-10-25T12:26:25.088+00:00"
+    }
+  ]
+}
