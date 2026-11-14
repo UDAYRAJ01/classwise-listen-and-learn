@@ -25,6 +25,9 @@ const GUIDE = {
     "POST ?action=submit": "send the exact write/check JSON file bytes as application/json, no wrapper; returns id, sha256, pending status. Same bytes return the existing receipt.",
     "GET ?action=submissions&task=1": "list writing/checking receipts and review status (optional task filter)",
     "GET ?action=submission&id=<uuid>": "retrieve original draft JSON bytes; hash stays unchanged",
+    "GET ?action=tasks&status=open&limit=25": "the writing to-do list (optional board, grade, subject filters)",
+    "GET ?action=task&id=12": "one task's full material: textbook text + hash, style samples, teacher instructions",
+    "POST ?action=claim&id=12": "take one open task so nobody else writes the same chapter",
   },
 };
 
