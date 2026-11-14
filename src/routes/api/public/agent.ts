@@ -202,6 +202,22 @@ export const Route = createFileRoute("/api/public/agent")({
       POST: async ({ request }) => {
         const { agentAuthorized } = await import("@/lib/server/agent-auth.server");
         if (!agentAuthorized(request)) return json(401, { error: "Invalid key. Send Authorization: Bearer <key> or x-agent-key: <key>." });
+        if (new URL(request.url).searchParams.get("action") === "claim") {
+          const idRaw = new URL(request.url).searchParams.get("id");
+          const id = Number(idRaw);
+          if (!idRaw || !Number.isSafeInteger(id) || id < 1) return json(400, { error: "id must be a task number" });
+          const admin = await db();
+          const { data, error } = await admin
+            .from("agent_tasks")
+            .update({ status: "claimed", claimed_at: new Date().toISOString() })
+            .eq("id", id)
+            .eq("status", "open")
+            .select("id, status, claimed_at");
+          if (error) return json(500, { error: error.message });
+          if (data?.length) return json(200, { claimed: data[0] });
+          const { data: now } = await admin.from("agent_tasks").select("id, status").eq("id", id).maybeSingle();
+          return now ? json(409, { error: `Task ${id} is ${now.status}, not open` }) : json(404, { error: "No such task" });
+        }
         if (new URL(request.url).searchParams.get("action") === "submit") {
           const { parseContentSubmission } = await import("@/lib/agent-submissions");
           const { createHash } = await import("node:crypto");
