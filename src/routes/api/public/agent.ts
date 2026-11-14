@@ -149,34 +149,48 @@ export const Route = createFileRoute("/api/public/agent")({
             lang: row.language as "hinglish" | "hi" | "en",
             source: source.body,
           });
-          const { data: candidates, error: sampleError } = await admin
-            .from("notes")
-            .select("board, grade, subject, chapter_slug, chapter_title, book_name, language, content, created_at, note_checks(issues, checked_at)")
-            .eq("is_custom", false)
-            .neq("chapter_slug", row.chapter_slug)
-            .limit(300);
-          if (sampleError) return json(500, { error: sampleError.message });
           const { data: openReports } = await admin.from("note_reports").select("chapter_slug, language").eq("status", "open");
           const reported = new Set((openReports ?? []).map((r) => `${r.chapter_slug}|${r.language}`));
+          /** Closest style first: same class+subject, then same class, then anything checked. */
+          const pools = [
+            { board: row.board, grade: row.grade, subject: row.subject },
+            { board: row.board, grade: row.grade },
+            { board: row.board },
+          ];
+          const seen = new Set<string>();
           const scored: { score: number; sample: Record<string, unknown> }[] = [];
-          for (const note of candidates ?? []) {
-            const check = Array.isArray(note.note_checks) ? note.note_checks[0] : undefined;
-            if (!check || !Array.isArray(check.issues) || check.issues.length > 0) continue;
-            if (!check.checked_at || check.checked_at <= note.created_at) continue;
-            if (reported.has(`${note.chapter_slug}|${note.language}`)) continue;
-            const score = (note.grade === row.grade ? 0 : 10) + (note.subject === row.subject ? 0 : 5) + (note.language === row.language ? 0 : 1);
-            scored.push({
-              score,
-              sample: {
-                chapter: note.chapter_slug,
-                title: note.chapter_title,
-                book: note.book_name,
-                language: note.language,
-                reviewStatus: "stored-textbook-check-pass-not-human-approved",
-                checkedAt: check.checked_at,
-                content: note.content,
-              },
-            });
+          for (const [poolIndex, filter] of pools.entries()) {
+            if (scored.length >= 3) break;
+            let query = admin
+              .from("notes")
+              .select("board, grade, subject, chapter_slug, chapter_title, book_name, language, content, created_at, note_checks(issues, checked_at)")
+              .eq("is_custom", false)
+              .neq("chapter_slug", row.chapter_slug)
+              .limit(60);
+            for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);
+            const { data: pool, error: poolError } = await query;
+            if (poolError) return json(500, { error: poolError.message });
+            for (const note of pool ?? []) {
+              const identityKey = `${note.chapter_slug}|${note.language}`;
+              if (seen.has(identityKey)) continue;
+              seen.add(identityKey);
+              const check = Array.isArray(note.note_checks) ? note.note_checks[0] : note.note_checks;
+              if (!check || !Array.isArray(check.issues) || check.issues.length > 0) continue;
+              if (!check.checked_at || new Date(check.checked_at).getTime() <= new Date(note.created_at).getTime()) continue;
+              if (reported.has(identityKey)) continue;
+              scored.push({
+                score: poolIndex,
+                sample: {
+                  chapter: note.chapter_slug,
+                  title: note.chapter_title,
+                  book: note.book_name,
+                  language: note.language,
+                  reviewStatus: "stored-textbook-check-pass-not-human-approved",
+                  checkedAt: check.checked_at,
+                  content: note.content,
+                },
+              });
+            }
           }
           scored.sort((a, b) => a.score - b.score);
           const samples = scored.slice(0, 3).map((s) => s.sample);
