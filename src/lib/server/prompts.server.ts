@@ -134,3 +134,53 @@ export function notesPrompt(opts: {
     .filter((line) => line !== null)
     .join("\n");
 }
+
+/**
+ * The same teacher instructions, but for an external writer that must return the
+ * whole note in one JSON file instead of three parts. No model call happens here.
+ */
+export function agentWriterInstructions(opts: {
+  board: BoardId;
+  grade: number;
+  subject: SubjectMeta;
+  chapterTitle: string;
+  bookName: string | null;
+  gist: string | null;
+  lang: Lang;
+  source: string;
+}): string {
+  const board = BOARDS[opts.board];
+  const stage = gradeStage(opts.grade);
+  const isLanguageSubject = ["english", "english-language", "english-literature", "english-modern"].includes(
+    opts.subject.slug,
+  );
+  const isIndic = ["hindi", "sanskrit"].includes(opts.subject.slug);
+  return [
+    `Board: ${board.name} (${opts.board === "icse" && opts.grade >= 11 ? "ISC" : board.short}).`,
+    `Class: ${opts.grade}.`,
+    `Subject: ${opts.subject.name}.`,
+    opts.bookName ? `Book: ${opts.bookName}.` : null,
+    `Chapter: ${opts.chapterTitle}.`,
+    opts.gist ? `Chapter is about: ${opts.gist}` : null,
+    "",
+    `Language: ${LANG_RULES[opts.lang]}`,
+    isLanguageSubject
+      ? "This is an English language/literature chapter: keep quotations, poem lines, character names and literary devices in English; explain theme, summary, characters, message and poetic devices in the chosen language. Use 'formulas' for grammar rules only if the chapter is a grammar unit."
+      : null,
+    isIndic
+      ? "This is a Hindi/Sanskrit chapter: keep quotations, verses and word meanings (शब्दार्थ) in Devanagari even when the chosen language is Hinglish or English; explain them in the chosen language."
+      : null,
+    STAGE_RULES[stage],
+    "",
+    notesInstructions(),
+    "",
+    `OFFICIAL TEXTBOOK CHAPTER TEXT (extracted from the PDF; may contain layout noise and broken Devanagari matras — read through them). Base every fact, definition, date, name, formula, example and the chapter order on this text; do not add facts that contradict it, and cover what it covers. If the text holds several lessons, write notes ONLY for the chapter named above:\n<<<\n${opts.source}\n>>>`,
+    "",
+    "Write the COMPLETE note in one JSON object with every field: title, oneLiner, summary, keyPoints, keyTerms, formulas, tricks, questions, quickRevision, examTips, funFact, mcqs and mistakes. mcqs: " +
+      QUIZ_SIZE[stage] +
+      " questions, each with exactly 4 options, 'answer' the 0-based index of the single correct option, plausible wrong options from real student mistakes, a one-line explanation, and the correct option in different positions. marks is an integer 1-6. Empty formulas/keyTerms are allowed when irrelevant; no other field may be empty. Plain text strings only, ** around the 1-3 most important keywords, no other markdown.",
+    "Do not claim any question is a real past-paper question, do not invent printed page numbers or diagram labels, and do not write audio.",
+  ]
+    .filter((line) => line !== null)
+    .join("\n");
+}
