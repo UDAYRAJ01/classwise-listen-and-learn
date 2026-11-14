@@ -79,6 +79,12 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Added current missing inventory (1,946 cached chapters; 4,501 missing language rows), exact NCERT source, writer instructions and three stored-check-pass references under agent-workspace/materials/pilot-my-bicycle; source/sample hashes and draft schemas verified; six submission tests pass. References are not human approval.
 - [x] Muse confirmed material folder and hashes, wrote pilot writing/checking drafts and passed validation; GitHub push is blocked by a reported 403. No production import yet.
 
+## Muse self-serve queue (request of 14 Nov: "computer band kar raha hu, tum karte raho")
+- [x] `agent_tasks` queue: one row per chapter + language with no notes, `open` when textbook text is stored, `blocked` when it is not (4,500 rows: 2,118 open, 2,382 blocked); `scripts/agent/tasks.ts` rebuilds it without reopening claimed or applied rows
+- [x] `/api/public/agent` serves the queue: `?action=tasks` (filters + total), `?action=task&id=N` (identity, exact textbook text + SHA-256, up to 3 checked style notes, this app's own teacher instructions), `POST ?action=claim&id=N` (only an open task, else 409/404); 8 new instruction tests, 119 pass
+- [x] Published and verified live: task list, one task's material (hash matches the pilot's stored source), claim + double-claim + missing-id answers; test task put back in the open list
+- [ ] Muse writes from the queue: it must claim a task, write + check with that task number, and submit both JSONs
+
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
 - [x] Second pass for Class 11–12 Hindi chapters converted late
