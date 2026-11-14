@@ -35,6 +35,45 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_content_submissions: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          payload: Json
+          raw_json: string
+          review_note: string | null
+          reviewed_at: string | null
+          sha256: string
+          status: string
+          task: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          payload: Json
+          raw_json: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          sha256: string
+          status?: string
+          task: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          payload?: Json
+          raw_json?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          sha256?: string
+          status?: string
+          task?: number
+        }
+        Relationships: []
+      }
       agent_fixes: {
         Row: {
           created_at: string

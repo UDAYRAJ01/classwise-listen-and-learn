@@ -134,6 +134,13 @@
       "when": 1794324858509,
       "tag": "0018_agent_review_pipeline",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794698615490,
+      "tag": "0019_agent_content_inbox",
+      "breakpoints": true
     }
   ]
 }
