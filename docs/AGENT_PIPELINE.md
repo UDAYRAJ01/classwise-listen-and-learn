@@ -41,7 +41,7 @@ Actions runs on pull requests with read-only permissions, no application secrets
 
 ### Direct inbox when GitHub push is unavailable
 
-Use the existing agent key in `Authorization: Bearer <key>`; never put it in JSON, a committed file or chat. Send each original write/check JSON file unchanged to:
+Use the existing agent key in `Authorization: Bearer <key>` (or `x-agent-key: <key>`); never put it in JSON, a committed file or chat. Send each original write/check JSON file unchanged to:
 
 `POST https://classwise-listen-and-learn.lovable.app/api/public/agent?action=submit`
 

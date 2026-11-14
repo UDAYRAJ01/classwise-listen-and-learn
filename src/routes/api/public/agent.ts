@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/public/agent")({
     handlers: {
       GET: async ({ request }) => {
         const { agentAuthorized, safeCodePath } = await import("@/lib/server/agent-auth.server");
-        if (!agentAuthorized(request)) return json(401, { error: "Invalid key" });
+        if (!agentAuthorized(request)) return json(401, { error: "Invalid key. Send Authorization: Bearer <key> or x-agent-key: <key>." });
         const url = new URL(request.url);
         const action = url.searchParams.get("action") ?? "guide";
         const admin = await db();
@@ -85,7 +85,7 @@ export const Route = createFileRoute("/api/public/agent")({
       },
       POST: async ({ request }) => {
         const { agentAuthorized } = await import("@/lib/server/agent-auth.server");
-        if (!agentAuthorized(request)) return json(401, { error: "Invalid key" });
+        if (!agentAuthorized(request)) return json(401, { error: "Invalid key. Send Authorization: Bearer <key> or x-agent-key: <key>." });
         if (new URL(request.url).searchParams.get("action") === "submit") {
           const { parseContentSubmission } = await import("@/lib/agent-submissions");
           const { createHash } = await import("node:crypto");
