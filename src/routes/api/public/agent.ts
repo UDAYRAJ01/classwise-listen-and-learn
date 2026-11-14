@@ -137,7 +137,7 @@ export const Route = createFileRoute("/api/public/agent")({
           const { createHash } = await import("node:crypto");
           const sha256 = createHash("sha256").update(source.body).digest("hex");
           const { getSubject, SUBJECTS } = await import("@/lib/catalog");
-          const subject = getSubject(row.board, row.grade, row.subject) ?? SUBJECTS[row.subject] ?? { slug: row.subject, name: row.subject, hi: "", icon: "", tone: "ink" };
+          const subject = getSubject(row.board as "cbse" | "icse", row.grade, row.subject) ?? SUBJECTS[row.subject] ?? { slug: row.subject, name: row.subject, hi: "", icon: "", tone: "ink" };
           const { agentWriterInstructions } = await import("@/lib/server/prompts.server");
           const instructions = agentWriterInstructions({
             board: row.board as "cbse" | "icse",
@@ -199,7 +199,7 @@ export const Route = createFileRoute("/api/public/agent")({
               text: source.body,
               provenance: "Exact UTF-8 body stored by this app from the official textbook PDF. Hash these exact bytes. Layout noise and damaged Devanagari matras are possible; the printed PDF stays the authority for images and page numbers.",
             },
-            samples: scored.map((s) => s.sample),
+            samples,
             instructions,
             submit: {
               url: "https://classwise-listen-and-learn.lovable.app/api/public/agent?action=submit",
