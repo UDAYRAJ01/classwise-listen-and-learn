@@ -15,7 +15,7 @@ if (!key) throw new Error("AGENT_ACCESS_KEY is not set");
 
 const { data: rows, error } = await admin
   .from("agent_tasks")
-  .select("id, board, grade, subject, chapter_slug, language, has_source")
+  .select("id, board, grade, subject, chapter_slug, chapter_title, language, has_source")
   .eq("status", "open")
   .order("board")
   .order("grade")
