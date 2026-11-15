@@ -20,6 +20,7 @@ import { submissionSchema } from "@/lib/agent-submissions";
 import { loadChapterContext } from "@/lib/server/note-pipeline.server";
 import { normalizeNote } from "@/lib/server/normalize.server";
 import { sha256 } from "./submission-schema.ts";
+import { evidenceCoverage, missingAnchors as findMissing, scriptShare, sourceProof } from "./review-gates.ts";
 
 const OUT = "/tmp/review";
 mkdirSync(OUT, { recursive: true });
@@ -34,11 +35,8 @@ if (error) throw error;
 const checks = new Map<number, typeof rows>();
 for (const r of rows) if (r.kind === "check") checks.set(r.task, [...(checks.get(r.task) ?? []), r]);
 
-const norm = (s: string) => s.toLowerCase().normalize("NFC").replace(/[^\p{L}\p{M}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
-const deva = (s: string) => (s.match(/\p{Script=Devanagari}/gu) ?? []).length;
-const latin = (s: string) => (s.match(/[A-Za-z]/g) ?? []).length;
 
-type Result = { task: number; id: string; checkId?: string; chapter: string; lang: string; ok: boolean; flags: string[]; missingAnchors: string[] };
+type Result = { proof?: string; task: number; id: string; checkId?: string; chapter: string; lang: string; ok: boolean; flags: string[]; missingAnchors: string[] };
 const results: Result[] = [];
 
 for (const row of rows.filter((r) => r.kind === "write")) {
@@ -53,51 +51,46 @@ for (const row of rows.filter((r) => r.kind === "write")) {
   const subject = getSubject(d.board as BoardId, d.grade, d.subject);
   if (!subject) { results.push({ task: row.task, id: row.id, chapter: d.chapter, lang: d.language, ok: false, flags: ["subject"], missingAnchors: [] }); continue; }
   const ctx = await loadChapterContext(admin, { board: d.board as BoardId, grade: d.grade, subject, chapter: d.chapter });
-  if (!ctx.source) flags.push("no-stored-text");
-  else if (sha256(ctx.source) !== d.source.sha256) flags.push("source-hash");
+  const { data: srcRows } = await admin.from("chapter_sources").select("body").eq("board", d.board).eq("grade", d.grade)
+    .eq("subject", subject.slug).eq("chapter_slug", d.chapter).order("body_chars", { ascending: false }).limit(1);
+  const source = (srcRows?.[0]?.body as string | undefined) ?? "";
+  if (!source) flags.push("no-stored-text");
 
   const pair = checks.get(row.task) ?? [];
   const check = pair.find((c) => {
     const p = submissionSchema.safeParse(c.payload);
     return p.success && p.data.kind === "check" && p.data.noteSha256 === sha256(row.raw_json ?? "");
   });
+  let proof = "";
   if (!check) flags.push(pair.length ? "check-not-for-these-bytes" : "no-check");
   else {
     const p = submissionSchema.parse(check.payload);
-    if (p.kind === "check" && p.verdict !== "pass") flags.push("check-says-changes");
+    if (p.kind === "check") {
+      if (p.verdict !== "pass") flags.push("check-says-changes");
+      const cov = evidenceCoverage(p.checks, source);
+      const sp = sourceProof(d.source.sha256, sha256(source), cov);
+      proof = sp.how + (cov.missing.length ? `; not found: ${cov.missing.slice(0, 4).join(" | ")}` : "");
+      if (!sp.ok) flags.push("source-not-proven");
+    }
   }
 
   const content = normalizeNote(d.content as never, ctx.chapterTitle);
   if (content.keyPoints.length === 0) flags.push("empty-after-normalize");
 
-  const all = JSON.stringify(d.content);
-  const dv = deva(all), la = latin(all);
-  if (d.language === "hi" && dv / (dv + la) < 0.6) flags.push(`hindi-share-${Math.round((100 * dv) / (dv + la))}%`);
-  if (d.language === "en" && la / (dv + la) < 0.8 && !/hindi|sanskrit/.test(d.subject)) flags.push(`english-share-${Math.round((100 * la) / (dv + la))}%`);
+  const share = scriptShare(d.content);
+  const bookIsEnglish = d.subject === "english";
+  if (d.language === "hi" && share.devanagari < (bookIsEnglish ? 0.35 : 0.6)) flags.push(`hindi-share-${Math.round(100 * share.devanagari)}%`);
+  if (d.language === "en" && share.latin < (bookIsEnglish ? 0.8 : 0.5)) flags.push(`english-share-${Math.round(100 * share.latin)}%`);
 
-  // MCQ sanity: options distinct, explanation mentions the right option text loosely.
   for (const [i, m] of d.content.mcqs.entries()) {
-    if (new Set(m.options.map(norm)).size !== 4) flags.push(`mcq${i + 1}-duplicate-options`);
+    if (new Set(m.options.map((o) => o.trim().toLowerCase())).size !== 4) flags.push(`mcq${i + 1}-duplicate-options`);
   }
-
-  // Anchors: highlighted and quoted words should exist in the book (same script as the book).
-  const src = norm(ctx.source ?? "");
-  const srcIsDeva = deva(ctx.source ?? "") > latin(ctx.source ?? "");
-  const anchors = new Set<string>();
-  for (const m of all.matchAll(/\*\*(.+?)\*\*/g)) anchors.add(m[1]);
-  for (const m of all.matchAll(/[“"]([^“”"\\]{2,60})[”"]/g)) anchors.add(m[1]);
-  const missingAnchors: string[] = [];
-  for (const a of anchors) {
-    const n = norm(a);
-    if (!n || n.length < 3) continue;
-    const isDeva = deva(a) > latin(a);
-    if (isDeva !== srcIsDeva) continue; // translations/explanations, not quotes from the book
-    if (!src.includes(n)) missingAnchors.push(a);
-  }
+  const missingAnchors = findMissing(d.content, source);
 
   const lines = [
     `TASK ${row.task}  ${d.board} ${d.grade} ${d.subject} ${d.chapter} (${d.language})  title=${d.content.title}`,
     `FLAGS: ${flags.join(", ") || "none"}`,
+    `SOURCE: ${proof}`,
     `ANCHORS NOT IN BOOK: ${missingAnchors.join(" | ") || "none"}`,
     `ONE-LINER: ${d.content.oneLiner}`,
     `SUMMARY: ${d.content.summary}`,
@@ -108,8 +101,8 @@ for (const row of rows.filter((r) => r.kind === "write")) {
     `FUNFACT: ${d.content.funFact}`,
   ];
   writeFileSync(`${OUT}/${row.task}.txt`, lines.join("\n"));
-  writeFileSync(`${OUT}/${row.task}.source.txt`, ctx.source ?? "");
-  results.push({ task: row.task, id: row.id, checkId: check?.id, chapter: `${d.subject}/${d.chapter}`, lang: d.language, ok: flags.length === 0, flags, missingAnchors });
+  writeFileSync(`${OUT}/${row.task}.source.txt`, source);
+  results.push({ task: row.task, id: row.id, checkId: check?.id, chapter: `${d.subject}/${d.chapter}`, lang: d.language, ok: flags.length === 0, flags, missingAnchors, proof });
 }
 
 writeFileSync(`${OUT}/summary.json`, JSON.stringify(results, null, 2));
