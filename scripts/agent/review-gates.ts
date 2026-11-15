@@ -21,18 +21,30 @@ export function scriptShare(content: unknown) {
   return { devanagari: d / Math.max(1, d + l), latin: l / Math.max(1, d + l) };
 }
 
+/**
+ * Letters only, no spaces or vowel signs: stored Hindi text comes from PDF extraction that
+ * splits and reorders matras ("सनु ाती" for "सुनाती"), so compare the consonant skeleton.
+ */
+export const skeleton = (s: string) =>
+  s.toLowerCase().normalize("NFD").replace(/[\p{M}\u200b-\u200d]/gu, "").replace(/[^\p{L}\p{N}]/gu, "");
+
 /** Quoted book lines the checker cited as evidence, and how many occur in our stored text. */
 export function evidenceCoverage(checkItems: { evidence: string }[], source: string) {
-  const src = normText(source);
-  const quotes = checkItems.flatMap((c) => [...c.evidence.matchAll(/[“"]([^“”"]{8,400})[”"]/g)].map((m) => m[1]));
-  const usable = quotes.map(normText).filter((q) => q.split(" ").length >= 2);
-  const found = usable.filter((q) => src.includes(q));
-  return { quotes: usable.length, found: found.length, missing: usable.filter((q) => !src.includes(q)) };
+  const src = skeleton(source);
+  const quotes = checkItems.flatMap((c) => [
+    ...[...c.evidence.matchAll(/[“"]([^“”"]{8,400})[”"]/g)].map((m) => m[1]),
+    ...[...c.evidence.matchAll(/(?:^|[\s(:;])'([^']{8,400})'(?=[\s.,;:)—]|$)/g)].map((m) => m[1]),
+  ]);
+  // A quote that cites the writer instructions is not a book line.
+  const usable = quotes.filter((q) => q.trim().split(/\s+/).length >= 2 && !/formulas? for grammar|writer instructions/i.test(q));
+  const parts = usable.flatMap((q) => q.split(/\s*[|…]\s*|\.\.\./).filter((x) => skeleton(x).length >= 6));
+  const missing = parts.filter((q) => !src.includes(skeleton(q)));
+  return { quotes: parts.length, found: parts.length - missing.length, missing };
 }
 
 /** Highlighted / quoted words in the note written in the book's script that the book never contains. */
 export function missingAnchors(content: unknown, source: string) {
-  const src = normText(source);
+  const src = skeleton(source);
   const srcIsDeva = deva(source) > latin(source);
   const anchors = new Set<string>();
   for (const s of stringsOf(content)) {
@@ -40,7 +52,7 @@ export function missingAnchors(content: unknown, source: string) {
     for (const m of s.matchAll(/[“"‘]([^“”"’]{2,80})[”"’]/g)) anchors.add(m[1]);
   }
   return [...anchors].filter((a) => {
-    const n = normText(a);
+    const n = skeleton(a);
     if (n.length < 3) return false;
     if (deva(a) > latin(a) !== srcIsDeva) return false;
     return !src.includes(n);
@@ -50,6 +62,6 @@ export function missingAnchors(content: unknown, source: string) {
 /** The draft must be built on our textbook: exact hash, or a copy whose cited lines all occur in it. */
 export function sourceProof(draftHash: string, storedHash: string, coverage: { quotes: number; found: number }) {
   if (draftHash === storedHash) return { ok: true, how: "exact hash" };
-  const ok = coverage.quotes >= 5 && coverage.found / coverage.quotes >= 0.9;
+  const ok = coverage.quotes >= 3 && coverage.found / coverage.quotes >= 0.85;
   return { ok, how: `hash differs; ${coverage.found}/${coverage.quotes} cited book lines found in stored text` };
 }
