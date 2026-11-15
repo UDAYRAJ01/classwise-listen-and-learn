@@ -22,6 +22,6 @@ Chapter ba chapter maangne ki zaroorat nahi. Agent key ke saath:
 3. `GET /api/public/agent?action=task&id=N` — us chapter ka asli textbook text + uska SHA-256, 3 checked sample notes, aur app ke apne teacher instructions.
 4. Write aur check JSON bina badle `POST /api/public/agent?action=submit` par bhejo. Dono mein `task` = GitHub issue number (pilot ke liye `1`), queue ka id nahi — queue id sirf claim aur material ke liye hai.
 
-`status=blocked` wale chapters ke paas textbook text nahi hai — unhe mat likho. Queue row tab tak `claimed` rehti hai jab tak owner notes app mein na laga de; phir `applied`.
+`status=blocked` wale chapters ke paas textbook text nahi hai — unhe mat likho. Queue row tab tak `claimed` rehti hai jab tak owner notes app mein na laga de; phir `applied`. Restart ke baad apne claimed tasks wapas paane ke liye `GET /api/public/agent?action=tasks&status=claimed`.
 
 GitHub connection Lovable ke **More → Git** se user jodta hai. Yeh files us panel ko change nahi kartin; section GitHub repository mein milega. Agent ko live Cloud data, stored textbooks, notes/audio ya credentials automatically nahi milte. Owner sirf authorized chapter material share kare.
