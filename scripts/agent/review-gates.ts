@@ -32,8 +32,8 @@ export const skeleton = (s: string) =>
 export function evidenceCoverage(checkItems: { evidence: string }[], source: string) {
   const src = skeleton(source);
   const quotes = checkItems.flatMap((c) => [
-    ...[...c.evidence.matchAll(/[“"]([^“”"]{8,400})[”"]/g)].map((m) => m[1]),
-    ...[...c.evidence.matchAll(/(?:^|[\s(:;])'([^']{8,400})'(?=[\s.,;:)—]|$)/g)].map((m) => m[1]),
+    ...[...c.evidence.matchAll(/[“"]([^“”"]{8,400})[”"]/g)].map((m) => m[1] ?? ""),
+    ...[...c.evidence.matchAll(/(?:^|[\s(:;])'([^']{8,400})'(?=[\s.,;:)—]|$)/g)].map((m) => m[1] ?? ""),
   ]);
   // A quote that cites the writer instructions is not a book line.
   const usable = quotes.filter((q) => q.trim().split(/\s+/).length >= 2 && !/formulas? for grammar|writer instructions/i.test(q));
@@ -48,8 +48,8 @@ export function missingAnchors(content: unknown, source: string) {
   const srcIsDeva = deva(source) > latin(source);
   const anchors = new Set<string>();
   for (const s of stringsOf(content)) {
-    for (const m of s.matchAll(/\*\*(.+?)\*\*/g)) anchors.add(m[1]);
-    for (const m of s.matchAll(/[“"‘]([^“”"’]{2,80})[”"’]/g)) anchors.add(m[1]);
+    for (const m of s.matchAll(/\*\*(.+?)\*\*/g)) anchors.add(m[1] ?? "");
+    for (const m of s.matchAll(/[“"‘]([^“”"’]{2,80})[”"’]/g)) anchors.add(m[1] ?? "");
   }
   return [...anchors].filter((a) => {
     const n = skeleton(a);
