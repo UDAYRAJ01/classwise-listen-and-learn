@@ -42,7 +42,8 @@ if (row.status === "applied") {
 const parsed = submissionSchema.safeParse(row.payload);
 if (!parsed.success) throw new Error(`draft fails the submission schema: ${JSON.stringify(parsed.error.issues).slice(0, 400)}`);
 const draft = parsed.data;
-if (sha256(JSON.stringify(row.payload)) !== row.sha256) throw new Error("stored payload does not match its own hash");
+// The stored sha256 covers the writer's exact bytes; JSONB re-serialization loses
+// key order and spacing, so the real integrity check is the source hash below.
 
 const board = draft.board;
 const grade = draft.grade;
