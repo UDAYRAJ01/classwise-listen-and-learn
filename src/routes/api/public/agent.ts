@@ -25,7 +25,7 @@ const GUIDE = {
     "POST ?action=submit": "send the exact write/check JSON file bytes as application/json, no wrapper; returns id, sha256, pending status. Same bytes return the existing receipt.",
     "GET ?action=submissions&task=1": "list writing/checking receipts and review status (optional task filter)",
     "GET ?action=submission&id=<uuid>": "retrieve original draft JSON bytes; hash stays unchanged",
-    "GET ?action=tasks&status=open&limit=25": "the writing to-do list (optional board, grade, subject filters)",
+    "GET ?action=tasks&status=open&limit=25": "the writing to-do list (optional board, grade, subject, language filters)",
     "GET ?action=task&id=12": "one task's full material: textbook text + hash, style samples, teacher instructions",
     "POST ?action=claim&id=12": "take one open task so nobody else writes the same chapter",
   },
@@ -109,9 +109,18 @@ export const Route = createFileRoute("/api/public/agent")({
           }
           const subject = url.searchParams.get("subject");
           if (subject) query = query.eq("subject", subject);
+          const language = url.searchParams.get("language");
+          if (language) {
+            if (!["hinglish", "hi", "en"].includes(language)) return json(400, { error: "language must be hinglish, hi or en" });
+            query = query.eq("language", language);
+          }
           const { data, error } = await query;
           if (error) return json(500, { error: error.message });
-          const { count } = await admin.from("agent_tasks").select("id", { count: "exact", head: true }).eq("status", status);
+          const { count } = await admin
+            .from("agent_tasks")
+            .select("id", { count: "exact", head: true })
+            .eq("status", status)
+            .eq(board ? "board" : "id", board ?? "00000000-0000-0000-0000-000000000000");
           return json(200, { status, total: count ?? data.length, tasks: data });
         }
         if (action === "task") {
