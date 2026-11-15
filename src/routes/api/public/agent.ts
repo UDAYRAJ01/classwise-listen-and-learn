@@ -25,6 +25,9 @@ const GUIDE = {
     "POST ?action=submit": "send the exact write/check JSON file bytes as application/json, no wrapper; returns id, sha256, pending status. Same bytes return the existing receipt.",
     "GET ?action=submissions&task=1": "list writing/checking receipts and review status (optional task filter)",
     "GET ?action=submission&id=<uuid>": "retrieve original draft JSON bytes; hash stays unchanged",
+    "GET ?action=tasks&status=open&limit=25": "the writing to-do list (optional board, grade, subject, language filters)",
+    "GET ?action=task&id=12": "one task's full material: textbook text + hash, style samples, teacher instructions",
+    "POST ?action=claim&id=12": "take one open task so nobody else writes the same chapter",
   },
 };
 
@@ -81,11 +84,181 @@ export const Route = createFileRoute("/api/public/agent")({
           if (error) return json(500, { error: error.message });
           return json(200, { fixes: data });
         }
+        if (action === "tasks") {
+          const status = url.searchParams.get("status") ?? "open";
+          if (!["open", "blocked", "claimed", "applied"].includes(status)) return json(400, { error: "status must be open, blocked, claimed or applied" });
+          const limitRaw = Number(url.searchParams.get("limit") ?? 25);
+          const limit = Number.isSafeInteger(limitRaw) && limitRaw >= 1 && limitRaw <= 100 ? limitRaw : 25;
+          const board = url.searchParams.get("board");
+          const grade = url.searchParams.get("grade");
+          const subject = url.searchParams.get("subject");
+          const language = url.searchParams.get("language");
+          if (language && !["hinglish", "hi", "en"].includes(language)) return json(400, { error: "language must be hinglish, hi or en" });
+          const gradeRaw = grade ? Number(grade) : null;
+          if (gradeRaw !== null && (!Number.isSafeInteger(gradeRaw) || gradeRaw < 1 || gradeRaw > 12))
+            return json(400, { error: "grade must be 1-12" });
+          // Same filters on the page and on the count, so "total" always matches the list.
+          const page = admin
+            .from("agent_tasks")
+            .select("id, board, grade, subject, chapter_slug, chapter_title, book_name, language, has_source, source_url, source_chars, status")
+            .eq("status", status)
+            .order("board")
+            .order("grade")
+            .order("subject")
+            .order("chapter_slug")
+            .order("language")
+            .limit(limit);
+          const counted = admin.from("agent_tasks").select("id", { count: "exact", head: true }).eq("status", status);
+          if (board) {
+            page.eq("board", board);
+            counted.eq("board", board);
+          }
+          if (gradeRaw !== null) {
+            page.eq("grade", gradeRaw);
+            counted.eq("grade", gradeRaw);
+          }
+          if (subject) {
+            page.eq("subject", subject);
+            counted.eq("subject", subject);
+          }
+          if (language) {
+            page.eq("language", language);
+            counted.eq("language", language);
+          }
+          const { data, error } = await page;
+          if (error) return json(500, { error: error.message });
+          const { count } = await counted;
+          return json(200, { status, total: count ?? data.length, tasks: data });
+        }
+        if (action === "task") {
+          const idRaw = url.searchParams.get("id");
+          const id = Number(idRaw);
+          if (!idRaw || !Number.isSafeInteger(id) || id < 1) return json(400, { error: "id must be a task number" });
+          const { data: row, error } = await admin.from("agent_tasks").select("*").eq("id", id).maybeSingle();
+          if (error) return json(500, { error: error.message });
+          if (!row) return json(404, { error: "No such task" });
+          if (!row.has_source) return json(409, { error: "This chapter has no stored textbook text, so it cannot be written from source", status: row.status });
+          const { data: sourceRows, error: sourceError } = await admin
+            .from("chapter_sources")
+            .select("body, source_url, body_chars")
+            .eq("board", row.board)
+            .eq("grade", row.grade)
+            .eq("subject", row.subject)
+            .eq("chapter_slug", row.chapter_slug)
+            .order("body_chars", { ascending: false })
+            .limit(1);
+          if (sourceError) return json(500, { error: sourceError.message });
+          const source = sourceRows?.[0];
+          if (!source?.body) return json(409, { error: "Textbook text row disappeared; re-run scripts/agent/tasks.ts" });
+          const { createHash } = await import("node:crypto");
+          const sha256 = createHash("sha256").update(source.body).digest("hex");
+          const { getSubject, SUBJECTS } = await import("@/lib/catalog");
+          const subject = getSubject(row.board as "cbse" | "icse", row.grade, row.subject) ?? SUBJECTS[row.subject] ?? { slug: row.subject, name: row.subject, hi: "", icon: "", tone: "ink" };
+          const { agentWriterInstructions } = await import("@/lib/server/prompts.server");
+          const instructions = agentWriterInstructions({
+            board: row.board as "cbse" | "icse",
+            grade: row.grade,
+            subject,
+            chapterTitle: row.chapter_title,
+            bookName: row.book_name,
+            gist: null,
+            lang: row.language as "hinglish" | "hi" | "en",
+            source: source.body,
+          });
+          const { data: openReports } = await admin.from("note_reports").select("chapter_slug, language").eq("status", "open");
+          const reported = new Set((openReports ?? []).map((r) => `${r.chapter_slug}|${r.language}`));
+          /** Closest style first: same class+subject, then same class, then anything checked. */
+          const pools = [
+            { board: row.board, grade: row.grade, subject: row.subject },
+            { board: row.board, grade: row.grade },
+            { board: row.board },
+          ];
+          const seen = new Set<string>();
+          const scored: { score: number; sample: Record<string, unknown> }[] = [];
+          for (const [poolIndex, filter] of pools.entries()) {
+            if (scored.length >= 3) break;
+            let query = admin
+              .from("notes")
+              .select("board, grade, subject, chapter_slug, chapter_title, book_name, language, content, created_at, note_checks(issues, checked_at)")
+              .eq("is_custom", false)
+              .neq("chapter_slug", row.chapter_slug)
+              .limit(60);
+            for (const [column, value] of Object.entries(filter)) query = query.eq(column, value);
+            const { data: pool, error: poolError } = await query;
+            if (poolError) return json(500, { error: poolError.message });
+            for (const note of pool ?? []) {
+              const identityKey = `${note.chapter_slug}|${note.language}`;
+              if (seen.has(identityKey)) continue;
+              seen.add(identityKey);
+              const check = Array.isArray(note.note_checks) ? note.note_checks[0] : note.note_checks;
+              if (!check || !Array.isArray(check.issues) || check.issues.length > 0) continue;
+              if (!check.checked_at || new Date(check.checked_at).getTime() <= new Date(note.created_at).getTime()) continue;
+              if (reported.has(identityKey)) continue;
+              scored.push({
+                score: poolIndex,
+                sample: {
+                  chapter: note.chapter_slug,
+                  title: note.chapter_title,
+                  book: note.book_name,
+                  language: note.language,
+                  reviewStatus: "stored-textbook-check-pass-not-human-approved",
+                  checkedAt: check.checked_at,
+                  content: note.content,
+                },
+              });
+            }
+          }
+          scored.sort((a, b) => a.score - b.score);
+          const samples = scored.slice(0, 3).map((s) => s.sample);
+          return json(200, {
+            task: row.id,
+            status: row.status,
+            identity: {
+              board: row.board,
+              grade: row.grade,
+              subject: row.subject,
+              chapter: row.chapter_slug,
+              title: row.chapter_title,
+              book: row.book_name,
+              language: row.language,
+            },
+            source: {
+              reference: source.source_url ?? row.source_url,
+              sha256,
+              characters: source.body.length,
+              text: source.body,
+              provenance: "Exact UTF-8 body stored by this app from the official textbook PDF. Hash these exact bytes. Layout noise and damaged Devanagari matras are possible; the printed PDF stays the authority for images and page numbers.",
+            },
+            samples,
+            instructions,
+            submit: {
+              url: "https://classwise-listen-and-learn.lovable.app/api/public/agent?action=submit",
+              headers: { Authorization: "Bearer <key>", "Content-Type": "application/json" },
+              note: `Send the writing JSON and the checking JSON as two separate POSTs of the exact file bytes, each with "task": ${row.id}. The check must carry the writing file's byte hash as noteSha256.`,
+            },
+          });
+        }
         return json(200, GUIDE);
       },
       POST: async ({ request }) => {
         const { agentAuthorized } = await import("@/lib/server/agent-auth.server");
         if (!agentAuthorized(request)) return json(401, { error: "Invalid key. Send Authorization: Bearer <key> or x-agent-key: <key>." });
+        if (new URL(request.url).searchParams.get("action") === "claim") {
+          const idRaw = new URL(request.url).searchParams.get("id");
+          const id = Number(idRaw);
+          if (!idRaw || !Number.isSafeInteger(id) || id < 1) return json(400, { error: "id must be a task number" });
+          const admin = await db();
+          const { data, error } = await admin
+            .from("agent_tasks")
+            .update({ status: "claimed", claimed_at: new Date().toISOString() })
+            .eq("id", id)
+            .eq("status", "open")
+            .select("id, status, claimed_at");
+          if (error) return json(500, { error: error.message });
+          if (data?.length) return json(200, { claimed: data[0] });
+          const { data: now } = await admin.from("agent_tasks").select("id, status").eq("id", id).maybeSingle();
+          return now ? json(409, { error: `Task ${id} is ${now.status}, not open` }) : json(404, { error: "No such task" });
+        }
         if (new URL(request.url).searchParams.get("action") === "submit") {
           const { parseContentSubmission } = await import("@/lib/agent-submissions");
           const { createHash } = await import("node:crypto");

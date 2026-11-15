@@ -110,10 +110,65 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_tasks: {
+        Row: {
+          applied_at: string | null
+          board: string
+          book_name: string | null
+          chapter_slug: string
+          chapter_title: string
+          claimed_at: string | null
+          created_at: string
+          grade: number
+          has_source: boolean
+          id: number
+          language: string
+          source_chars: number
+          source_url: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          applied_at?: string | null
+          board: string
+          book_name?: string | null
+          chapter_slug: string
+          chapter_title: string
+          claimed_at?: string | null
+          created_at?: string
+          grade: number
+          has_source?: boolean
+          id?: never
+          language: string
+          source_chars?: number
+          source_url?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          applied_at?: string | null
+          board?: string
+          book_name?: string | null
+          chapter_slug?: string
+          chapter_title?: string
+          claimed_at?: string | null
+          created_at?: string
+          grade?: number
+          has_source?: boolean
+          id?: never
+          language?: string
+          source_chars?: number
+          source_url?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: []
+      }
       chapter_sources: {
         Row: {
           board: string
           body: string
+          body_chars: number
           chapter_slug: string
           created_at: string
           fts: unknown
@@ -124,6 +179,7 @@ export type Database = {
         Insert: {
           board: string
           body: string
+          body_chars?: number
           chapter_slug: string
           created_at?: string
           fts?: unknown
@@ -134,6 +190,7 @@ export type Database = {
         Update: {
           board?: string
           body?: string
+          body_chars?: number
           chapter_slug?: string
           created_at?: string
           fts?: unknown

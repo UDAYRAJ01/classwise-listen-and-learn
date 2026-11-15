@@ -27,6 +27,16 @@ Add `noteFile` referencing a writing JSON in `agent-workspace/submissions/`, `vo
 
 Generate track text with the existing `buildTracks(note.content, note.language)` in `src/lib/tracks.ts`. Include every track in its original order, including section labels; never reword/add narration or change indices. Hash exact UTF-8 track text. WAV must be uncompressed PCM, 24,000 Hz, mono, 16-bit, nonempty, under 10 MB per file. Automated matching checks the declared text hash, not whether the spoken words are accurate; owner must listen before approval. Use only approved notes. JSON and audio must share chapter, language and source identity. Do not commit an entire book audio collection; use small chapter-scoped PRs.
 
+## Self-serve task queue
+
+The app keeps a to-do list of chapters that still have no notes. With the same agent key:
+
+- `GET /api/public/agent?action=tasks&status=open&limit=25` — chapters that can be written now, because their official textbook text is stored. Optional `board`, `grade`, `subject` filters. `status=blocked` lists chapters with no stored text: do not write those from memory.
+- `GET /api/public/agent?action=task&id=12` — that task's full material: chapter identity, the exact textbook text with its SHA-256, up to three checked style notes, and this app's own teacher instructions for that class, subject and language.
+- `POST /api/public/agent?action=claim&id=12` — take the task so another writer does not repeat it. Only an `open` task can be claimed.
+
+Send both drafts back carrying that number as `task`: `POST /api/public/agent?action=submit`, exact file bytes, one POST per file. The queue row stays `open`/`claimed` until the owner imports the notes, then it becomes `applied`. Structural validation still does not prove factual accuracy.
+
 ## Run locally
 
 ```sh

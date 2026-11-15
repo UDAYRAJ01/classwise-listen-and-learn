@@ -79,6 +79,13 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Added current missing inventory (1,946 cached chapters; 4,501 missing language rows), exact NCERT source, writer instructions and three stored-check-pass references under agent-workspace/materials/pilot-my-bicycle; source/sample hashes and draft schemas verified; six submission tests pass. References are not human approval.
 - [x] Muse confirmed material folder and hashes, wrote pilot writing/checking drafts and passed validation; GitHub push is blocked by a reported 403. No production import yet.
 
+## Muse self-serve queue (request of 14 Nov: "computer band kar raha hu, tum karte raho")
+- [x] `agent_tasks` queue: one row per chapter + language with no notes, `open` when textbook text is stored, `blocked` when it is not (4,500 rows: 2,118 open, 2,382 blocked); `scripts/agent/tasks.ts` rebuilds it without reopening claimed or applied rows
+- [x] `/api/public/agent` serves the queue: `?action=tasks` (status, limit, board, grade, subject, language filters + matching total), `?action=task&id=N` (identity, exact textbook text + SHA-256, up to 3 checked style notes, this app's own teacher instructions), `POST ?action=claim&id=N` (only an open task, else 409/404); 8 new instruction tests, 119 pass
+- [x] Published and verified live: 30 open tasks across 30 class-subject groups all answered with text, hash, instructions and samples (`scripts/agent/verify-queue.ts`); blocked rows refuse with 409; language filter total (1,060 Hindi) matches the database; claim + double-claim + missing-id answers checked; test task put back in the open list
+- [x] Guides made unambiguous for the writer: `task` in the JSON is the GitHub issue number (not the queue id), the queue is the live list instead of the stale `missing-notes.json`, and `status=claimed` resumes work after a restart
+- [ ] Muse writes from the queue: it must claim a task, write + check with that task number, and submit both JSONs
+
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
 - [x] Re-check CBSE Class 10–12 Hindi + Class 10 Sanskrit from the now-readable book text (80 of 80 chapters written + checked)
 - [x] Second pass for Class 11–12 Hindi chapters converted late
@@ -86,10 +93,21 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Class 11 Hindi Vitan: dropped "लेखकों के बारे में" (an appendix, not a chapter)
 - [x] Bold-word parser: "**=**", "**;**", unclosed highlights and p*** handled; Python/Java stars kept
 - [ ] ICSE/ISC: still unverified — ICSE 9 Hindi split & drama/novel, ICSE 9 Commercial Studies full list, Computer Applications 9–10, ICSE 1–8 lists; ISC 11 Accounts, Chemistry, Geography, Physics, Psychology; ISC 12 Accounts, Business Studies, Commerce, Computer Science, Economics, History titles, Maths, Physics (exact publisher contents pages not reachable; cisce.org blocks downloads from here)
-- [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
+- [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet — on 14 Nov the book site answered nothing at all from this sandbox (even PDFs already stored), so retry the fetch from a working connection before assuming the files are gone
 
 ## Ready next
 - JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2). First teach the concepts stage to file new questions under a chapter's existing concepts, so new papers don't force a rewrite of its written index
 - JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
+
+## Muse inbox — accepted so far
+- My Bicycle (CBSE Class 2 English): English notes from task 1 (write + check,
+  both applied) and Hindi notes from task 2 (write applied). `scripts/agent/import-draft.ts
+  --id=<uuid>` is the owner-side accept button: it re-checks the draft against the
+  submission schema, refuses unless the draft's source hash matches the stored
+  textbook text, saves through the app's own `saveNote`, then marks the submission
+  and the queue row `applied`. The Hindi page shows "मेरी साइकिल", 5 key-point
+  groups and 5 MCQs.
+- Still open: Muse has not sent the Hindi **check** draft for task 2, so that
+  chapter's review is incomplete even though its notes are live.
