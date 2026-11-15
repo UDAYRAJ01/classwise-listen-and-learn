@@ -89,7 +89,16 @@ export const Route = createFileRoute("/api/public/agent")({
           if (!["open", "blocked", "claimed", "applied"].includes(status)) return json(400, { error: "status must be open, blocked, claimed or applied" });
           const limitRaw = Number(url.searchParams.get("limit") ?? 25);
           const limit = Number.isSafeInteger(limitRaw) && limitRaw >= 1 && limitRaw <= 100 ? limitRaw : 25;
-          let query = admin
+          const board = url.searchParams.get("board");
+          const grade = url.searchParams.get("grade");
+          const subject = url.searchParams.get("subject");
+          const language = url.searchParams.get("language");
+          if (language && !["hinglish", "hi", "en"].includes(language)) return json(400, { error: "language must be hinglish, hi or en" });
+          const gradeRaw = grade ? Number(grade) : null;
+          if (gradeRaw !== null && (!Number.isSafeInteger(gradeRaw) || gradeRaw < 1 || gradeRaw > 12))
+            return json(400, { error: "grade must be 1-12" });
+          // Same filters on the page and on the count, so "total" always matches the list.
+          const page = admin
             .from("agent_tasks")
             .select("id, board, grade, subject, chapter_slug, chapter_title, book_name, language, has_source, source_url, source_chars, status")
             .eq("status", status)
@@ -99,28 +108,26 @@ export const Route = createFileRoute("/api/public/agent")({
             .order("chapter_slug")
             .order("language")
             .limit(limit);
-          const board = url.searchParams.get("board");
-          if (board) query = query.eq("board", board);
-          const grade = url.searchParams.get("grade");
-          if (grade) {
-            const g = Number(grade);
-            if (!Number.isSafeInteger(g) || g < 1 || g > 12) return json(400, { error: "grade must be 1-12" });
-            query = query.eq("grade", g);
+          const counted = admin.from("agent_tasks").select("id", { count: "exact", head: true }).eq("status", status);
+          if (board) {
+            page.eq("board", board);
+            counted.eq("board", board);
           }
-          const subject = url.searchParams.get("subject");
-          if (subject) query = query.eq("subject", subject);
-          const language = url.searchParams.get("language");
+          if (gradeRaw !== null) {
+            page.eq("grade", gradeRaw);
+            counted.eq("grade", gradeRaw);
+          }
+          if (subject) {
+            page.eq("subject", subject);
+            counted.eq("subject", subject);
+          }
           if (language) {
-            if (!["hinglish", "hi", "en"].includes(language)) return json(400, { error: "language must be hinglish, hi or en" });
-            query = query.eq("language", language);
+            page.eq("language", language);
+            counted.eq("language", language);
           }
-          const { data, error } = await query;
+          const { data, error } = await page;
           if (error) return json(500, { error: error.message });
-          const { count } = await admin
-            .from("agent_tasks")
-            .select("id", { count: "exact", head: true })
-            .eq("status", status)
-            .eq(board ? "board" : "id", board ?? "00000000-0000-0000-0000-000000000000");
+          const { count } = await counted;
           return json(200, { status, total: count ?? data.length, tasks: data });
         }
         if (action === "task") {
