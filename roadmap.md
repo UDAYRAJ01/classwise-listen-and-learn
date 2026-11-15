@@ -81,8 +81,9 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 
 ## Muse self-serve queue (request of 14 Nov: "computer band kar raha hu, tum karte raho")
 - [x] `agent_tasks` queue: one row per chapter + language with no notes, `open` when textbook text is stored, `blocked` when it is not (4,500 rows: 2,118 open, 2,382 blocked); `scripts/agent/tasks.ts` rebuilds it without reopening claimed or applied rows
-- [x] `/api/public/agent` serves the queue: `?action=tasks` (filters + total), `?action=task&id=N` (identity, exact textbook text + SHA-256, up to 3 checked style notes, this app's own teacher instructions), `POST ?action=claim&id=N` (only an open task, else 409/404); 8 new instruction tests, 119 pass
-- [x] Published and verified live: task list, one task's material (hash matches the pilot's stored source), claim + double-claim + missing-id answers; test task put back in the open list
+- [x] `/api/public/agent` serves the queue: `?action=tasks` (status, limit, board, grade, subject, language filters + matching total), `?action=task&id=N` (identity, exact textbook text + SHA-256, up to 3 checked style notes, this app's own teacher instructions), `POST ?action=claim&id=N` (only an open task, else 409/404); 8 new instruction tests, 119 pass
+- [x] Published and verified live: 30 open tasks across 30 class-subject groups all answered with text, hash, instructions and samples (`scripts/agent/verify-queue.ts`); blocked rows refuse with 409; language filter total (1,060 Hindi) matches the database; claim + double-claim + missing-id answers checked; test task put back in the open list
+- [x] Guides made unambiguous for the writer: `task` in the JSON is the GitHub issue number (not the queue id), the queue is the live list instead of the stale `missing-notes.json`, and `status=claimed` resumes work after a restart
 - [ ] Muse writes from the queue: it must claim a task, write + check with that task number, and submit both JSONs
 
 ## In progress (request of 25 Oct: verify everything, more tricks & tips, read tracking)
@@ -92,7 +93,7 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Class 11 Hindi Vitan: dropped "लेखकों के बारे में" (an appendix, not a chapter)
 - [x] Bold-word parser: "**=**", "**;**", unclosed highlights and p*** handled; Python/Java stars kept
 - [ ] ICSE/ISC: still unverified — ICSE 9 Hindi split & drama/novel, ICSE 9 Commercial Studies full list, Computer Applications 9–10, ICSE 1–8 lists; ISC 11 Accounts, Chemistry, Geography, Physics, Psychology; ISC 12 Accounts, Business Studies, Commerce, Computer Science, Economics, History titles, Maths, Physics (exact publisher contents pages not reachable; cisce.org blocks downloads from here)
-- [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet
+- [ ] CBSE Class 8 Social Science Part 2 (revised July 2026): chapter list stored, textbook text not reachable yet — on 14 Nov the book site answered nothing at all from this sandbox (even PDFs already stored), so retry the fetch from a working connection before assuming the files are gone
 
 ## Ready next
 - JEE Main: add more shifts per year (each year has 10–20 shifts; we use 2). First teach the concepts stage to file new questions under a chapter's existing concepts, so new papers don't force a rewrite of its written index
