@@ -100,3 +100,14 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - JEE Main 2026 Jan 24 source has only 21 of 25 Maths questions; find a complete copy
 - JEE Advanced 2018, 2020, 2021: official answer keys not found yet (solutions are solved twice and shown only when both agree)
 - Pre-make solutions for the most-asked questions so the first click is instant
+
+## Muse inbox — accepted so far
+- My Bicycle (CBSE Class 2 English): English notes from task 1 (write + check,
+  both applied) and Hindi notes from task 2 (write applied). `scripts/agent/import-draft.ts
+  --id=<uuid>` is the owner-side accept button: it re-checks the draft against the
+  submission schema, refuses unless the draft's source hash matches the stored
+  textbook text, saves through the app's own `saveNote`, then marks the submission
+  and the queue row `applied`. The Hindi page shows "मेरी साइकिल", 5 key-point
+  groups and 5 MCQs.
+- Still open: Muse has not sent the Hindi **check** draft for task 2, so that
+  chapter's review is incomplete even though its notes are live.
