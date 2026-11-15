@@ -4,3 +4,4 @@
 - Narration declarations must match `buildTracks` order and exact text hashes; accept only 24 kHz mono 16-bit PCM WAV parts to preserve the existing app audio contract.
 - Re-run `snapshot.ts` after changing agent-facing code or docs; the external agent reads that copy, not the live repo, so a stale copy hides live endpoints.
 - Re-run `tasks.ts` after importing notes, changing syllabi or storing new textbook text; the queue is a snapshot of what is missing, not a live view, and it never reopens a claimed or applied row.
+- Import a writing draft only with a passing check that covers its exact bytes; prove the textbook by exact hash or by the checker's cited lines found in stored text (consonant-skeleton match, since PDF Hindi text reorders matras), otherwise require an explicit owner `--reviewed` note.

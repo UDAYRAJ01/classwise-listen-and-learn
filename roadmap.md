@@ -111,3 +111,8 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
   groups and 5 MCQs.
 - Still open: Muse has not sent the Hindi **check** draft for task 2, so that
   chapter's review is incomplete even though its notes are live.
+
+## Muse batch 15 Nov (Class 2 English + Hindi)
+- [x] Reviewed and imported 77 chapters (Class 2 English 26 = 13 chapters x hi/en; Class 2 Hindi 51 incl. बादल): every check draft covered the exact note bytes and said pass; quiz answers and story facts spot-read against the stored NCERT text. Inbox empty after import (cap 200 no longer close).
+- `scripts/agent/review-drafts.ts` reports every pending write; `import-draft.ts` now needs a passing paired check and proves the textbook by hash or cited lines (PDF Hindi text has broken matras, so lines are compared by consonant skeleton).
+- No audio made for these notes (voice work stays stopped).
