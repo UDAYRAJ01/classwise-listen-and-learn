@@ -122,3 +122,4 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Rejected Class 3 English "Chandrayaan" (en): it said Chandrayaan-3 landed on 14 July 2023; the book says launched 14 July, landed 23 August 2023. Reason sent to Muse through the inbox.
 - [x] Date scan over all 100: no year in a note that the book lacks, except quiz wrong-options
 - Picture-only answers (counts in pictures behind "___" blanks) cannot be checked from stored text; the book site is still unreachable from here
+- [x] Notes inbox limit raised from 200 to 1,500 pending drafts (~750 notes) so Muse is not stalled overnight
