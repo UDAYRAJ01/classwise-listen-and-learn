@@ -37,6 +37,8 @@ The app keeps a to-do list of chapters that still have no notes. With the same a
 
 Send both drafts back carrying that number as `task`: `POST /api/public/agent?action=submit`, exact file bytes, one POST per file. The queue row stays `open`/`claimed` until the owner imports the notes, then it becomes `applied`. Structural validation still does not prove factual accuracy.
 
+The inbox holds up to 1,500 pending drafts (a note is two: write + check, so about 750 notes). When full, `submit` returns `429`; wait until the owner reviews before sending more.
+
 ## Run locally
 
 ```sh

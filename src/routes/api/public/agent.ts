@@ -36,6 +36,9 @@ async function db() {
   return supabaseAdmin;
 }
 
+/** Max pending write+check drafts (each note = 2 rows) before Muse must wait for review. */
+const CONTENT_INBOX_CAP = 1500;
+
 export const Route = createFileRoute("/api/public/agent")({
   server: {
     handlers: {
@@ -274,7 +277,7 @@ export const Route = createFileRoute("/api/public/agent")({
           if (existing.data) return json(200, { ...existing.data, duplicate: true });
           const { count, error: countError } = await admin.from("agent_content_submissions").select("id", { count: "exact", head: true }).eq("status", "pending");
           if (countError) return json(500, { error: countError.message });
-          if ((count ?? 0) >= 200) return json(429, { error: "Inbox full; wait for review" });
+          if ((count ?? 0) >= CONTENT_INBOX_CAP) return json(429, { error: `Inbox full (${CONTENT_INBOX_CAP} pending); wait for review` });
           const { data, error } = await admin.from("agent_content_submissions").insert({ kind: draft.kind, task: draft.task, payload: draft, raw_json: raw, sha256: hash }).select("id, sha256, status").single();
           if (error?.code === "23505") {
             const retry = await admin.from("agent_content_submissions").select("id, sha256, status").eq("sha256", hash).single();
