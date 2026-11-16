@@ -26,7 +26,9 @@ export function scriptShare(content: unknown) {
  * splits and reorders matras ("सनु ाती" for "सुनाती"), so compare the consonant skeleton.
  */
 export const skeleton = (s: string) =>
-  s.toLowerCase().normalize("NFD").replace(/[\p{M}\u200b-\u200d]/gu, "").replace(/[^\p{L}\p{N}]/gu, "");
+  s.toLowerCase().normalize("NFD").replace(/[\p{M}\u200b-\u200d]/gu, "").replace(/[^\p{L}\p{N}]/gu, "")
+    // Hindi books print ८० where notes write 80; compare the number, not the digit shapes.
+    .replace(/[\u0966-\u096f]/g, (d) => String(d.charCodeAt(0) - 0x0966));
 
 /** Quoted book lines the checker cited as evidence, and how many occur in our stored text. */
 export function evidenceCoverage(checkItems: { evidence: string }[], source: string) {

@@ -116,3 +116,9 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Reviewed and imported 77 chapters (Class 2 English 26 = 13 chapters x hi/en; Class 2 Hindi 51 incl. बादल): every check draft covered the exact note bytes and said pass; quiz answers and story facts spot-read against the stored NCERT text. Inbox empty after import (cap 200 no longer close).
 - `scripts/agent/review-drafts.ts` reports every pending write; `import-draft.ts` now needs a passing paired check and proves the textbook by hash or cited lines (PDF Hindi text has broken matras, so lines are compared by consonant skeleton).
 - No audio made for these notes (voice work stays stopped).
+
+## Muse batch 16 Nov (Class 2 Maths, Class 3 English / EVS / Hindi)
+- [x] 100 notes reviewed and imported (72 passed the automatic textbook check, 1 after the check learned to read ८० as 80, 27 read by hand: names, numbers and story facts traced to the stored book text)
+- [x] Rejected Class 3 English "Chandrayaan" (en): it said Chandrayaan-3 landed on 14 July 2023; the book says launched 14 July, landed 23 August 2023. Reason sent to Muse through the inbox.
+- [x] Date scan over all 100: no year in a note that the book lacks, except quiz wrong-options
+- Picture-only answers (counts in pictures behind "___" blanks) cannot be checked from stored text; the book site is still unreachable from here
