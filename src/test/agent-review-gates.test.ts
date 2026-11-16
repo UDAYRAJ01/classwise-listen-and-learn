@@ -7,6 +7,13 @@ describe("agent draft review gates", () => {
     expect(skeleton(pdfText).includes(skeleton("स्कूल की बातें सुनाती है"))).toBe(true);
   });
 
+  it("treats Devanagari digits in the book as the same number the notes write", () => {
+    const pdfText = "पिछले ८० वर्षों से तिमक्का पौधे लगा रही हैं। लगभग ३८५ बरगद के पेड़";
+    expect(skeleton(pdfText).includes(skeleton("पिछले 80 वर्षों से तिमक्का"))).toBe(true);
+    expect(skeleton(pdfText).includes(skeleton("लगभग 385 बरगद"))).toBe(true);
+    expect(skeleton(pdfText).includes(skeleton("लगभग 386 बरगद"))).toBe(false);
+  });
+
   it("accepts a different hash only when the cited book lines are in our copy", () => {
     const source = "Hello, I am Ravi. I study in Class 2. My friend and I go to school on foot.";
     const good = evidenceCoverage([{ evidence: '"I am Ravi" "I study in Class 2" "go to school on foot"' }], source);
