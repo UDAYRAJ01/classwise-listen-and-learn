@@ -79,7 +79,7 @@ for (const row of rows.filter((r) => r.kind === "write")) {
     }
   }
 
-  const content = normalizeNote(d.content as never, ctx.chapterTitle);
+  const content = normalizeNote(d.content as never, ctx?.chapterTitle ?? d.content.title);
   if (content.keyPoints.length === 0) flags.push("empty-after-normalize");
 
   const share = scriptShare(d.content);
