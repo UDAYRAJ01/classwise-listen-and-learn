@@ -50,7 +50,12 @@ for (const row of rows.filter((r) => r.kind === "write")) {
   if (d.task !== row.task) flags.push("task-number-mismatch");
   const subject = getSubject(d.board as BoardId, d.grade, d.subject);
   if (!subject) { results.push({ task: row.task, id: row.id, chapter: d.chapter, lang: d.language, ok: false, flags: ["subject"], missingAnchors: [] }); continue; }
-  const ctx = await loadChapterContext(admin, { board: d.board as BoardId, grade: d.grade, subject, chapter: d.chapter });
+  let ctx: Awaited<ReturnType<typeof loadChapterContext>> | null = null;
+  try {
+    ctx = await loadChapterContext(admin, { board: d.board as BoardId, grade: d.grade, subject, chapter: d.chapter });
+  } catch {
+    flags.push("chapter-not-in-list");
+  }
   const { data: srcRows } = await admin.from("chapter_sources").select("body").eq("board", d.board).eq("grade", d.grade)
     .eq("subject", subject.slug).eq("chapter_slug", d.chapter).order("body_chars", { ascending: false }).limit(1);
   const source = (srcRows?.[0]?.body as string | undefined) ?? "";
