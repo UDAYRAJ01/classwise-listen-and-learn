@@ -123,3 +123,9 @@ Class 1–12 short notes + memory tricks + audio for CBSE/NCERT and ICSE/ISC.
 - [x] Date scan over all 100: no year in a note that the book lacks, except quiz wrong-options
 - Picture-only answers (counts in pictures behind "___" blanks) cannot be checked from stored text; the book site is still unreachable from here
 - [x] Notes inbox limit raised from 200 to 1,500 pending drafts (~750 notes) so Muse is not stalled overnight
+
+## Muse batch 17 Nov (Class 3–7: Maths, English, Hindi, EVS, Sanskrit, Science, Social Science)
+- [x] 385 notes imported: 207 passed the automatic textbook check; 178 read by owner script (every calculation recomputed, every year and person/place name traced to the stored book text). No content error found.
+- [x] Two drafts had a wrong chapter address (Class 6 Science ch 10, Class 6 Social Science ch 11); address corrected, writing unchanged
+- Picture-story panels (e.g. Class 7 English "Rani Abbakka") are not in stored text; their names could not be checked here
+- Muse total live: 664 notes; app total 2,003
